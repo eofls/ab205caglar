@@ -1,0 +1,177 @@
+{
+  "source": {
+    "document": "Türkçe UH-1 / AB-205 Operatör Kitabı",
+    "sha256": "9ad5a56e021ae0491bada2bf3452f4577b163e65f300cf3500717972397ca1b7",
+    "pdfPage": 197,
+    "printedPage": "9-14",
+    "figure": "9-2",
+    "powerState": "off",
+    "pitot": "roof"
+  },
+  "review": {
+    "date": "2026-10-14",
+    "method": "Aynı PDF yeniden büyütülerek eksen ve eğri kimlikleri kontrol edildi; elle seçilen noktalar piksel desteğiyle tekrar okundu. Bağımsız uzman doğrulaması değildir.",
+    "applicability": "unverified",
+    "physicsReady": false,
+    "rounding": "Alçalma 10 ft/dk; oran 0,1:1. Hassasiyet garantisi değil.",
+    "limits": "Yalnız çatı KIAS; RPM eğrileri arasında enterpolasyon ve aralık dışında ekstrapolasyon yok. Rüzgâr, yoğunluk, ağırlık düzeltmesi uygulanmaz.",
+    "occlusions": "63 ve 80 kt çevresindeki işaret/yazılar çizgiyi kısmen kapatır; komşu görünen çizgiyle yaklaşık okunur. Tekil nokta değerleri kesin ölçüm değildir."
+  },
+  "curves": {
+    "284": [
+      [
+        40,
+        1550,
+        2.9
+      ],
+      [
+        50,
+        1450,
+        3.8
+      ],
+      [
+        60,
+        1410,
+        4.5
+      ],
+      [
+        63,
+        1400,
+        4.6
+      ],
+      [
+        70,
+        1430,
+        4.9
+      ],
+      [
+        80,
+        1520,
+        5.2
+      ]
+    ],
+    "314": [
+      [
+        40,
+        1900,
+        2.1
+      ],
+      [
+        50,
+        1670,
+        3.0
+      ],
+      [
+        60,
+        1600,
+        3.7
+      ],
+      [
+        63,
+        1600,
+        3.9
+      ],
+      [
+        70,
+        1620,
+        4.2
+      ],
+      [
+        80,
+        1720,
+        4.5
+      ]
+    ],
+    "339": [
+      [
+        50,
+        2440,
+        1.5
+      ],
+      [
+        55,
+        2270,
+        1.9
+      ],
+      [
+        60,
+        2210,
+        2.2
+      ],
+      [
+        63,
+        2190,
+        2.3
+      ],
+      [
+        70,
+        2220,
+        2.7
+      ],
+      [
+        75,
+        2280,
+        2.9
+      ],
+      [
+        80,
+        2380,
+        3.0
+      ]
+    ]
+  },
+  "columns": [
+    "roofKias",
+    "approxDescentFpm",
+    "approxGlideRatio"
+  ],
+  "spotChecks314": [
+    {
+      "roofKias": 55,
+      "readFpm": 1620,
+      "interpolatedFpm": 1640,
+      "absoluteDifferenceFpm": 20
+    },
+    {
+      "roofKias": 75,
+      "readFpm": 1660,
+      "interpolatedFpm": 1670,
+      "absoluteDifferenceFpm": 10
+    }
+  ],
+  "spotCheckScope": "İki ara nokta aynı kaynak üzerinde kontrol edildi. Farklar tüm eğri için hata sınırı veya güven aralığı değildir.",
+  "calibration": {
+    "upperCrop": {
+      "scale": 3,
+      "origin": [
+        714,
+        404
+      ],
+      "x20": 80,
+      "x120": 750,
+      "y2600": 41,
+      "y1400": 878
+    },
+    "lowerCrop": {
+      "scale": 4,
+      "origin": [
+        1040,
+        1760
+      ],
+      "x20": 30,
+      "x120": 925,
+      "y0Left": 599,
+      "y0Right": 593,
+      "y6Left": 38,
+      "y6Right": 32
+    }
+  },
+  "poweredReference": {
+    "rotorRpm": 324,
+    "engineRpm": 6600,
+    "pdfPage": 118,
+    "printedPage": "7-5",
+    "section": "7.5.1 ikaz",
+    "scope": "Seyahat için tavsiye; metal pal sınırının bağlamı ayrıca PDF90 §5.2.2. Eski seyahat kartlarının 314/6400 temeli ve tork düzeltmesi, güçsüz Şekil9-2 ile aynı bağlam değildir."
+  }
+}
