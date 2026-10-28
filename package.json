@@ -1,0 +1,12 @@
+{
+  "name": "ab205-scenario-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/ci.mjs",
+    "test:browser": "playwright test",
+    "report:decisions": "node scripts/decision-report.mjs",
+    "build:preview": "node scripts/build-static.mjs"
+  },
+  "devDependencies": { "@playwright/test": "1.56.1" }
+}

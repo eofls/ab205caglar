@@ -1,0 +1,48 @@
+name: AB-205 previews and approved releases
+on:
+  workflow_run:
+    workflows: [AB-205 automatic tests]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: 'Successful main test run ID to approve (also used to roll back)'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: ab205-pages-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+      - name: Prepare verified artifact without running its code
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ inputs.source_run || github.event.workflow_run.id }}
+          PUBLISH_MODE: ${{ github.event_name == 'workflow_dispatch' && 'approve' || 'preview' }}
+        run: python3 scripts/publish-pages.py
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: publication
+      - name: Publish previews and the approved version
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e

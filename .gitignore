@@ -1,0 +1,12 @@
+node_modules/
+ci-results/
+playwright-report/
+test-results/
+site-dist/
+reports/
+publication/
+stage/
+.env
+.env.*
+__pycache__/
+*.pyc

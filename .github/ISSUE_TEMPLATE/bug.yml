@@ -1,0 +1,28 @@
+name: Hata bildirimi
+description: Tekrarlanabilir uygulama veya senaryo hatası
+title: "[Hata] "
+body:
+  - type: textarea
+    id: version
+    attributes:
+      label: Sürüm ve koşullar
+      description: Commit/önizleme bağlantısı, tarayıcı, irtifa, IAS, rüzgâr, ağırlık ve senaryo.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Adımlar ve verilen kararlar
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Beklenen ve gerçekleşen sonuç
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Kanıt
+      description: Oturum kaydı, ekran görüntüsü, test raporu veya dayanak belge.
