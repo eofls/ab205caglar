@@ -1,0 +1,283 @@
+--- a/aircraft-data.js
++++ b/aircraft-data.js
+@@ -17,7 +17,7 @@
+  {id:'cruise',title:'Metal pal ile seyir',value:'319–324 rotor RPM',source:'TR §5.2.2, PDF 90 / basılı 5-1',context:'Metin, kompozit pal için bu sınırlamanın geçerli olmadığını belirtir. Bu, kompozit için limitsiz kullanım anlamına gelmez.',status:'Metinden okundu'},
+  {id:'min-descent',title:'Grafikte minimum alçalma sürati',value:'63 kt çatı / 52 kt burun',source:'TR Şekil 9-2, PDF 197 / basılı 9-14',context:'Grafiğin işaretli sürat çiftidir; her koşul için otomatik hedef sürat değildir.',status:'Grafik etiketinden okundu',image:'autorotation-reference.png'},
+  {id:'max-glide',title:'Grafikte azami süzülüş mesafesi sürati',value:'98 kt çatı / 82 kt burun',source:'TR Şekil 9-2, PDF 197 / basılı 9-14',context:'Mevcut başlangıç seçiminin 0–80 kt çatı aralığını genişletmez; yalnız referans bilgidir.',status:'Grafik etiketinden okundu',image:'autorotation-reference.png'},
+- {id:'curves',title:'Alçalma ve süzülüş eğrileri',value:'284 / 314 / 339 rotor RPM eğrileri',source:'TR Şekil 9-2, PDF 197 / basılı 9-14',context:'Eğri üzerindeki RPM değerleri işletme limiti değildir. 284/314 RPM için 40–80, 339 RPM için 50–80 çatı KIAS bölümünde alçalma ve süzülüş oranı yaklaşık okundu. Kaynakla yeniden karşılaştırıldı; uçuş hesabı etkin değil.',status:'Kısmi ön okuma',image:'autorotation-reference.png'},
++ {id:'curves',title:'Alçalma ve süzülüş eğrileri',value:'284 / 314 / 339 rotor RPM eğrileri',source:'TR Şekil 9-2, PDF 197 / basılı 9-14',context:'Eğri üzerindeki RPM değerleri işletme limiti değildir. 284/314 RPM için 40–80, 339 RPM için 50–80 çatı KIAS bölümünde alçalma ve süzülüş oranı yaklaşık okundu. Kaynakla yaklaşık karşılaştırıldı; deneysel hesapta kullanılıyor, bağımsız doğrulama tamamlanmadı.',status:'Kısmi ön okuma',image:'autorotation-reference.png'},
+  {id:'engine',title:'Motor konfigürasyonu ayrımı',value:'Ana metin T53-L-13; 703 için EK-C',source:'TR PDF 16 / basılı 2-3; §5.3, PDF 91 / basılı 5-2',context:'703 seçimi, ana metindeki motor verilerini 703’e aktarmayı engelleyen bir ayrım olarak kaydedilir.',status:'Metinden okundu'}
+ ];
+ export function parseAircraftNumber(value){return typeof value==='string'&&value.trim()===''?null:Number(value);}
+--- a/app.js
++++ b/app.js
+@@ -1,3 +1,5 @@
++import {MAX_SESSION_BYTES,liveFlightState} from './flight-reference.js';
++import {terrainHeight as liveTerrainHeight} from './terrain-data.js';
+ import {HeliAudio,soundInputs} from './heli-audio.js';
+ import {foldNotes} from './ui-help.js';
+ import {StartMap} from './start-map.js';
+@@ -112,7 +114,7 @@
+  $('live-descent').title=flight.contact?'Temas sonrası düşey hız; temas öncesi değer raporda.':'Varyo: + tırmanış, − alçalış (ft/dk). Anlık düşey hız hesabı.';
+  $('live-groundspeed').textContent=flight.quality==='unsupported'?'— kt':flight.groundSpeedKt.toFixed(1)+' kt yer';
+  $('rpm-phase').textContent=state.power.phase;$('rpm-note').textContent=state.power.note+' · IAS hava sürati; yer sürati ayrı';
+- if(flight.ground){$('engine-rpm').textContent=flight.ground.engineRpm.toFixed(0)+' RPM';const wind=session.config.windFromDeg*Math.PI/180,wx=-session.config.windKt*1852/3600*Math.sin(wind),wz=session.config.windKt*1852/3600*Math.cos(wind);$('live-airspeed').textContent=(Math.hypot(flight.ground.velocityMps[0]-wx,flight.ground.velocityMps[2]-wz)*3600/1852*Math.sqrt(flight.densityKgM3/1.225)).toFixed(1)+' KIAS';$('rotor-rpm').textContent=flight.ground.rotorRpm.toFixed(1)+' RPM';$('live-altitude').textContent=Math.max(0,(flight.ground.position[1]-flight.position[1])/.3048).toFixed(1)+' ft AGL';$('live-descent').textContent=((v=>(Math.abs(v)<.5?'0':(v>0?'+':'−')+Math.abs(v).toFixed(0)))(flight.ground.velocityMps[1]/.3048*60))+' ft/dk';$('live-groundspeed').textContent=(flight.ground.groundSpeedMps*3600/1852).toFixed(1)+' kt yer';$('rpm-phase').textContent=flight.ground.phase;$('rpm-note').textContent='Temas sonrası varsayımsal zemin modeli · temas öncesi değerler sonuç raporunda';}
++ if(flight.ground){const live=liveFlightState(flight,liveTerrainHeight);$('engine-rpm').textContent=live.engineRpm.toFixed(0)+' RPM';$('live-airspeed').textContent=live.iasKt.toFixed(1)+' KIAS';$('rotor-rpm').textContent=live.rotorRpm.toFixed(1)+' RPM';$('live-altitude').textContent=live.heightAglFt.toFixed(1)+' ft AGL';$('live-descent').textContent=((v=>(Math.abs(v)<.5?'0':(v>0?'+':'−')+Math.abs(v).toFixed(0)))(-live.descentFpm))+' ft/dk';$('live-groundspeed').textContent=live.groundSpeedKt.toFixed(1)+' kt yer';$('rpm-phase').textContent=flight.ground.phase;$('rpm-note').textContent='Temas sonrası varsayımsal zemin modeli · temas öncesi değerler sonuç raporunda';}
+  $('rpm-readout').title=state.power.explanation+' '+state.power.reference;
+  const profile=PROFILES[s.id];
+  $('profile-code').textContent=profile?profile.code+' / SENARYO ODAĞI':s.lesson==='S01'?'S01 / DÜZ UÇUŞ':'SERBEST BAŞLANGIÇ';
+@@ -160,7 +162,7 @@
+ $('rate').onchange=e=>{session.setRate(Number(e.target.value));save();};
+ $('export').onclick=()=>saveFile('ab205-oturum-v1.json',JSON.stringify(session.serialize(),null,2));
+ $('import-button').onclick=()=>$('import').click();
+-$('import').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>100000)throw Error('Kayıt dosyası fazla büyük.');const restored=Session.restore(JSON.parse(await file.text()));session=restored;lastSignature='';lastDecision='';fillForm();render();save();$('error').textContent='';}catch(e){error(e);}finally{$('import').value='';}};
++$('import').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>MAX_SESSION_BYTES)throw Error('Kayıt dosyası fazla büyük.');const restored=Session.restore(JSON.parse(await file.text()));session=restored;lastSignature='';lastDecision='';fillForm();render();save();$('error').textContent='';}catch(e){error(e);}finally{$('import').value='';}};
+ const manualInput=new ManualInput();let manualMounted=false;
+ // Instructor cues in manual flight (TR Uçuş Hareketleri otorotasyon sırası); advisory text only.
+ function manualCue(p){if(!p||p.contact||p.time<4)return '';const c=p.controls??{},h=p.heightAglFt,ias=p.iasKt,rpm=p.rotorRpm,rod=p.descentFpm;
+@@ -177,7 +179,7 @@
+   const run=manualRun(session.config.manualRunId),finished=session.scenario.endReason==='contact';
+   if(session.playing&&session.time>=3.98&&(!finished||changed))run.record(session.time,inp);
+   manualInput.view?.();}
+- if(session.playing){session.tick(Math.min(delta,.25));if(!session.playing&&session.pending)autoResume=true;render();if(!session.playing||now-lastSave>1000){save();lastSave=now;}}sceneView.draw();requestAnimationFrame(frame);}
++ if(session.playing){session.tick(Math.min(delta,.25));if(!session.playing&&session.pending)autoResume=true;render();if(!session.playing||now-lastSave>1000){save();lastSave=now;}}try{sceneView.draw();}catch(e){console.error('3B çizim hatası',e);}requestAnimationFrame(frame);}
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){session.pause();save();render();}});window.addEventListener('pagehide',save);
+ fillForm();render();if(restoreMessage)$('save-status').textContent=restoreMessage;else save();requestAnimationFrame(frame);
+ 
+--- a/catalog.js
++++ b/catalog.js
+@@ -30,7 +30,7 @@
+   {id:'caution',name:'İkazlı saha',subtitle:'Alçak uçuşta güç kaybı',zone:'caution',zoneLabel:'İkazlı',height:40,ias:70,duration:48,decisions:profileDecisions('caution'),
+     context:'İleri sürat mevcut; yerden yükseklik sınırlı. Koordinata dayalı eğim kullanılır; zemin uygunluğu ayrıca değerlendirilir.',
+     aero:'Alçak yükseklik, yavaşlama ve iniş hazırlığı için kullanılabilen payı daraltır. İleri sürat tek başına emniyet sağlamaz.',
+-    outcome:'Kaynak, ikazlı sahadaki tam güç kaybında pilotun gayretine rağmen hasar olasılığının yüksek olduğunu belirtir. Bu prototip hasar yüzdesi veya temas hızı hesaplamaz.'},
++    outcome:'Kaynak, ikazlı sahadaki tam güç kaybında pilotun gayretine rağmen hasar olasılığının yüksek olduğunu belirtir. Temas hızı ve benzetilmiş sertlik endeksi hesaplanır; gerçek hasar olasılığı değildir.'},
+   {id:'avoid-low',name:'Kaçınılacak saha',subtitle:'Düşük sürat / yerden ayrılmış uçuş',zone:'avoid',zoneLabel:'Kaçınılacak',height:200,ias:10,duration:54,decisions:profileDecisions('avoid-low'),
+     context:'Düşük süratli uçuş; otorotatif akışı geliştirmek için gereken zaman ve irtifa önemli.',
+     aero:'Düşük ileri süratte alçalışa geçiş ve hava akımının kurulması önem kazanır. Yükseklik–sürat bileşimi, rotor enerjisini yönetme payını sınırlayabilir.',
+@@ -42,11 +42,11 @@
+   {id:'avoid-fast',name:'Yere yakın / yüksek sürat',subtitle:'Alt kaçınma bölgesinin ayrı örneği',zone:'avoid',zoneLabel:'Kaçınılacak',height:5,ias:75,duration:42,decisions:profileDecisions('avoid-fast'),
+     context:'Çok sınırlı yer açıklığı ve yüksek ileri sürat. Düşük süratli kaçınma senaryosundan ayrı ele alınır.',
+     aero:'Yüksek ileri sürate rağmen yer açıklığı yavaşlama için yetersiz kalabilir. Kuyruk ve arazi açıklığı ayrıca değerlendirilir.',
+-    outcome:'Rotor enerjisi, yer açıklığı ve ileri sürat birlikte değerlendirilmelidir. Bu sürüm flare, temas açısı veya duruş mesafesi hesaplamaz.'},
++    outcome:'Rotor enerjisi, yer açıklığı ve ileri sürat birlikte değerlendirilmelidir. Fleyır, temas tutumu ve duruş mesafesi deneysel olarak hesaplanır.'},
+   {id:'hover',name:'Yer tesirinde havır',subtitle:'Kumanda genellemesine karşı kontrol senaryosu',zone:'context',zoneLabel:'Özel koşul',height:3,ias:0,duration:40,decisions:profileDecisions('hover'),
+     context:'Düz zeminde, yer tesirinde alçak havır. Bu örneğin bölgesi otomatik sınıflandırılmıyor.',
+     aero:'Yer tesirindeki havırda rotorun depolanmış enerjisi ve çok kısa yer açıklığı birlikte ele alınır; seyirdeki tepki aynen kopyalanmaz.',
+-    outcome:'Kaynaklar yer tesirindeki havır ile seyir koşullarında ilk kollektif uygulamasını ayırır. Bu dalın amacı bu farkı görünür kılmaktır; kumanda miktarı hesaplanmaz.'}
++    outcome:'Kaynaklar yer tesirindeki havır ile seyir koşullarında ilk kollektif uygulamasını ayırır. Bu dalın amacı bu farkı görünür kılmaktır; kumanda miktarı deneysel olarak hesaplanır.'}
+ ];
+ export const DEFAULT_CONFIG = {...DEFAULT_AIRCRAFT,flightArea:'terrain',customSites:[],hiddenSites:[],nextSiteNumber:3,scenario:'caution',customStart:false,startHeightFt:40,startIasKt:70,mode:'guided',powerLossMode:'total',pedalMode:'auto',temperatureC:20,pressureAltitudeFt:3000,windKt:5,windFromDeg:0,headingDeg:0,startX:0,startZ:0,visibilityKm:10,cloudCover:'clear',lighting:'day',turbulence:'none',pilot:'proficient',copilot:'proficient',physicsModel:'energy',manualRunId:'',precipitation:'none',program:'emergency',emergencyId:'engine-total',maneuverId:'hover'};
+ export function getScenario(id){return SCENARIOS.find(s=>s.id===id);}
+--- a/cockpit-gauges.js
++++ b/cockpit-gauges.js
+@@ -1,3 +1,5 @@
++import {liveFlightState} from './flight-reference.js';
++import {terrainHeight as liveTerrainHeight} from './terrain-data.js';
+ // Cockpit instrument overlay (v0.31; v0.32 restyled after the user's AB-205 panel photos: English panel legends, black bezels on a dark green-grey panel): analog-style dual tachometer, airspeed, radar altitude, VSI and attitude.
+ // Values come from the same simulated state as the rest of the app; gauges are schematic, not certified panel art.
+ const NS='http://www.w3.org/2000/svg';
+@@ -21,7 +23,7 @@
+   this.q=k=>this.el.querySelector(k);
+  }
+  set(dialKey,i,value){const d=this.dials[dialKey],svg=this.el.querySelectorAll('.cg-dial')[['tach','ias','att','alt','vsi'].indexOf(dialKey)];if(!svg)return;const n=svg.querySelector(`[data-n="${i}"]`);if(n)n.setAttribute('transform',`rotate(${d.ang(value)} 60 60)`);}
+- update(p,{visible}){this.el.hidden=!visible;if(!visible||!p)return;
++ update(p,{visible}){p=p?liveFlightState(p,liveTerrainHeight):p;this.el.hidden=!visible;if(!visible||!p)return;
+   const rotorPct=p.rotorRpm/324*100,enginePct=(p.engineRpm??0)/6600*100;this.set('tach',0,rotorPct);this.set('tach',1,enginePct);
+   this.set('ias',0,p.iasKt);this.set('alt',0,p.heightAglFt);this.set('vsi',0,-p.descentFpm);
+   const digits=this.el.querySelectorAll('[data-d="0"]');digits[0].textContent=p.rotorRpm.toFixed(0);digits[1].textContent=p.iasKt.toFixed(0);digits[2].textContent=p.heightAglFt.toFixed(0);digits[3].textContent=(-p.descentFpm).toFixed(0);
+--- a/cockpit3d.js
++++ b/cockpit3d.js
+@@ -1,3 +1,5 @@
++import {liveFlightState} from './flight-reference.js';
++import {terrainHeight as liveTerrainHeight} from './terrain-data.js';
+ // v0.35 3D cockpit of the AB-205 (J-4489): instrument panel, glareshield, pedestal, overhead console, circuit breakers,
+ // cyclic, collective (with switch box and twist-grip throttle), pedals, seats and the cabin frame.
+ // Panels are the user's photos (rectified); every instrument face is drawn live over its photo position and every
+@@ -254,7 +256,7 @@
+   if(!o)return null;o.updateWorldMatrix(true,false);return new T.Vector3().setFromMatrixPosition(o.matrixWorld);}
+  worldPos(id){const P=this.parts[id]??this.parts['g_'+id];if(!P)return null;const o=P.g??P;o.updateWorldMatrix(true,false);return new T.Vector3().setFromMatrixPosition(o.matrixWorld);}
+  /* ---------- per-frame update from the simulated state ---------- */
+- update(p,{time=0,config={},cues=[]}={}){if(p)this.out=this.outputs(p,time,config);if(!this.group.visible||!p)return;this.frame++;this.applyLighting(this.out);const nowR=performance.now(),dtR=Math.min(.2,Math.max(0,(nowR-(this.lastR??nowR))/1000));this.lastR=nowR;
++ update(p,{time=0,config={},cues=[]}={}){p=p?liveFlightState(p,liveTerrainHeight):p;if(p)this.out=this.outputs(p,time,config);if(!this.group.visible||!p)return;this.frame++;this.applyLighting(this.out);const nowR=performance.now(),dtR=Math.min(.2,Math.max(0,(nowR-(this.lastR??nowR))/1000));this.lastR=nowR;
+   const st=this.state,on=k=>st[k],ac=on('invtr')!==1&&on('bat')===1&&!this.cbOut('adi'),dcOn=on('bat')===1||p.engineRpm>5500;
+   // engine / power values
+   const eng=p.ground?.engineRpm??p.engineRpm??6600,rot=p.ground?.rotorRpm??p.rotorRpm??324,shp=Math.max(0,(p.shaftPowerW??0)),running=eng>3000,pf=clamp(shp/820000,0,1.3);
+--- a/engine.js
++++ b/engine.js
+@@ -1,3 +1,4 @@
++import {DEFAULT_WEIGHT_LB,APP_VERSION,MAX_SESSION_SECONDS} from './flight-reference.js';
+ import {validateSites,landingOptions} from './landing-sites.js';
+ import {redirectDecision,redirectId,currentLanding} from './site-redirect.js';
+ import {contactAssessment} from './contact-assessment.js';
+@@ -60,7 +61,7 @@
+  const effects=[{kind:'Meteoroloji',text:`Rüzgâr ${c.windKt} kt / ${c.windFromDeg}°: ${Math.abs(headwind).toFixed(1)} kt ${headwind>=0?'karşı':'arka'}, ${Math.abs(crosswind).toFixed(1)} kt yan bileşen.`,source:['faa']}];
+  effects.push({kind:'Meteoroloji',text:`${c.temperatureC} °C, basınç irtifası ${c.pressureAltitudeFt} ft → yoğunluk irtifası ≈ ${da} ft.${da>4000?' Yüksek yoğunluk irtifası rotor verimini düşürür; alçalış oranı artar, fleyırda frenleme azalır.':''}`,source:['faa']});
+  if(c.windKt>0)effects.push({kind:'Meteoroloji',text:`Rüzgâr yere yaklaştıkça azalır (${surface}); fleyır ve temas anında karşı rüzgâr katkısı yukarıdakinden düşüktür.${c.flightArea==='mountain'?' Rüzgârüstü yamaçta yükselen, rüzgâraltında çöken hava vardır.':''}`,source:['met','faa']});
+- {const p=ppc({weightLb:c.grossWeightLb??8500,paFt:c.pressureAltitudeFt,tempC:c.temperatureC});effects.push({kind:'Performans',text:`PPC (${c.grossWeightLb??8500} lb, ${c.pressureAltitudeFt} ft, ${c.temperatureC} °C): azami tork ${p.tqMax} PSI; havır torku yer tesirinde ${p.tqIge}, dışında ${p.tqOge} PSI; güç payı ${p.margin} PSI. Azami havır ağırlığı yer tesirinde ${p.wMaxIge} lb, dışında ${p.wMaxOge} lb.${p.goOge?'':' Yer tesiri dışında havır gücü yok: tepe / kapalı bölge harekâtı yapılmaz.'}`,source:['tr'],reference:'TM 55-1520-210-10 bölüm 7 (yaklaşım)'});}
++ {const p=ppc({weightLb:c.grossWeightLb??DEFAULT_WEIGHT_LB,paFt:c.pressureAltitudeFt,tempC:c.temperatureC});effects.push({kind:'Performans',text:`PPC (${c.grossWeightLb??DEFAULT_WEIGHT_LB} lb, ${c.pressureAltitudeFt} ft, ${c.temperatureC} °C): azami tork ${p.tqMax} PSI; havır torku yer tesirinde ${p.tqIge}, dışında ${p.tqOge} PSI; güç payı ${p.margin} PSI. Azami havır ağırlığı yer tesirinde ${p.wMaxIge} lb, dışında ${p.wMaxOge} lb.${p.goOge?'':' Yer tesiri dışında havır gücü yok: tepe / kapalı bölge harekâtı yapılmaz.'}`,source:['tr'],reference:'TM 55-1520-210-10 bölüm 7 (yaklaşım)'});}
+  effects.push({kind:'Meteoroloji',text:`Görüş ${c.visibilityKm} km${c.visibilityKm<5?': saha ve engel (tel, ağaç) tespiti zorlaşır.':'.'}`,source:['crm']});
+  if(c.turbulence!=='none')effects.push({kind:'Meteoroloji',text:`${c.turbulence==='moderate'?'Orta':'Hafif'} türbülans: yatay σ≈${c.turbulence==='moderate'?'1.8':'0.7'} m/s, düşey σ≈${c.turbulence==='moderate'?'0.9':'0.35'} m/s; düşey bileşen yere yaklaştıkça azalır.`,source:['met','crm']});
+  return {headwind,crosswind,effects};
+@@ -153,12 +154,12 @@
+   const lesson=scenario.lesson==='S01'?{...lessonView(this.time,choices,scenario.decisions),phases:[...lessonView(this.time,choices,scenario.decisions).phases.filter(p=>p.at<scenario.duration),{at:scenario.duration,label:'Tamamlandı'}],complete,...(this.config.mode==='watch'?{crew:'Uyarlanabilir pilot · anlık durum değerlendirmesi',field:'Anlık kumandalara göre T temas tahmini',focus:'compare'}:{})}:null;
+   return {power,aircraft:aircraftAssessment(this.config),time:this.time,duration:scenario.duration,playing:this.playing,rate:this.rate,pending:this.pending?.id??null,events,answers,current:events.at(-1),stage:complete?'Tamamlandı':physical.ground?.phase??physical.controls.phase,lesson,renderFrame:{presentationProgress:this.time/(scenario.duration||1),enginePowered:physical.powered,physicalState:physical},riskChoices:answers.filter(a=>scenario.decisions.find(d=>d.id===a.id)?.options.find(o=>o.id===a.option)?.risk).length};
+  }
+- serialize(){return {schemaVersion:VERSION,appVersion:'0.33.0',legacyTiming:this.legacyTiming,config:{...this.config},time:this.time,rate:this.rate,answers:this.answers.map(a=>({...a})),...(this.config.mode==='manual'?{manualInputs:manualRun(this.config.manualRunId).inputs.map(r=>[...r])}:{})};}
++ serialize(){return {schemaVersion:VERSION,appVersion:APP_VERSION,legacyTiming:this.legacyTiming,config:{...this.config},time:this.time,rate:this.rate,answers:this.answers.map(a=>({...a})),...(this.config.mode==='manual'?{manualInputs:manualRun(this.config.manualRunId).inputs.map(r=>[...r])}:{})};}
+  static restore(raw){
+   if(!raw||![1,2,3,4,5,6,7,8,9,10,11,12,13,14,VERSION].includes(raw.schemaVersion)||!Array.isArray(raw.answers)||raw.answers.length>64)throw Error('Desteklenmeyen kayıt');
+   const s=new Session(raw.config);if(s.config.mode==='manual'){if(raw.manualInputs!==undefined&&(!Array.isArray(raw.manualInputs)||raw.manualInputs.length>40000||raw.manualInputs.some(r=>!Array.isArray(r)||r.length!==5||r.some(v=>!Number.isFinite(v)))))throw Error('Geçersiz elle uçuş kaydı');const run=manualRun(s.config.manualRunId);run.reset(raw.manualInputs??[]);run.prepare(s.baseScenario,s.config);if(Number.isFinite(raw.time))run.ensure(Math.min(600,raw.time));}if(raw.legacyTiming!==undefined&&typeof raw.legacyTiming!=='boolean')throw Error('Geçersiz zamanlama');s.legacyTiming=raw.schemaVersion===VERSION&&raw.legacyTiming===true;s.setRate(raw.rate);
+   let previous=-1;const seen=new Set();
+   for(const a of raw.answers){if(seen.has(a.id)||![...s.baseScenario.decisions,...Object.values(EXTRA_DECISIONS),...s.config.customSites.filter(t=>t.at!==undefined).map(redirectDecision),...s.config.customSites.map(t=>({...EXTRA_DECISIONS.approach,id:'approach-'+t.number})),...Object.values(programDefs(s.config))].some(d=>d.id===a.id&&(d.id==='landing'?landingOptions(s.config,d.options):d.options).some(o=>o.id===a.option)))throw Error('Geçersiz karar');seen.add(a.id);if(raw.schemaVersion!==VERSION){for(let n=0;n<16;n++){const next=s.scenario.decisions.find(d=>!s.answers.some(x=>x.id===d.id));if(!next||next.id===a.id||!LEGACY_DEFAULTS[next.id])break;s.seek(next.at);s.choose(next.id,LEGACY_DEFAULTS[next.id]);}}const d=s.scenario.decisions.find(d=>d.id===a.id);if(!Number.isFinite(a.at)||a.at<=previous)throw Error('Geçersiz karar kaydı');previous=a.at;if(!d){if(raw.schemaVersion===VERSION)throw Error('Karar bulunamadı');continue;}if(raw.schemaVersion===VERSION&&a.at!==d.at)throw Error('Geçersiz karar zamanı');s.seek(d.at);s.choose(a.id,a.option);}
+-  number(raw.time,0,600,'zaman');if(raw.schemaVersion!==VERSION){for(let n=0;n<16;n++){const next=s.scenario.decisions.find(d=>!s.answers.some(x=>x.id===d.id));if(!next||next.at>raw.time||!LEGACY_DEFAULTS[next.id])break;s.seek(next.at);s.choose(next.id,LEGACY_DEFAULTS[next.id]);}}const target=raw.schemaVersion===VERSION?raw.time:Math.min(raw.time,s.scenario.duration);s.seek(target);if(raw.schemaVersion===VERSION&&s.time!==target)throw Error('Karar atlanmış kayıt');return s;
++  number(raw.time,0,isProgramFlight(s.config)?MAX_SESSION_SECONDS:600,'zaman');if(raw.schemaVersion!==VERSION){for(let n=0;n<16;n++){const next=s.scenario.decisions.find(d=>!s.answers.some(x=>x.id===d.id));if(!next||next.at>raw.time||!LEGACY_DEFAULTS[next.id])break;s.seek(next.at);s.choose(next.id,LEGACY_DEFAULTS[next.id]);}}const target=raw.schemaVersion===VERSION?raw.time:Math.min(raw.time,s.scenario.duration);s.seek(target);if(raw.schemaVersion===VERSION&&s.time!==target)throw Error('Karar atlanmış kayıt');return s;
+  }
+ }
+--- a/flight-dynamics.js
++++ b/flight-dynamics.js
+@@ -1,3 +1,4 @@
++import {atmosphere as sharedAtmosphere,DEFAULT_MASS_KG} from './flight-reference.js';
+ import {currentLanding} from './site-redirect.js';
+ import {choosePilotSite} from './flight-guidance.js';
+ import {obstacleHeight,obstacleTopNear} from './terrain-data.js';
+@@ -22,11 +23,11 @@
+ import {CURVES} from './curve-reference.js';
+ export const MODEL_VERSION='energy-1.7';
+ export const G=9.80665,FT=.3048,KT=1852/3600;
+-export const PARAMETERS=Object.freeze({massKg:2800,inertiaKgM2:2711,engineCoastSeconds:3,step:.02,failureTime:4,dragAreaM2:1.5,profilePowerCollectiveExponent:1.25});
++export const PARAMETERS=Object.freeze({massKg:DEFAULT_MASS_KG,inertiaKgM2:2711,engineCoastSeconds:3,step:.02,failureTime:4,dragAreaM2:1.5,profilePowerCollectiveExponent:1.25});
+ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+ import {terrainHeight,surfaceProfile,wireDistance,POWER_LINES} from './terrain-data.js';
+ export {terrainHeight} from './landing-sites.js';
+-export function atmosphere(c){const h=c.pressureAltitudeFt*FT,p=101325*Math.pow(1-2.25577e-5*h,5.25588);return {density:p/(287.05287*(c.temperatureC+273.15)),pressurePa:p};}
++export const atmosphere=sharedAtmosphere;
+ function row(rpm,kias){const points=CURVES[rpm],v=clamp(kias,points[0].kias,points.at(-1).kias),i=Math.max(1,points.findIndex(p=>p.kias>=v)),a=points[i-1],b=points[i];return a.descentFpm+(b.descentFpm-a.descentFpm)*(v-a.kias)/(b.kias-a.kias);}
+ // Only the common 50–80 KIAS / 284–339 RPM rectangle is chart interpolation.
+ // Outside it, a smooth engineering extension is used and explicitly flagged.
+@@ -203,3 +204,12 @@
+   const out=describe({...s,input:this.inputAt(s.t)??s.input},p,[],config,time,false);out.manualInput=this.inputAt(time);return out;}
+ }
+ export function manualRun(id='default'){if(!MANUAL.has(id))MANUAL.set(id,new ManualRun(id));return MANUAL.get(id);}
++
++// Diagnostic bench only: evaluate the production force/energy equations at a fixed
++// airspeed/RPM/descent. No controller tuning, no integration, no claim of flight validation.
++export function autorotationBalance({config,iasKt,rotorRpm,descentMps,collective}){
++ const c={...config,windKt:0,turbulence:'none',mode:'manual',powerLossMode:'total',program:'emergency',emergencyId:'engine-total',initialRotorRpm:rotorRpm};
++ const p=setup({height:2000,ias:iasKt},c),s=initial(p),tas=iasKt*KT*p.tasFactor,drag=.5*p.density*PARAMETERS.dragAreaM2*tas*tas;
++ Object.assign(s,{t:20,x:0,z:0,y:terrainHeight(0,0,p.flightArea)+2000*FT,w:descentMps,collective,pedal:.5,cyclicX:0,cyclicZ:-Math.atan2(drag,p.mass*G),inflowCapture:clamp((1-collective)/.22,0,1),engine:0,input:{collective,cyclicF:0,cyclicR:0,pedal:.5}});
++ const d=derivative(s,p,[]);return {liftN:d.lift,weightN:p.mass*G,verticalAccelerationMps2:d.w,rotorPowerW:d.rotorPower,rotorRateRpmS:d.omega*30/Math.PI,forwardAccelerationMps2:-d.vz,lateralAccelerationMps2:d.vx,densityKgM3:p.density,massKg:p.mass,tasKt:tas/KT,collective,descentMps,iasKt,rotorRpm};
++}
+--- a/flight-reference.js
++++ b/flight-reference.js
+@@ -0,0 +1,12 @@
++// Shared reference frames and defaults; not an aircraft certification.
++export const APP_VERSION='0.40.0-validation';
++export const FT=.3048,KT=1852/3600,LB_KG=.45359237;
++export const DEFAULT_MASS_KG=2800,DEFAULT_WEIGHT_LB=DEFAULT_MASS_KG/LB_KG;
++export const MAX_SESSION_SECONDS=900,MAX_SESSION_BYTES=8*1024*1024;
++export function massKg(c={}){return c.grossWeightLb==null?DEFAULT_MASS_KG:c.grossWeightLb*LB_KG;}
++export function atmosphere(c){const h=c.pressureAltitudeFt*FT,p=101325*Math.pow(1-2.25577e-5*h,5.25588);return {density:p/(287.05287*(c.temperatureC+273.15)),pressurePa:p};}
++export function tasFactor(c){return Math.sqrt(1.225/atmosphere(c).density);}
++export function windVector(c){const a=c.windFromDeg*Math.PI/180;return {x:-c.windKt*KT*Math.sin(a),z:c.windKt*KT*Math.cos(a)};}
++// IAS target on a ground track: crab into crosswind; unreachable crosswind is allowed to drift.
++export function velocityForTrack(iasKt,track,c){const W=windVector(c),v=Math.max(0,iasKt)*KT*tasFactor(c),ux=Math.sin(track),uz=-Math.cos(track),rx=Math.cos(track),rz=Math.sin(track),cross=W.x*rx+W.z*rz,cancel=Math.max(-v,Math.min(v,-cross)),along=Math.sqrt(Math.max(0,v*v-cancel*cancel));return {x:ux*along+rx*cancel+W.x,z:uz*along+rz*cancel+W.z};}
++export function liveFlightState(p,areaHeight){if(!p.ground)return p;const g=p.ground,v=g.velocityMps,W=p.airMass??{},tas=Math.hypot(v[0]-(W.windX??0),v[2]-(W.windZ??0)),f=Math.sqrt(1.225/(p.densityKgM3??1.225));return {...p,position:g.position,velocityMps:v,iasKt:tas/KT/f,tasKt:tas/KT,groundSpeedKt:g.groundSpeedMps/KT,heightAglFt:Math.max(0,(g.position[1]-areaHeight(g.position[0],g.position[2],p.flightArea))/FT),descentFpm:-v[1]/FT*60,rotorRpm:g.rotorRpm,engineRpm:g.engineRpm,pitch:g.pitch,roll:g.roll};}
+--- a/performance.js
++++ b/performance.js
+@@ -1,3 +1,4 @@
++import {DEFAULT_WEIGHT_LB} from './flight-reference.js';
+ /* v0.39 performans planlaması (PPC) — TM 55-1520-210-10 bölüm 7 mantığıyla: yoğunluk irtifası, havır torku (yer tesirinde
+    2 ft / yer tesiri dışında), azami kullanılabilir tork (30 dakika) ve güç payı. Abaklar sayısallaştırılmadı: değerler
+    UH-1H / T53-L-13B için bilinen noktalara oturtulmuş bir yaklaşım (deniz seviyesi 9500 lb: IGE ≈ 39, OGE ≈ 46 PSI;
+@@ -5,7 +6,7 @@
+ const FT=.3048;
+ export function densityAltitudeFt(paFt,tempC){const isa=15-2*paFt/1000;return paFt+120*(tempC-isa);}
+ export function sigmaOf(daFt){return Math.pow(1-6.8756e-6*daFt,4.2561);}
+-export function ppc({weightLb=8500,paFt=3000,tempC=15}={}){const da=densityAltitudeFt(paFt,tempC),sig=sigmaOf(Math.max(-2000,da)),w=weightLb/9500;
++export function ppc({weightLb=DEFAULT_WEIGHT_LB,paFt=3000,tempC=15}={}){const da=densityAltitudeFt(paFt,tempC),sig=sigmaOf(Math.max(-2000,da)),w=weightLb/9500;
+  const oge=16+30*Math.pow(w,1.5)/Math.sqrt(sig),ige=oge*.84,max=Math.min(50,58-1.8*Math.max(0,da)/1000);
+  const margin=max-oge,marginIge=max-ige;
+  /* azami havır ağırlığı (yer tesirinde): ige(w)=max */
+@@ -14,7 +15,7 @@
+   wMaxIge:Math.min(9500,Math.round(wMaxIge/50)*50),wMaxOge:Math.min(9500,Math.round(wMaxOge/50)*50),goIge:marginIge>=0,goOge:margin>=0};}
+ export function ppcText(p){return `YOĞUNLUK İRTİFASI ${p.da} FİT; AZAMİ TORK ${p.tqMax} PSI; HAVIR TORKU YER TESİRİNDE ${p.tqIge}, YER TESİRİ DIŞINDA ${p.tqOge} PSI; GÜÇ PAYI ${p.margin>=0?p.margin:'YOK ('+p.margin+')'} PSI${p.goOge?'':' — YER TESİRİ DIŞI HAVIR GÜCÜ YOK'}`;}
+ /* site conditions: pressure altitude ≈ site elevation (standard pressure), temperature with the standard lapse from the configured value */
+-export function sitePpc(config,elevFt){const pa=Math.max(0,elevFt),t=(config.temperatureC??15)-2*(pa-(config.pressureAltitudeFt??3000))/1000;return ppc({weightLb:config.grossWeightLb??8500,paFt:pa,tempC:t});}
++export function sitePpc(config,elevFt){const pa=Math.max(0,elevFt),t=(config.temperatureC??15)-2*(pa-(config.pressureAltitudeFt??3000))/1000;return ppc({weightLb:config.grossWeightLb??DEFAULT_WEIGHT_LB,paFt:pa,tempC:t});}
+ export {FT};
+ 
+ /* v0.39 tork göstergesi PPC'ye bağlı: güç oranı (şaft gücü / referans) × yer tesiri dışı havır torku / 1.25
+--- a/program-flight.js
++++ b/program-flight.js
+@@ -1,3 +1,4 @@
++import {tasFactor,windVector,velocityForTrack} from './flight-reference.js';
+ // v0.34 program flight: powered flight for emergencies that keep (or partly keep) engine power and for the flight
+ // manoeuvres (normal powered flight, no failure). A kinematic, trimmed flight model: the pilot program sets targets
+ // (track, speed, vertical speed / height, heading), the aircraft follows them within acceleration, climb and yaw
+@@ -39,7 +40,7 @@
+  // horizontal
+  let dvx=0,dvz=0;
+  if(st.onGround){const gs=Math.hypot(st.vx,st.vz);if(tg.taxi){dvx=(tg.taxi.vx-st.vx)*1.2;dvz=(tg.taxi.vz-st.vz)*1.2;}else if(gs>0){const dec=Math.min(gs/dt,tg.groundDecel??2.5);dvx=-st.vx/gs*dec;dvz=-st.vz/gs*dec;}}
+- else{let dx,dz;if(tg.vel){dx=tg.vel[0];dz=tg.vel[1];}else{const sp=(tg.speedKt??0)*KT,tr=tg.track??st.track;dx=Math.sin(tr)*sp;dz=-Math.cos(tr)*sp;}
++ else{let dx,dz;if(tg.vel){dx=tg.vel[0];dz=tg.vel[1];}else{const tr=tg.track??st.track,V=velocityForTrack(tg.speedKt??0,tr,ctx.config);dx=V.x;dz=V.z;}
+   const a=(tg.accel??1.6)*(fx.heavy?.6:1),k=tg.gain??.8,gsNow=Math.hypot(st.vx,st.vz),spD=Math.hypot(dx,dz);
+   /* v0.34.1 coordinated turns: in forward flight the track turns at a bank-limited rate and the speed changes along it
+      (a plain velocity-vector controller cut the corner - a reversal slowed to a stop instead of turning) */
+@@ -90,7 +91,7 @@
+  const W=ctx.wind??{x:0,z:0},Ws=Math.hypot(W.x,W.z),aglNow=Math.max(0,st.y-g2),airX=st.vx-W.x,airZ=st.vz-W.z;let gust=0,wv=0;
+  if(Ws>.5&&!st.onGround){gust=(Math.sin(st.t*.73)*.5+Math.sin(st.t*1.91+1)*.3+Math.sin(st.t*3.7+2)*.2)*Ws*.25;const gk=Math.min(1,Ws/10);st.pitch+=Math.sin(st.t*2.9)*gk*.004;st.roll+=Math.sin(st.t*2.3+1)*gk*.006;
+   const e=30,gx=(terrainHeight(st.x+e,st.z,area)-terrainHeight(st.x-e,st.z,area))/(2*e),gz=(terrainHeight(st.x,st.z+e,area)-terrainHeight(st.x,st.z-e,area))/(2*e);wv=clamp((W.x*gx+W.z*gz),-4,4)*Math.exp(-aglNow/120);}
+- ctx.gust=gust;ctx.wv=wv;const iasNow=Math.max(0,Math.hypot(airX,airZ)+gust)/KT,driven=st.eng>5000&&!st.autorot;
++ ctx.gust=gust;ctx.wv=wv;const iasNow=Math.max(0,Math.hypot(airX,airZ)+gust)/KT/ctx.tasFactor,driven=st.eng>5000&&!st.autorot;
+  let cfOff=0,crOff=0;
+  if(!st.onGround&&driven){const e2=iasNow>8&&iasNow<28?Math.sin(Math.PI*(iasNow-8)/20):0;cfOff+=.05*e2;crOff-=.035*e2;
+   if(Math.hypot(st.vx,st.vz)<3&&aglNow<15){crOff-=.03;st.roll-=.026*Math.min(1,dt*4);}
+@@ -122,18 +123,19 @@
+  return {ctrl:n,throttle:thr};}
+ // ---------- run cache ----------
+ const RUNS=new Map();
+-function runKey(c,choices){return JSON.stringify([c.program,c.emergencyId,c.maneuverId,c.flightArea,c.startX,c.startZ,c.startHeightFt,c.startIasKt,c.headingDeg,c.windKt,c.windFromDeg,c.temperatureC,c.pressureAltitudeFt,c.mode,c.pilot,c.grossWeightKg??c.massKg,choices.map(a=>[a.id,a.option,+a.at.toFixed(3)])]);}
++function runKey(c,choices){return JSON.stringify([c.program,c.emergencyId,c.maneuverId,c.flightArea,c.startX,c.startZ,c.startHeightFt,c.startIasKt,c.headingDeg,c.windKt,c.windFromDeg,c.temperatureC,c.pressureAltitudeFt,c.mode,c.pilot,c.grossWeightLb,c.initialRotorRpm,c.initialEngineRpm,c.turbulence,c.copilot,choices.map(a=>[a.id,a.option,+a.at.toFixed(3)])]);}
+ export function programRun(config,choices=[]){const key=runKey(config,choices);let r=RUNS.get(key);if(r)return r;r=simulate(config,choices);RUNS.set(key,r);if(RUNS.size>40)RUNS.delete(RUNS.keys().next().value);return r;}
+ // choice lookup: answered option, otherwise (planning / hazır akış) the reference option of that decision
+ function chooser(config,choices,defs){return (id,t=Infinity)=>{const a=choices.find(x=>x.id===id&&x.at<=t+1e-9);if(a)return a.option;if(config.mode==='guided'&&t===Infinity)return undefined;return defs[id]?.reference;};}
+ function simulate(config,choices){
+- const area=config.flightArea??'terrain',hd=(config.headingDeg??0)*Math.PI/180,h0=(config.startHeightFt??0)*FT,v0=(config.startIasKt??0)*KT,maneuver=config.program==='maneuver';
+- const x0=(config.startX??0)-Math.sin(hd)*v0*4,z0=(config.startZ??0)+Math.cos(hd)*v0*4,g0=terrainHeight(x0,z0,area);
+- const st={t:0,x:x0,z:z0,y:g0+h0,vx:Math.sin(hd)*v0,vz:-Math.cos(hd)*v0,vy:0,hdg:hd,track:hd,trackPrev:hd,yawRate:0,pitch:0,roll:0,rpm:324,eng:6600,col:1,colPrev:1,cyc:[0,0],cfPrev:0,crPrev:0,ped:0,pedPrev:0,rotorAngle:0,onGround:h0<.2,contact:null,autorot:false};
++ const area=config.flightArea??'terrain',hd=(config.headingDeg??0)*Math.PI/180,h0=(config.startHeightFt??0)*FT,v0=(config.startIasKt??0)*KT*tasFactor(config),maneuver=config.program==='maneuver';
++ const W=windVector(config),airborne=h0>=.2,vx0=Math.sin(hd)*v0+(airborne?W.x:0),vz0=-Math.cos(hd)*v0+(airborne?W.z:0);
++ const x0=(config.startX??0)-vx0*4,z0=(config.startZ??0)-vz0*4,g0=terrainHeight(x0,z0,area);
++ const st={t:0,x:x0,z:z0,y:g0+h0,vx:vx0,vz:vz0,vy:0,hdg:hd,track:hd,trackPrev:hd,yawRate:0,pitch:0,roll:0,rpm:config.initialRotorRpm??324,eng:config.initialEngineRpm??6600,col:1,colPrev:1,cyc:[0,0],cfPrev:0,crPrev:0,ped:0,pedPrev:0,rotorAngle:0,onGround:h0<.2,contact:null,autorot:false};
+  if(st.onGround&&v0<1){st.col=.55;}
+  const INIT=structuredClone(st);
+  const wFrom=(config.windFromDeg??0)*Math.PI/180,wSp=(config.windKt??0)*KT;
+- const ctx={wind:{x:-Math.sin(wFrom)*wSp,z:Math.cos(wFrom)*wSp},area,maneuver,water:false,fx:{},events:[],decisions:[],lights:new Set(),warn:{rpm:false,fire:false},panelOff:false,smoke:0,phase:'Güçlü uçuş',reason:'',lz:null,end:null,endReason:'contact',notes:[]};
++ const ctx={config,tasFactor:tasFactor(config),wind:{x:-Math.sin(wFrom)*wSp,z:Math.cos(wFrom)*wSp},area,maneuver,water:false,fx:{},events:[],decisions:[],lights:new Set(),warn:{rpm:false,fire:false},panelOff:false,smoke:0,phase:'Güçlü uçuş',reason:'',lz:null,end:null,endReason:'contact',notes:[]};
+  if(!maneuver)ctx.em=emergencyById(config.emergencyId);
+  const director=maneuver?maneuverDirector(maneuverById(config.maneuverId),config,choices,ctx,{st,pickLZ:pickProgramLZ,powerRequired}):emergencyDirector(emergencyById(config.emergencyId),config,choices,ctx);
+  const dt=.05,samples=[];let tgPrev={};
+@@ -397,7 +399,7 @@
+  const ground=contact?{duration:Math.max(0,s.t-contact.time),elapsed:Math.max(0,s.t-contact.time),settled:gs<.3,bouncing:false,mechanics:{water:!!contact.water,surface:contact.surface,rollover:false,snag:false},secondaryContacts:[],position:[s.x,s.y,s.z],velocityMps:[s.vx,0,s.vz],groundSpeedMps:gs,rotorRpm:s.rpm,engineRpm:s.eng,rotorAngleDelta:0,pitch:s.pitch,roll:s.roll,phase:s.phase}:null;
+  const controls={...template.controls,reason:s.reason,phase:s.phase,collective:s.col,targetCollective:s.col,collectiveRate:s.dcol,cyclicForward:s.cyc[0],cyclicRight:s.cyc[1],cyclicForwardRate:s.dcyc[0],cyclicRightRate:s.dcyc[1],pedal:s.ped,pedalRate:s.dped,pedalTarget:s.ped,programNotes:s.ctrl,throttle:s.throttle,flare:/fleyır/i.test(s.phase),cushion:/son kollektif/i.test(s.phase),guidance:null,managed:true,speedKt:air/KT,holdCyclic:false,levelCyclic:false};
+  const share=powered?Math.min(1.2,powerRequired(air/KT,s.vy,s.y-g)):0;
+- return {...template,time,position:[s.x,s.y,s.z],velocityMps:[s.vx,s.vy,s.vz],heightAglFt:Math.max(0,(s.y-g)/FT),iasKt:Math.max(0,air+(s.gust??0))/KT,tasKt:air/KT,airMass:{...(template.airMass??{}),upMps:s.wv??0},groundSpeedKt:gs/KT,descentFpm:-s.vy/FT*60,verticalAccelerationMps2:(s.vy-p.vy)/run.dt,rotorRpm:s.rpm,engineRpm:s.eng,rotorAngle:s.rotorAngle,heading:s.hdg,pitch:s.pitch,roll:s.roll,
++ return {...template,time,position:[s.x,s.y,s.z],velocityMps:[s.vx,s.vy,s.vz],heightAglFt:Math.max(0,(s.y-g)/FT),iasKt:Math.max(0,air+(s.gust??0))/KT/tasFactor(config),tasKt:air/KT,airMass:{...(template.airMass??{}),upMps:s.wv??0},groundSpeedKt:gs/KT,descentFpm:-s.vy/FT*60,verticalAccelerationMps2:(s.vy-p.vy)/run.dt,rotorRpm:s.rpm,engineRpm:s.eng,rotorAngle:s.rotorAngle,heading:s.hdg,pitch:s.pitch,roll:s.roll,
+   contact,ground,controls,powered,availablePowerFraction:powered?1:0,shaftPowerW:(template.referenceShaftPowerW??template.shaftPowerW??600000)*share,pilotSite:s.lz?{id:'pilot',label:'P',x:s.lz.x,z:s.lz.z,quality:s.lz.score??0,surfaceLabel:s.lz.label}:null,landingTargets:[],obstacleAhead:null,pilotForecast:null,quality:'program',
+   program:{kind:config.program,id:config.program==='maneuver'?config.maneuverId:config.emergencyId,phase:s.phase,lights:s.lights,warn:s.warn,panelOff:s.panelOff,smoke:s.smoke,smokeKind:s.smokeKind,vibration:s.vib,etl:s.etl??0,yawRate:s.yawRate,autorotation:s.autorot}};}
+ export function programEnd(config,choices){const r=programRun(config,choices);return {time:r.duration,reason:r.endReason,contact:r.contact};}
+--- a/sw.js
++++ b/sw.js
+@@ -1,7 +1,7 @@
+ // Offline shell (v0.31). Cache-first for static files, network-first for the page; falls back to cache offline.
+-const CACHE='ab205-v0.39.2';
+-const SHELL=["./", "./adaptive-pilot.js", "./aerodynamic-state.js", "./aircraft-data.js", "./airframe-contact.js", "./app.js", "./area-scene.js", "./vendor/GLTFLoader.js", "./vendor/BufferGeometryUtils.js", "./assets/models/ab205-jandarma-doku0.png", "./assets/models/ab205-jandarma-doku1.png", "./assets/models/ab205-jandarma-doku10.png", "./assets/models/ab205-jandarma-doku11.png", "./assets/models/ab205-jandarma-doku12.png", "./assets/models/ab205-jandarma-doku13.png", "./assets/models/ab205-jandarma-doku14.png", "./assets/models/ab205-jandarma-doku15.png", "./assets/models/ab205-jandarma-doku16.png", "./assets/models/ab205-jandarma-doku17.png", "./assets/models/ab205-jandarma-doku18.png", "./assets/models/ab205-jandarma-doku19.png", "./assets/models/ab205-jandarma-doku2.png", "./assets/models/ab205-jandarma-doku20.png", "./assets/models/ab205-jandarma-doku21.png", "./assets/models/ab205-jandarma-doku3.png", "./assets/models/ab205-jandarma-doku4.png", "./assets/models/ab205-jandarma-doku5.png", "./assets/models/ab205-jandarma-doku6.png", "./assets/models/ab205-jandarma-doku7.png", "./assets/models/ab205-jandarma-doku8.png", "./assets/models/ab205-jandarma-doku9.png", "./assets/models/ab205-jandarma.json", "./assets/models/ab205-jandarma.wasm", "./assets/models/ab205-kazali-doku0.png", "./assets/models/ab205-kazali.json", "./assets/models/ab205-kazali.wasm", "./assets/models/ab205-kumandalar-doku0.jpg", "./assets/models/ab205-kumandalar-doku1.jpg", "./assets/models/ab205-kumandalar.json", "./assets/models/ab205-kumandalar.wasm", "./assets/models/panel-temiz.jpg", "./assets/terrain/guvercinlik-osm.js", "./assets/terrain/guvercinlik-dem.js", "./assets/terrain/guvercinlik-s2.jpg", "./assets/terrain/guvercinlik-s2-genis.jpg", "./ataturk-background.jpg", "./autorotation-reference.png", "./caglar-filo.jpeg", "./caglar-filo.png", "./canvas-scene.js", "./catalog.js", "./chart-selection.js", "./cockpit-gauges.js", "./component-damage.js", "./contact-assessment.js", "./control-display.js", "./counterfactual.js", "./curve-audit.json", "./curve-reference.js", "./damage-screening.js", "./debrief.js", "./decision-comparison.js", "./decision-timing.js", "./emergency-catalog.js", "./engine.js", "./environment.js", "./event-text.js", "./field-frame.js", "./flight-controls.js", "./flight-dynamics.js", "./flight-evidence.js", "./flight-guidance.js", "./flight-overlays.js", "./fullscreen-layout.js", "./ground-contact.js", "./havacilik.png", "./heli-audio.js", "./hv-reference.png", "./hv-turkish-reference.png", "./icon-192.png", "./icon-512.png", "./instructor-room.js", "./landing-analysis.js", "./landing-sites.js", "./landing-zone.js", "./maneuver-catalog.js", "./maneuver-state.js", "./manifest.webmanifest", "./manual-input.js", "./okul.png", "./outcome-report.js", "./power-transition.js", "./powered-reference.png", "./predictive-pilot.js", "./program-debrief.js", "./program-flight.js", "./program-picker.js", "./project-status.md", "./rotor-bemt.js", "./rotor-coupling.js", "./rotor-reference.png", "./scenario-book.js", "./scenario-lesson.js", "./scenario-profiles.js", "./scene-contract.js", "./scene-model-legacy.js", "./scene-model.js", "./scene-motion.js", "./scene-view.js", "./site-picker.js", "./site-redirect.js", "./start-map.js", "./structural-contact.js", "./style.css", "./terminal-control.js", "./terrain-data.js", "./terrain-detail.js", "./transition-185.png", "./transition-186.png", "./transition-24.png", "./ui-help.js", "./vendor/OrbitControls.js", "./vendor/THREE-LICENSE.txt", "./vendor/three.module.js", "./visual-weather.js", "./yaw-dynamics.js", "./cockpit3d.js", "./cockpit-gauges-draw.js", "./narration.js", "./assets/cockpit/acpanel.jpg", "./assets/cockpit/colhead.jpg", "./assets/cockpit/miscpanel.jpg", "./assets/cockpit/overhead_sw.jpg", "./assets/cockpit/panel.jpg", "./assets/cockpit/pedestal.jpg", "./real-area.js", "./performance.js", "./callout-values.js", "./assets/terrain/tepeler-real.js", "./assets/terrain/golbasi-real.js", "./assets/terrain/tepeler-sites.js", "./assets/terrain/tepeler-s2.jpg", "./assets/terrain/tepeler-s2-genis.jpg", "./assets/terrain/golbasi-s2.jpg", "./assets/terrain/golbasi-s2-genis.jpg", "./device-profile.js", "./assets/models/ab205-jandarma-doku0-lite.png", "./assets/models/ab205-jandarma-doku1-lite.png", "./assets/models/ab205-jandarma-doku10-lite.png", "./assets/models/ab205-jandarma-doku11-lite.png", "./assets/models/ab205-jandarma-doku12-lite.png", "./assets/models/ab205-jandarma-doku13-lite.png", "./assets/models/ab205-jandarma-doku14-lite.png", "./assets/models/ab205-jandarma-doku15-lite.png", "./assets/models/ab205-jandarma-doku16-lite.png", "./assets/models/ab205-jandarma-doku17-lite.png", "./assets/models/ab205-jandarma-doku18-lite.png", "./assets/models/ab205-jandarma-doku19-lite.png", "./assets/models/ab205-jandarma-doku2-lite.png", "./assets/models/ab205-jandarma-doku20-lite.png", "./assets/models/ab205-jandarma-doku21-lite.png", "./assets/models/ab205-jandarma-doku3-lite.png", "./assets/models/ab205-jandarma-doku4-lite.png", "./assets/models/ab205-jandarma-doku5-lite.png", "./assets/models/ab205-jandarma-doku6-lite.png", "./assets/models/ab205-jandarma-doku7-lite.png", "./assets/models/ab205-jandarma-doku8-lite.png", "./assets/models/ab205-jandarma-doku9-lite.png", "./assets/models/ab205-jandarma-lite.json", "./assets/models/ab205-kazali-doku0-lite.png", "./assets/models/ab205-kazali-lite.json", "./assets/models/ab205-kumandalar-doku0-lite.jpg", "./assets/models/ab205-kumandalar-doku1-lite.jpg", "./assets/models/ab205-kumandalar-lite.json"];
+-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()).catch(()=>{}));});
+-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()));});
++const CACHE='ab205-v0.40.0-validation';
++const SHELL=["./flight-reference.js", "./", "./adaptive-pilot.js", "./aerodynamic-state.js", "./aircraft-data.js", "./airframe-contact.js", "./app.js", "./area-scene.js", "./vendor/GLTFLoader.js", "./vendor/BufferGeometryUtils.js", "./assets/models/ab205-jandarma-doku0.png", "./assets/models/ab205-jandarma-doku1.png", "./assets/models/ab205-jandarma-doku10.png", "./assets/models/ab205-jandarma-doku11.png", "./assets/models/ab205-jandarma-doku12.png", "./assets/models/ab205-jandarma-doku13.png", "./assets/models/ab205-jandarma-doku14.png", "./assets/models/ab205-jandarma-doku15.png", "./assets/models/ab205-jandarma-doku16.png", "./assets/models/ab205-jandarma-doku17.png", "./assets/models/ab205-jandarma-doku18.png", "./assets/models/ab205-jandarma-doku19.png", "./assets/models/ab205-jandarma-doku2.png", "./assets/models/ab205-jandarma-doku20.png", "./assets/models/ab205-jandarma-doku21.png", "./assets/models/ab205-jandarma-doku3.png", "./assets/models/ab205-jandarma-doku4.png", "./assets/models/ab205-jandarma-doku5.png", "./assets/models/ab205-jandarma-doku6.png", "./assets/models/ab205-jandarma-doku7.png", "./assets/models/ab205-jandarma-doku8.png", "./assets/models/ab205-jandarma-doku9.png", "./assets/models/ab205-jandarma.json", "./assets/models/ab205-jandarma.wasm", "./assets/models/ab205-kazali-doku0.png", "./assets/models/ab205-kazali.json", "./assets/models/ab205-kazali.wasm", "./assets/models/ab205-kumandalar-doku0.jpg", "./assets/models/ab205-kumandalar-doku1.jpg", "./assets/models/ab205-kumandalar.json", "./assets/models/ab205-kumandalar.wasm", "./assets/models/panel-temiz.jpg", "./assets/terrain/guvercinlik-osm.js", "./assets/terrain/guvercinlik-dem.js", "./assets/terrain/guvercinlik-s2.jpg", "./assets/terrain/guvercinlik-s2-genis.jpg", "./ataturk-background.jpg", "./autorotation-reference.png", "./caglar-filo.png", "./canvas-scene.js", "./catalog.js", "./chart-selection.js", "./cockpit-gauges.js", "./component-damage.js", "./contact-assessment.js", "./control-display.js", "./counterfactual.js", "./curve-audit.json", "./curve-reference.js", "./damage-screening.js", "./debrief.js", "./decision-comparison.js", "./decision-timing.js", "./emergency-catalog.js", "./engine.js", "./environment.js", "./event-text.js", "./field-frame.js", "./flight-controls.js", "./flight-dynamics.js", "./flight-evidence.js", "./flight-guidance.js", "./flight-overlays.js", "./fullscreen-layout.js", "./ground-contact.js", "./havacilik.png", "./heli-audio.js", "./hv-reference.png", "./hv-turkish-reference.png", "./icon-192.png", "./icon-512.png", "./instructor-room.js", "./landing-analysis.js", "./landing-sites.js", "./landing-zone.js", "./maneuver-catalog.js", "./maneuver-state.js", "./manifest.webmanifest", "./manual-input.js", "./okul.png", "./outcome-report.js", "./power-transition.js", "./powered-reference.png", "./predictive-pilot.js", "./program-debrief.js", "./program-flight.js", "./program-picker.js", "./project-status.md", "./rotor-bemt.js", "./rotor-coupling.js", "./rotor-reference.png", "./scenario-book.js", "./scenario-lesson.js", "./scenario-profiles.js", "./scene-contract.js", "./scene-model-legacy.js", "./scene-model.js", "./scene-motion.js", "./scene-view.js", "./site-picker.js", "./site-redirect.js", "./start-map.js", "./structural-contact.js", "./style.css", "./terminal-control.js", "./terrain-data.js", "./terrain-detail.js", "./transition-185.png", "./transition-186.png", "./transition-24.png", "./ui-help.js", "./vendor/OrbitControls.js", "./vendor/THREE-LICENSE.txt", "./vendor/three.module.js", "./visual-weather.js", "./yaw-dynamics.js", "./cockpit3d.js", "./cockpit-gauges-draw.js", "./narration.js", "./assets/cockpit/acpanel.jpg", "./assets/cockpit/colhead.jpg", "./assets/cockpit/miscpanel.jpg", "./assets/cockpit/overhead_sw.jpg", "./assets/cockpit/panel.jpg", "./assets/cockpit/pedestal.jpg", "./real-area.js", "./performance.js", "./callout-values.js", "./assets/terrain/tepeler-real.js", "./assets/terrain/golbasi-real.js", "./assets/terrain/tepeler-sites.js", "./assets/terrain/tepeler-s2.jpg", "./assets/terrain/tepeler-s2-genis.jpg", "./assets/terrain/golbasi-s2.jpg", "./assets/terrain/golbasi-s2-genis.jpg", "./device-profile.js", "./assets/models/ab205-jandarma-doku0-lite.png", "./assets/models/ab205-jandarma-doku1-lite.png", "./assets/models/ab205-jandarma-doku10-lite.png", "./assets/models/ab205-jandarma-doku11-lite.png", "./assets/models/ab205-jandarma-doku12-lite.png", "./assets/models/ab205-jandarma-doku13-lite.png", "./assets/models/ab205-jandarma-doku14-lite.png", "./assets/models/ab205-jandarma-doku15-lite.png", "./assets/models/ab205-jandarma-doku16-lite.png", "./assets/models/ab205-jandarma-doku17-lite.png", "./assets/models/ab205-jandarma-doku18-lite.png", "./assets/models/ab205-jandarma-doku19-lite.png", "./assets/models/ab205-jandarma-doku2-lite.png", "./assets/models/ab205-jandarma-doku20-lite.png", "./assets/models/ab205-jandarma-doku21-lite.png", "./assets/models/ab205-jandarma-doku3-lite.png", "./assets/models/ab205-jandarma-doku4-lite.png", "./assets/models/ab205-jandarma-doku5-lite.png", "./assets/models/ab205-jandarma-doku6-lite.png", "./assets/models/ab205-jandarma-doku7-lite.png", "./assets/models/ab205-jandarma-doku8-lite.png", "./assets/models/ab205-jandarma-doku9-lite.png", "./assets/models/ab205-jandarma-lite.json", "./assets/models/ab205-kazali-doku0-lite.png", "./assets/models/ab205-kazali-lite.json", "./assets/models/ab205-kumandalar-doku0-lite.jpg", "./assets/models/ab205-kumandalar-doku1-lite.jpg", "./assets/models/ab205-kumandalar-lite.json"];
++self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
++self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('ab205-')&&x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()));});
+ self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const page=r.mode==='navigate';
+  e.respondWith(page?fetch(r).then(res=>{const copy=res.clone();caches.open(CACHE).then(c=>c.put(r,copy));return res;}).catch(()=>caches.match(r).then(m=>m||caches.match('./'))):caches.match(r).then(m=>m||fetch(r).then(res=>{if(res.ok&&new URL(r.url).origin===location.origin){const copy=res.clone();caches.open(CACHE).then(c=>c.put(r,copy));}return res;})));});

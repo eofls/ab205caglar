@@ -1,0 +1,170 @@
+[
+  {
+    "name": "initial IAS/TAS/wind pa0 hd0 wind0",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd0 wind90",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd0 wind180",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd0 wind270",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd90 wind0",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd90 wind90",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd90 wind180",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd90 wind270",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd180 wind0",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd180 wind90",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd180 wind180",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd180 wind270",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd270 wind0",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd270 wind90",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd270 wind180",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa0 hd270 wind270",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd0 wind0",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd0 wind90",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd0 wind180",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd0 wind270",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd90 wind0",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd90 wind90",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd90 wind180",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd90 wind270",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd180 wind0",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd180 wind90",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd180 wind180",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd180 wind270",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd270 wind0",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd270 wind90",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd270 wind180",
+    "pass": true
+  },
+  {
+    "name": "initial IAS/TAS/wind pa10000 hd270 wind270",
+    "pass": true
+  },
+  {
+    "name": "track velocity retains commanded IAS with attainable crosswind",
+    "pass": true
+  },
+  {
+    "name": "program cache separates RPM configurations",
+    "pass": true
+  },
+  {
+    "name": "program cache separates configured gross weight",
+    "pass": true
+  },
+  {
+    "name": "PPC and physics same default mass",
+    "pass": true
+  },
+  {
+    "name": "UI import can admit a changing 60-second manual record",
+    "pass": true
+  },
+  {
+    "name": "contact live instruments preserve impact report",
+    "pass": true
+  },
+  {
+    "name": "failed offline install rejects instead of activating",
+    "pass": true
+  },
+  {
+    "name": "cache cleanup limited to this app",
+    "pass": true
+  },
+  {
+    "name": "every required offline resource exists",
+    "pass": true
+  },
+  {
+    "name": "long session round trip",
+    "pass": true
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "source": "REQUIRED: test report / calibrated recording identifier",
+  "aircraft": {"type": "REQUIRED", "engine": null, "blade": null, "mass_kg": null, "cg": null, "pitot": null},
+  "conditions": {"pressure_altitude_ft": null, "temperature_c": null, "wind_from_deg": null, "wind_kt": null, "configuration_revision": null},
+  "time_alignment": "Set both files to the same documented event; no automatic shift",
+  "input_mapping": "Measured lever angles are NOT the app's dimensionless collective; document linkage conversion",
+  "maxGapSeconds": 1,
+  "tolerances": {}
+}

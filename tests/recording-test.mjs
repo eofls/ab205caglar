@@ -1,0 +1,2 @@
+import assert from 'node:assert/strict';import {parse,compare} from './compare-recordings.mjs';
+const a=parse('time_s,rotor_rpm\n0,300\n1,310\n2,320'),b=parse('time_s,rotor_rpm\n0,302\n2,322');const r=compare(a,b,{maxGapSeconds:3,tolerances:{rotor_rpm:3}});assert.equal(r.metrics.rotor_rpm.rmse,2);assert.equal(r.metrics.rotor_rpm.status,'pass');assert.equal(compare(a,b,{maxGapSeconds:1}).metrics.rotor_rpm.count,2);assert.throws(()=>parse('time_s,rotor_rpm\n1,300\n0,301'));console.log('4 synthetic comparator checks passed (not flight data)');

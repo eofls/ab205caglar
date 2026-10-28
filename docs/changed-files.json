@@ -1,0 +1,13 @@
+[
+  "aircraft-data.js",
+  "app.js",
+  "catalog.js",
+  "cockpit-gauges.js",
+  "cockpit3d.js",
+  "engine.js",
+  "flight-dynamics.js",
+  "performance.js",
+  "program-flight.js",
+  "sw.js",
+  "flight-reference.js"
+]

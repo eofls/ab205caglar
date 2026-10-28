@@ -1,0 +1,19 @@
+{
+  "id": "engineering-baseline-2800",
+  "airframeFamily": "UH-1H / AB-205 comparison, not configuration approval",
+  "massKg": 2800,
+  "initialRotorRpm": 324,
+  "initialEngineRpm": 6600,
+  "pitotReference": "roof IAS",
+  "externalLoad": "none assumed for bench",
+  "sourceRevision": null,
+  "cg": null,
+  "engineVariant": null,
+  "bladeVariant": null,
+  "status": "incomplete applicability; no certification",
+  "testAtmosphere": {
+    "pressureAltitudeFt": 0,
+    "temperatureC": 15,
+    "windKt": 0
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "version": "0.40.0-validation",
+  "date": "2026-10-28",
+  "overallStatus": "experimental-not-flight-validated",
+  "softwareRegression": {
+    "passed": 42,
+    "total": 42
+  },
+  "coreChecks": {
+    "passed": 32,
+    "total": 33,
+    "knownFailures": [
+      "Ground stopping responds to slope"
+    ]
+  },
+  "programNumerics": {
+    "total": 64,
+    "failed": []
+  },
+  "autorotation": {
+    "calibrationPoints": 17,
+    "sameChartHoldouts": 7,
+    "independentFlightValidation": false
+  },
+  "browser": "blocked: no executable browser in environment",
+  "structural": "synthetic; no verified AB205 force-stroke/part-failure curves",
+  "configuration": "2800kg engineering baseline, 324/6600 nominal; exact aircraft revision/CG/pal configuration not established",
+  "sourceFileHash": "1bb72cf138a25f67da786c7ec866c4aba51c7cf919f6545ab211998d4b00fae8"
+}

@@ -1,0 +1,23 @@
+{
+  "scope": "synthetic analytical work-energy check only",
+  "passed": 4,
+  "flightValidated": false,
+  "normal": {
+    "available": true,
+    "source": "SYNTHETIC MATHEMATICAL UNIT TEST — NOT AIRCRAFT DATA",
+    "strokeM": 0.025,
+    "peakForceN": 20000,
+    "residualEnergyJ": 0,
+    "capacityExceeded": false,
+    "reason": "Sabit rotor desteği ile tek eksenli enerji hesabı; hasar/yaralanma sınıfı değildir"
+  },
+  "overload": {
+    "available": true,
+    "source": "SYNTHETIC MATHEMATICAL UNIT TEST — NOT AIRCRAFT DATA",
+    "strokeM": 0.1,
+    "peakForceN": 20000,
+    "residualEnergyJ": 2500,
+    "capacityExceeded": true,
+    "reason": "Girilen eğrinin stroku tükendi; yapısal kırılma sınıfı belirlenmedi"
+  }
+}

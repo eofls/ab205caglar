@@ -1,0 +1,27 @@
+caution {"duration":18.37258815152531,"pass":true,"seconds":8.954}
+avoid-low {"duration":11.104967069638068,"pass":true,"seconds":1.048}
+safe {"duration":27.60472226093452,"pass":true,"seconds":5.098}
+avoid-fast {"duration":18.750568765280743,"pass":true,"seconds":9.287}
+hover {"duration":6.815210711843168,"pass":true,"seconds":0.265}
+area-airfield {"duration":23.394915220319433,"pass":true,"seconds":2.63}
+area-forest {"duration":24.743072182468357,"pass":true,"seconds":3.461}
+area-mountain {"duration":33.286594202033605,"pass":true,"seconds":5.855}
+area-water {"duration":28.90393531797438,"pass":true,"seconds":2.187}
+point-0-0 {"duration":0,"pass":true,"seconds":0.009}
+point-1-1 {"duration":6.024005597544789,"pass":true,"seconds":0.181}
+point-15-5 {"duration":7.503778931805443,"pass":true,"seconds":1.077}
+point-75-30 {"duration":10.931322580762,"pass":true,"seconds":1.808}
+point-600-80 {"duration":36.39883154368179,"pass":true,"seconds":6.256}
+partial {"duration":32.41120365177502,"pass":true,"seconds":6.135}
+hot-high-wind {"duration":19.972055165956757,"pass":true,"seconds":3.329}
+cold-crosswind {"duration":29.56428302769085,"pass":true,"seconds":5.278}
+developing {"duration":26.925577169654016,"pass":true,"seconds":4.802}
+guided reference priority:control,landing:shared,flare:adaptive,cushion:timed,overspeed:load,cyclic:coordinated,finalPull:now
+guided hold-energy priority:diagnose,recovery:hold,criticalRotor:hold,landing:shared,flare:adaptive,cushion:timed,cyclic:coordinated,finalPull:now
+guided late-recovery priority:diagnose,recovery:recover,landing:shared,flare:adaptive,cushion:timed,overspeed:load,cyclic:coordinated,finalPull:now
+guided no-flare priority:control,landing:shared,flare:omit,cushion:timed,finalPull:now
+guided late-collective priority:control,landing:shared,flare:adaptive,cushion:late,overspeed:load,cyclic:coordinated,finalPull:now
+guided hold-collective priority:control,landing:shared,flare:adaptive,cushion:timed,overspeed:load,cyclic:coordinated,finalPull:hold
+guided distant priority:control,landing:distant,approach:brake,flare:adaptive,cushion:timed,overspeed:load,cyclic:coordinated,finalPull:now
+guided rear-site priority:control,landing:site-3,approach-3:brake,flare:adaptive,overspeed:load,cushion:timed,cyclic:coordinated,finalPull:now
+DONE 33 checks 1 failed

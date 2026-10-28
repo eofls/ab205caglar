@@ -1,0 +1,106 @@
+{
+  "wind": {
+    "energy": {
+      "ias": 30,
+      "tas": 29.999999778069945,
+      "gs": 2.2193005446328257e-7,
+      "rpm": 324,
+      "engine": 6600,
+      "mass": 2800,
+      "velocity": [
+        0,
+        0,
+        1.1417068357388871e-7
+      ],
+      "quality": "experimental",
+      "availablePower": 1
+    },
+    "program": {
+      "ias": 30,
+      "tas": 29.999999778069945,
+      "gs": 2.2193005446328257e-7,
+      "rpm": 324,
+      "engine": 6600,
+      "mass": 2800,
+      "velocity": [
+        0,
+        0,
+        1.1417068357388871e-7
+      ],
+      "quality": "program",
+      "availablePower": 1
+    }
+  },
+  "rpm": {
+    "energy": {
+      "ias": 30,
+      "tas": 29.999999778069945,
+      "gs": 29.999999778069945,
+      "rpm": 310,
+      "engine": 6300,
+      "mass": 2800,
+      "velocity": [
+        0,
+        0,
+        -15.43333321916265
+      ],
+      "quality": "experimental",
+      "availablePower": 1
+    },
+    "program": {
+      "ias": 30,
+      "tas": 29.999999778069945,
+      "gs": 29.999999778069945,
+      "rpm": 310,
+      "engine": 6300,
+      "mass": 2800,
+      "velocity": [
+        0,
+        0,
+        -15.43333321916265
+      ],
+      "quality": "program",
+      "availablePower": 1
+    }
+  },
+  "density": {
+    "energy": {
+      "ias": 30,
+      "tas": 37.410383835695896,
+      "gs": 37.410383835695896,
+      "rpm": 324,
+      "engine": 6600,
+      "mass": 2800,
+      "velocity": [
+        0,
+        0,
+        -19.245564128808002
+      ],
+      "quality": "experimental",
+      "availablePower": 1
+    },
+    "program": {
+      "ias": 30,
+      "tas": 37.410383835695896,
+      "gs": 37.410383835695896,
+      "rpm": 324,
+      "engine": 6600,
+      "mass": 2800,
+      "velocity": [
+        0,
+        0,
+        -19.245564128808002
+      ],
+      "quality": "program",
+      "availablePower": 1
+    }
+  },
+  "weight": {
+    "programTrajectoriesEqual6000vs9500lb": true
+  },
+  "defaultMass": {
+    "physicsKg": 2800,
+    "ppcDefaultLb": 8500,
+    "ppcEquivalentKg": 3855.5351450000003
+  }
+}
