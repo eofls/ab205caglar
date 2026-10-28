@@ -382,8 +382,8 @@ export const MANUAL_MANEUVERS=new Set(['turns']);
 export const isManualProgram=c=>c?.mode==='manual'&&c.program==='maneuver'&&MANUAL_MANEUVERS.has(c.maneuverId);
 let inputSource=null;export function setManualInputSource(fn){inputSource=fn;}
 const MAN=new Map();
-function manualSamples(config,time){const id=config.manualRunId||'default',src=inputSource?.(id),inputs=src?.inputs??[],key=JSON.stringify([config.maneuverId,config.flightArea,config.startX,config.startZ,config.startHeightFt,config.startIasKt,config.headingDeg,config.windKt,config.windFromDeg]);
- let m=MAN.get(id);if(!m||m.key!==key){const ref=programRun({...config,mode:'watch'},[]);const st0=structuredClone(ref.init);m={key,ref,ctx:{...ref.ctx0,fx:{},events:[],timers:[]},samples:[snap(st0,{phase:'Görev',reason:'',lights:new Set(),warn:{},fx:{}})],states:[st0],seen:[]};MAN.set(id,m);}
+function manualSamples(config,time){const id=config.manualRunId||'default',src=inputSource?.(id),inputs=src?.inputs??[],key=JSON.stringify([config.maneuverId,config.flightArea,config.startX,config.startZ,config.startHeightFt,config.startIasKt,config.headingDeg,config.windKt,config.windFromDeg,config.temperatureC,config.pressureAltitudeFt]);
+ let m=MAN.get(id);if(!m||m.key!==key){const ref=programRun({...config,mode:'watch'},[]);const st0=structuredClone(ref.init);m={key,ref,ctx:{...ref.ctx0,config,tasFactor:tasFactor(config),fx:{},events:[],timers:[]},samples:[snap(st0,{phase:'Görev',reason:'',lights:new Set(),warn:{},fx:{}})],states:[st0],seen:[]};MAN.set(id,m);}
  {let i=0;const a=m.seen,b=inputs;while(i<a.length&&i<b.length&&a[i]===b[i])i++;if(i<a.length||i<b.length){const tc=Math.min(a[i]?.[0]??1e9,b[i]?.[0]??1e9),keep=Math.max(1,Math.floor(tc/.05)+1);if(m.samples.length>keep){m.samples.length=keep;m.states.length=keep;}m.seen=b.slice();}}
  const dt=.05,end=Math.min(time,m.ref.duration);
  while(m.states.at(-1).t<end-1e-9&&m.samples.length<20000){const st=structuredClone(m.states.at(-1)),t=st.t+dt,inp=src?.inputAt?.(t)??null,kt=Math.hypot(st.vx,st.vz)/KT;
