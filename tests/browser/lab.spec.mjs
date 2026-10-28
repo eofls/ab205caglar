@@ -74,7 +74,7 @@ test('without WebGL, diagram and playback remain usable',async({browser})=>{
  await context.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind,...a){if(String(kind).includes('webgl'))return null;return get.call(this,kind,...a);};});
  const p=await context.newPage();await p.goto('/');
  await expect.poll(()=>p.evaluate(()=>!!globalThis.__sceneView?.fallback)).toBe(true);
- await p.locator('#start-height').fill('100');await p.locator('#start-ias').fill('30');await p.locator('#start-form button').click();
+ await p.locator('#start-height').fill('100');await p.locator('#start-ias').fill('30');await p.locator('#start-form button[type=submit]').click();
  await p.locator('#play').click();await expect.poll(async()=>Number(await p.locator('#seek').inputValue())).toBeGreaterThan(0);
  await context.close();
 });
