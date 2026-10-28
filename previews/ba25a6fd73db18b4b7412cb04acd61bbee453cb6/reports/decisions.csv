@@ -1,0 +1,8 @@
+"name","descentFpm","groundSpeedKt","rotorRpm","severityPercent","damage","firstContact"
+"Referans kararlar","400.29448605705414","7.372986857846521","231.61344107123014","17","Belirgin hasar beklenmiyor · benzetim tahmini","skidRight"
+"Fleyırı ertele","324.2072617207352","7.601817347928682","234.0921703269721","11","Belirgin hasar beklenmiyor · benzetim tahmini","skidRight"
+"Fleyır uygulama","998.3798682435313","66.8677684289075","221.7868119505215","100","Ağır hasar olası · benzetim tahmini","skidRight"
+"Erken kollektif","5588.732845147696","60.669843423944805","166.59683185105627","100","Ağır hasar olası · benzetim tahmini","skidRight"
+"Son ana ertelenmiş kollektif","628.5143490558829","6.8863911092615835","272.3535111701631","41","Hafif hasar olası · benzetim tahmini","skidRight"
+"Son kollektifi uygulama","1518.1400532300838","7.60123857642836","296.5021297092539","100","Ağır hasar olası · benzetim tahmini","skidRight"
+"Mevcut saykılığı tut","423.6095617337898","4.718687775160979","256.11158682887384","19","Ağır hasar olası · benzetim tahmini","tailBoom"

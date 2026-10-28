@@ -1,0 +1,1328 @@
+<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>AB-205 karar karşılaştırması</title><style>body{font:16px system-ui;max-width:1200px;margin:40px auto;padding:20px;background:#f4f6f5;color:#182c2c}table{border-collapse:collapse;width:100%;background:white}td,th{padding:12px;border-bottom:1px solid #ccd;text-align:left}section{overflow:auto}details{margin:16px 0}small{color:#456}</style><h1>S01 · Karar karşılaştırması</h1><p>400 ft AGL · 60 KIAS · 2800 kg · rüzgâr 0 kt · 15°C · basınç irtifası 0 ft · 324 / 6600 RPM.</p><p>Deneysel model sonuçlarıdır. Temas sertliği bir enerji endeksidir; hasar olasılığı veya gerçek hava aracı limiti değildir. İstenen karar o dalda doğmadıysa aşağıda belirtilir.</p><small>Kod: ba25a6fd73db18b4b7412cb04acd61bbee453cb6</small><p><a href="decisions.csv">CSV indir</a> · <a href="decisions.json">Ayrıntılı JSON indir</a></p><section><table><thead><tr><th>Karar</th><th>Temas ft/dk</th><th>Yer sürati kt</th><th>Rotor RPM</th><th>Sertlik %</th><th>Referansa göre ft/dk farkı</th><th>Benzetilmiş hasar</th></tr></thead><tbody><tr><td>Referans kararlar</td><td>400.3</td><td>7.4</td><td>231.6</td><td>17.0</td><td>0.0</td><td>Belirgin hasar beklenmiyor · benzetim tahmini</td></tr><tr><td>Fleyırı ertele</td><td>324.2</td><td>7.6</td><td>234.1</td><td>11.0</td><td>-76.1</td><td>Belirgin hasar beklenmiyor · benzetim tahmini</td></tr><tr><td>Fleyır uygulama</td><td>998.4</td><td>66.9</td><td>221.8</td><td>100.0</td><td>598.1</td><td>Ağır hasar olası · benzetim tahmini</td></tr><tr><td>Erken kollektif</td><td>5588.7</td><td>60.7</td><td>166.6</td><td>100.0</td><td>5188.4</td><td>Ağır hasar olası · benzetim tahmini</td></tr><tr><td>Son ana ertelenmiş kollektif</td><td>628.5</td><td>6.9</td><td>272.4</td><td>41.0</td><td>228.2</td><td>Hafif hasar olası · benzetim tahmini</td></tr><tr><td>Son kollektifi uygulama</td><td>1518.1</td><td>7.6</td><td>296.5</td><td>100.0</td><td>1117.8</td><td>Ağır hasar olası · benzetim tahmini</td></tr><tr><td>Mevcut saykılığı tut</td><td>423.6</td><td>4.7</td><td>256.1</td><td>19.0</td><td>23.3</td><td>Ağır hasar olası · benzetim tahmini</td></tr></tbody></table></section><details><summary>Referans kararlar · karar ve parça ayrıntıları</summary><p>İstenen kararlar uygulandı.</p><pre>{
+  &quot;decisions&quot;: [
+    {
+      &quot;id&quot;: &quot;priority&quot;,
+      &quot;option&quot;: &quot;control&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 4,
+      &quot;heightFt&quot;: 407.43653695985773,
+      &quot;iasKt&quot;: 60,
+      &quot;rotorRpm&quot;: 324
+    },
+    {
+      &quot;id&quot;: &quot;landing&quot;,
+      &quot;option&quot;: &quot;shared&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 5.3,
+      &quot;heightFt&quot;: 399.0137066201301,
+      &quot;iasKt&quot;: 60.999706907851525,
+      &quot;rotorRpm&quot;: 297.4998164052183
+    },
+    {
+      &quot;id&quot;: &quot;flare&quot;,
+      &quot;option&quot;: &quot;adaptive&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 6.6,
+      &quot;heightFt&quot;: 371.99801307179445,
+      &quot;iasKt&quot;: 61.735950620467825,
+      &quot;rotorRpm&quot;: 292.5366977112012
+    },
+    {
+      &quot;id&quot;: &quot;cushion&quot;,
+      &quot;option&quot;: &quot;timed&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 9.1,
+      &quot;heightFt&quot;: 291.3413774452718,
+      &quot;iasKt&quot;: 64.95132079589266,
+      &quot;rotorRpm&quot;: 303.90883224200917
+    },
+    {
+      &quot;id&quot;: &quot;overspeed&quot;,
+      &quot;option&quot;: &quot;load&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 14.5,
+      &quot;heightFt&quot;: 108.54752937696584,
+      &quot;iasKt&quot;: 70.7311439162627,
+      &quot;rotorRpm&quot;: 322.1581039477315
+    },
+    {
+      &quot;id&quot;: &quot;cyclic&quot;,
+      &quot;option&quot;: &quot;coordinated&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 23,
+      &quot;heightFt&quot;: 51.70682009514228,
+      &quot;iasKt&quot;: 27.0142938435439,
+      &quot;rotorRpm&quot;: 305.12542342513336
+    },
+    {
+      &quot;id&quot;: &quot;finalPull&quot;,
+      &quot;option&quot;: &quot;now&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 25,
+      &quot;heightFt&quot;: 27.31395179562561,
+      &quot;iasKt&quot;: 13.563960937087618,
+      &quot;rotorRpm&quot;: 301.64373100852833
+    }
+  ],
+  &quot;parts&quot;: [
+    {
+      &quot;id&quot;: &quot;skidLeft&quot;,
+      &quot;label&quot;: &quot;Sol skid&quot;,
+      &quot;severity&quot;: 0.08241345173014984,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;skidRight&quot;,
+      &quot;label&quot;: &quot;Sağ skid&quot;,
+      &quot;severity&quot;: 0.08243568346223669,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;cabin&quot;,
+      &quot;label&quot;: &quot;Gövde/taban&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;cockpit&quot;,
+      &quot;label&quot;: &quot;Kokpit&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailBoom&quot;,
+      &quot;label&quot;: &quot;Kuyruk bumu&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailRotor&quot;,
+      &quot;label&quot;: &quot;Kuyruk rotoru&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mainRotor&quot;,
+      &quot;label&quot;: &quot;Ana rotor&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mast&quot;,
+      &quot;label&quot;: &quot;Mast&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;transmission&quot;,
+      &quot;label&quot;: &quot;Transmisyon bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;engine&quot;,
+      &quot;label&quot;: &quot;Motor bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;stabilizer&quot;,
+      &quot;label&quot;: &quot;Yatay stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;fin&quot;,
+      &quot;label&quot;: &quot;Dikey stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;controls&quot;,
+      &quot;label&quot;: &quot;Kumanda bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;crosstube&quot;,
+      &quot;label&quot;: &quot;Skid çapraz boruları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;glazing&quot;,
+      &quot;label&quot;: &quot;Cam yüzeyleri&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;blades&quot;,
+      &quot;label&quot;: &quot;Ana rotor palleri&quot;,
+      &quot;severity&quot;: 0.03476298154851119,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    }
+  ]
+}</pre></details><details><summary>Fleyırı ertele · karar ve parça ayrıntıları</summary><p>İstenen kararlar uygulandı.</p><pre>{
+  &quot;decisions&quot;: [
+    {
+      &quot;id&quot;: &quot;priority&quot;,
+      &quot;option&quot;: &quot;control&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 4,
+      &quot;heightFt&quot;: 407.43653695985773,
+      &quot;iasKt&quot;: 60,
+      &quot;rotorRpm&quot;: 324
+    },
+    {
+      &quot;id&quot;: &quot;landing&quot;,
+      &quot;option&quot;: &quot;shared&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 5.3,
+      &quot;heightFt&quot;: 399.0137066201301,
+      &quot;iasKt&quot;: 60.999706907851525,
+      &quot;rotorRpm&quot;: 297.4998164052183
+    },
+    {
+      &quot;id&quot;: &quot;flare&quot;,
+      &quot;option&quot;: &quot;late&quot;,
+      &quot;requested&quot;: &quot;late&quot;,
+      &quot;at&quot;: 6.6,
+      &quot;heightFt&quot;: 371.99801307179445,
+      &quot;iasKt&quot;: 61.735950620467825,
+      &quot;rotorRpm&quot;: 292.5366977112012
+    },
+    {
+      &quot;id&quot;: &quot;cushion&quot;,
+      &quot;option&quot;: &quot;timed&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 9.1,
+      &quot;heightFt&quot;: 291.3413774452718,
+      &quot;iasKt&quot;: 64.95132079589266,
+      &quot;rotorRpm&quot;: 303.90883224200917
+    },
+    {
+      &quot;id&quot;: &quot;overspeed&quot;,
+      &quot;option&quot;: &quot;load&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 15.2,
+      &quot;heightFt&quot;: 87.68441743012633,
+      &quot;iasKt&quot;: 70.63367165014328,
+      &quot;rotorRpm&quot;: 324.30894428724656
+    },
+    {
+      &quot;id&quot;: &quot;cyclic&quot;,
+      &quot;option&quot;: &quot;coordinated&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 16.5,
+      &quot;heightFt&quot;: 63.43132204418142,
+      &quot;iasKt&quot;: 62.31935621906711,
+      &quot;rotorRpm&quot;: 338.6032743478359
+    },
+    {
+      &quot;id&quot;: &quot;finalPull&quot;,
+      &quot;option&quot;: &quot;now&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 24.9,
+      &quot;heightFt&quot;: 24.02959488637913,
+      &quot;iasKt&quot;: 13.965980287127808,
+      &quot;rotorRpm&quot;: 300.51308311565845
+    }
+  ],
+  &quot;parts&quot;: [
+    {
+      &quot;id&quot;: &quot;skidLeft&quot;,
+      &quot;label&quot;: &quot;Sol skid&quot;,
+      &quot;severity&quot;: 0.05731455020203222,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;skidRight&quot;,
+      &quot;label&quot;: &quot;Sağ skid&quot;,
+      &quot;severity&quot;: 0.057329129891255375,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;cabin&quot;,
+      &quot;label&quot;: &quot;Gövde/taban&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;cockpit&quot;,
+      &quot;label&quot;: &quot;Kokpit&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailBoom&quot;,
+      &quot;label&quot;: &quot;Kuyruk bumu&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailRotor&quot;,
+      &quot;label&quot;: &quot;Kuyruk rotoru&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mainRotor&quot;,
+      &quot;label&quot;: &quot;Ana rotor&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mast&quot;,
+      &quot;label&quot;: &quot;Mast&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;transmission&quot;,
+      &quot;label&quot;: &quot;Transmisyon bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;engine&quot;,
+      &quot;label&quot;: &quot;Motor bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;stabilizer&quot;,
+      &quot;label&quot;: &quot;Yatay stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;fin&quot;,
+      &quot;label&quot;: &quot;Dikey stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;controls&quot;,
+      &quot;label&quot;: &quot;Kumanda bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;crosstube&quot;,
+      &quot;label&quot;: &quot;Skid çapraz boruları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;glazing&quot;,
+      &quot;label&quot;: &quot;Cam yüzeyleri&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;blades&quot;,
+      &quot;label&quot;: &quot;Ana rotor palleri&quot;,
+      &quot;severity&quot;: 0.02616291490022136,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    }
+  ]
+}</pre></details><details><summary>Fleyır uygulama · karar ve parça ayrıntıları</summary><p>İstenen kararlar uygulandı.</p><pre>{
+  &quot;decisions&quot;: [
+    {
+      &quot;id&quot;: &quot;priority&quot;,
+      &quot;option&quot;: &quot;control&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 4,
+      &quot;heightFt&quot;: 407.43653695985773,
+      &quot;iasKt&quot;: 60,
+      &quot;rotorRpm&quot;: 324
+    },
+    {
+      &quot;id&quot;: &quot;landing&quot;,
+      &quot;option&quot;: &quot;shared&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 5.3,
+      &quot;heightFt&quot;: 399.0137066201301,
+      &quot;iasKt&quot;: 60.999706907851525,
+      &quot;rotorRpm&quot;: 297.4998164052183
+    },
+    {
+      &quot;id&quot;: &quot;flare&quot;,
+      &quot;option&quot;: &quot;omit&quot;,
+      &quot;requested&quot;: &quot;omit&quot;,
+      &quot;at&quot;: 6.6,
+      &quot;heightFt&quot;: 371.99801307179445,
+      &quot;iasKt&quot;: 61.735950620467825,
+      &quot;rotorRpm&quot;: 292.5366977112012
+    },
+    {
+      &quot;id&quot;: &quot;cushion&quot;,
+      &quot;option&quot;: &quot;timed&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 9.1,
+      &quot;heightFt&quot;: 291.3413774452718,
+      &quot;iasKt&quot;: 64.95132079589266,
+      &quot;rotorRpm&quot;: 303.90883224200917
+    },
+    {
+      &quot;id&quot;: &quot;finalPull&quot;,
+      &quot;option&quot;: &quot;now&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 16.3,
+      &quot;heightFt&quot;: 58.95295276718337,
+      &quot;iasKt&quot;: 70.78706122810402,
+      &quot;rotorRpm&quot;: 324.49995410472206
+    }
+  ],
+  &quot;parts&quot;: [
+    {
+      &quot;id&quot;: &quot;skidLeft&quot;,
+      &quot;label&quot;: &quot;Sol skid&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;skidRight&quot;,
+      &quot;label&quot;: &quot;Sağ skid&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;cabin&quot;,
+      &quot;label&quot;: &quot;Gövde/taban&quot;,
+      &quot;severity&quot;: 0.65,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;cockpit&quot;,
+      &quot;label&quot;: &quot;Kokpit&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailBoom&quot;,
+      &quot;label&quot;: &quot;Kuyruk bumu&quot;,
+      &quot;severity&quot;: 0.65,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailRotor&quot;,
+      &quot;label&quot;: &quot;Kuyruk rotoru&quot;,
+      &quot;severity&quot;: 0.85,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: true,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mainRotor&quot;,
+      &quot;label&quot;: &quot;Ana rotor&quot;,
+      &quot;severity&quot;: 0.85,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: true,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mast&quot;,
+      &quot;label&quot;: &quot;Mast&quot;,
+      &quot;severity&quot;: 0.65,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;transmission&quot;,
+      &quot;label&quot;: &quot;Transmisyon bağlantıları&quot;,
+      &quot;severity&quot;: 0.007228482010128601,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;engine&quot;,
+      &quot;label&quot;: &quot;Motor bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;stabilizer&quot;,
+      &quot;label&quot;: &quot;Yatay stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;fin&quot;,
+      &quot;label&quot;: &quot;Dikey stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;controls&quot;,
+      &quot;label&quot;: &quot;Kumanda bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;crosstube&quot;,
+      &quot;label&quot;: &quot;Skid çapraz boruları&quot;,
+      &quot;severity&quot;: 0.48413542097649587,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;glazing&quot;,
+      &quot;label&quot;: &quot;Cam yüzeyleri&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;blades&quot;,
+      &quot;label&quot;: &quot;Ana rotor palleri&quot;,
+      &quot;severity&quot;: 0.10207754613403315,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    }
+  ]
+}</pre></details><details><summary>Erken kollektif · karar ve parça ayrıntıları</summary><p>İstenen kararlar uygulandı.</p><pre>{
+  &quot;decisions&quot;: [
+    {
+      &quot;id&quot;: &quot;priority&quot;,
+      &quot;option&quot;: &quot;control&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 4,
+      &quot;heightFt&quot;: 407.43653695985773,
+      &quot;iasKt&quot;: 60,
+      &quot;rotorRpm&quot;: 324
+    },
+    {
+      &quot;id&quot;: &quot;landing&quot;,
+      &quot;option&quot;: &quot;shared&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 5.3,
+      &quot;heightFt&quot;: 399.0137066201301,
+      &quot;iasKt&quot;: 60.999706907851525,
+      &quot;rotorRpm&quot;: 297.4998164052183
+    },
+    {
+      &quot;id&quot;: &quot;flare&quot;,
+      &quot;option&quot;: &quot;adaptive&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 6.6,
+      &quot;heightFt&quot;: 371.99801307179445,
+      &quot;iasKt&quot;: 61.735950620467825,
+      &quot;rotorRpm&quot;: 292.5366977112012
+    },
+    {
+      &quot;id&quot;: &quot;cushion&quot;,
+      &quot;option&quot;: &quot;early&quot;,
+      &quot;requested&quot;: &quot;early&quot;,
+      &quot;at&quot;: 9.1,
+      &quot;heightFt&quot;: 291.3413774452718,
+      &quot;iasKt&quot;: 64.95132079589266,
+      &quot;rotorRpm&quot;: 303.90883224200917
+    }
+  ],
+  &quot;parts&quot;: [
+    {
+      &quot;id&quot;: &quot;skidLeft&quot;,
+      &quot;label&quot;: &quot;Sol skid&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;skidRight&quot;,
+      &quot;label&quot;: &quot;Sağ skid&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;cabin&quot;,
+      &quot;label&quot;: &quot;Gövde/taban&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;cockpit&quot;,
+      &quot;label&quot;: &quot;Kokpit&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailBoom&quot;,
+      &quot;label&quot;: &quot;Kuyruk bumu&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: true,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailRotor&quot;,
+      &quot;label&quot;: &quot;Kuyruk rotoru&quot;,
+      &quot;severity&quot;: 0.85,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: true,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mainRotor&quot;,
+      &quot;label&quot;: &quot;Ana rotor&quot;,
+      &quot;severity&quot;: 0.85,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: true,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mast&quot;,
+      &quot;label&quot;: &quot;Mast&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;transmission&quot;,
+      &quot;label&quot;: &quot;Transmisyon bağlantıları&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;engine&quot;,
+      &quot;label&quot;: &quot;Motor bağlantıları&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;stabilizer&quot;,
+      &quot;label&quot;: &quot;Yatay stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;fin&quot;,
+      &quot;label&quot;: &quot;Dikey stabilize&quot;,
+      &quot;severity&quot;: 0.5,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;controls&quot;,
+      &quot;label&quot;: &quot;Kumanda bağlantıları&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;crosstube&quot;,
+      &quot;label&quot;: &quot;Skid çapraz boruları&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;glazing&quot;,
+      &quot;label&quot;: &quot;Cam yüzeyleri&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;blades&quot;,
+      &quot;label&quot;: &quot;Ana rotor palleri&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    }
+  ]
+}</pre></details><details><summary>Son ana ertelenmiş kollektif · karar ve parça ayrıntıları</summary><p>İstenen kararlar uygulandı.</p><pre>{
+  &quot;decisions&quot;: [
+    {
+      &quot;id&quot;: &quot;priority&quot;,
+      &quot;option&quot;: &quot;control&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 4,
+      &quot;heightFt&quot;: 407.43653695985773,
+      &quot;iasKt&quot;: 60,
+      &quot;rotorRpm&quot;: 324
+    },
+    {
+      &quot;id&quot;: &quot;landing&quot;,
+      &quot;option&quot;: &quot;shared&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 5.3,
+      &quot;heightFt&quot;: 399.0137066201301,
+      &quot;iasKt&quot;: 60.999706907851525,
+      &quot;rotorRpm&quot;: 297.4998164052183
+    },
+    {
+      &quot;id&quot;: &quot;flare&quot;,
+      &quot;option&quot;: &quot;adaptive&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 6.6,
+      &quot;heightFt&quot;: 371.99801307179445,
+      &quot;iasKt&quot;: 61.735950620467825,
+      &quot;rotorRpm&quot;: 292.5366977112012
+    },
+    {
+      &quot;id&quot;: &quot;cushion&quot;,
+      &quot;option&quot;: &quot;late&quot;,
+      &quot;requested&quot;: &quot;late&quot;,
+      &quot;at&quot;: 9.1,
+      &quot;heightFt&quot;: 291.3413774452718,
+      &quot;iasKt&quot;: 64.95132079589266,
+      &quot;rotorRpm&quot;: 303.90883224200917
+    },
+    {
+      &quot;id&quot;: &quot;overspeed&quot;,
+      &quot;option&quot;: &quot;load&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 14.5,
+      &quot;heightFt&quot;: 108.54752937696584,
+      &quot;iasKt&quot;: 70.7311439162627,
+      &quot;rotorRpm&quot;: 322.1581039477315
+    },
+    {
+      &quot;id&quot;: &quot;cyclic&quot;,
+      &quot;option&quot;: &quot;coordinated&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 23,
+      &quot;heightFt&quot;: 51.70682009514228,
+      &quot;iasKt&quot;: 27.0142938435439,
+      &quot;rotorRpm&quot;: 305.12542342513336
+    },
+    {
+      &quot;id&quot;: &quot;finalPull&quot;,
+      &quot;option&quot;: &quot;now&quot;,
+      &quot;requested&quot;: &quot;now&quot;,
+      &quot;at&quot;: 25.3,
+      &quot;heightFt&quot;: 21.98868793429505,
+      &quot;iasKt&quot;: 11.66705481438033,
+      &quot;rotorRpm&quot;: 300.35122089354525
+    }
+  ],
+  &quot;parts&quot;: [
+    {
+      &quot;id&quot;: &quot;skidLeft&quot;,
+      &quot;label&quot;: &quot;Sol skid&quot;,
+      &quot;severity&quot;: 0.1904575598578477,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;skidRight&quot;,
+      &quot;label&quot;: &quot;Sağ skid&quot;,
+      &quot;severity&quot;: 0.19048256332006824,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;cabin&quot;,
+      &quot;label&quot;: &quot;Gövde/taban&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;cockpit&quot;,
+      &quot;label&quot;: &quot;Kokpit&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailBoom&quot;,
+      &quot;label&quot;: &quot;Kuyruk bumu&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailRotor&quot;,
+      &quot;label&quot;: &quot;Kuyruk rotoru&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mainRotor&quot;,
+      &quot;label&quot;: &quot;Ana rotor&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mast&quot;,
+      &quot;label&quot;: &quot;Mast&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;transmission&quot;,
+      &quot;label&quot;: &quot;Transmisyon bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;engine&quot;,
+      &quot;label&quot;: &quot;Motor bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;stabilizer&quot;,
+      &quot;label&quot;: &quot;Yatay stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;fin&quot;,
+      &quot;label&quot;: &quot;Dikey stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;controls&quot;,
+      &quot;label&quot;: &quot;Kumanda bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;crosstube&quot;,
+      &quot;label&quot;: &quot;Skid çapraz boruları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;glazing&quot;,
+      &quot;label&quot;: &quot;Cam yüzeyleri&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;blades&quot;,
+      &quot;label&quot;: &quot;Ana rotor palleri&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    }
+  ]
+}</pre></details><details><summary>Son kollektifi uygulama · karar ve parça ayrıntıları</summary><p>İstenen kararlar uygulandı.</p><pre>{
+  &quot;decisions&quot;: [
+    {
+      &quot;id&quot;: &quot;priority&quot;,
+      &quot;option&quot;: &quot;control&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 4,
+      &quot;heightFt&quot;: 407.43653695985773,
+      &quot;iasKt&quot;: 60,
+      &quot;rotorRpm&quot;: 324
+    },
+    {
+      &quot;id&quot;: &quot;landing&quot;,
+      &quot;option&quot;: &quot;shared&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 5.3,
+      &quot;heightFt&quot;: 399.0137066201301,
+      &quot;iasKt&quot;: 60.999706907851525,
+      &quot;rotorRpm&quot;: 297.4998164052183
+    },
+    {
+      &quot;id&quot;: &quot;flare&quot;,
+      &quot;option&quot;: &quot;adaptive&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 6.6,
+      &quot;heightFt&quot;: 371.99801307179445,
+      &quot;iasKt&quot;: 61.735950620467825,
+      &quot;rotorRpm&quot;: 292.5366977112012
+    },
+    {
+      &quot;id&quot;: &quot;cushion&quot;,
+      &quot;option&quot;: &quot;timed&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 9.1,
+      &quot;heightFt&quot;: 291.3413774452718,
+      &quot;iasKt&quot;: 64.95132079589266,
+      &quot;rotorRpm&quot;: 303.90883224200917
+    },
+    {
+      &quot;id&quot;: &quot;overspeed&quot;,
+      &quot;option&quot;: &quot;load&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 14.5,
+      &quot;heightFt&quot;: 108.54752937696584,
+      &quot;iasKt&quot;: 70.7311439162627,
+      &quot;rotorRpm&quot;: 322.1581039477315
+    },
+    {
+      &quot;id&quot;: &quot;cyclic&quot;,
+      &quot;option&quot;: &quot;coordinated&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 23,
+      &quot;heightFt&quot;: 51.70682009514228,
+      &quot;iasKt&quot;: 27.0142938435439,
+      &quot;rotorRpm&quot;: 305.12542342513336
+    },
+    {
+      &quot;id&quot;: &quot;finalPull&quot;,
+      &quot;option&quot;: &quot;hold&quot;,
+      &quot;requested&quot;: &quot;hold&quot;,
+      &quot;at&quot;: 25,
+      &quot;heightFt&quot;: 27.31395179562561,
+      &quot;iasKt&quot;: 13.563960937087618,
+      &quot;rotorRpm&quot;: 301.64373100852833
+    }
+  ],
+  &quot;parts&quot;: [
+    {
+      &quot;id&quot;: &quot;skidLeft&quot;,
+      &quot;label&quot;: &quot;Sol skid&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;skidRight&quot;,
+      &quot;label&quot;: &quot;Sağ skid&quot;,
+      &quot;severity&quot;: 1,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;cabin&quot;,
+      &quot;label&quot;: &quot;Gövde/taban&quot;,
+      &quot;severity&quot;: 0.37235462726731333,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;cockpit&quot;,
+      &quot;label&quot;: &quot;Kokpit&quot;,
+      &quot;severity&quot;: 0.12740006666225528,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailBoom&quot;,
+      &quot;label&quot;: &quot;Kuyruk bumu&quot;,
+      &quot;severity&quot;: 0.9,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: true,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailRotor&quot;,
+      &quot;label&quot;: &quot;Kuyruk rotoru&quot;,
+      &quot;severity&quot;: 0.8,
+      &quot;state&quot;: &quot;Ağır deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mainRotor&quot;,
+      &quot;label&quot;: &quot;Ana rotor&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mast&quot;,
+      &quot;label&quot;: &quot;Mast&quot;,
+      &quot;severity&quot;: 0.0834000666622553,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;transmission&quot;,
+      &quot;label&quot;: &quot;Transmisyon bağlantıları&quot;,
+      &quot;severity&quot;: 0.3447728030252901,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;engine&quot;,
+      &quot;label&quot;: &quot;Motor bağlantıları&quot;,
+      &quot;severity&quot;: 0.2711909787832669,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;stabilizer&quot;,
+      &quot;label&quot;: &quot;Yatay stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;fin&quot;,
+      &quot;label&quot;: &quot;Dikey stabilize&quot;,
+      &quot;severity&quot;: 0.5,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;controls&quot;,
+      &quot;label&quot;: &quot;Kumanda bağlantıları&quot;,
+      &quot;severity&quot;: 0.1758182424202321,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;crosstube&quot;,
+      &quot;label&quot;: &quot;Skid çapraz boruları&quot;,
+      &quot;severity&quot;: 0.5106186827099876,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;glazing&quot;,
+      &quot;label&quot;: &quot;Cam yüzeyleri&quot;,
+      &quot;severity&quot;: 0.03585123225761366,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;blades&quot;,
+      &quot;label&quot;: &quot;Ana rotor palleri&quot;,
+      &quot;severity&quot;: 0.06516264121206908,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    }
+  ]
+}</pre></details><details><summary>Mevcut saykılığı tut · karar ve parça ayrıntıları</summary><p>İstenen kararlar uygulandı.</p><pre>{
+  &quot;decisions&quot;: [
+    {
+      &quot;id&quot;: &quot;priority&quot;,
+      &quot;option&quot;: &quot;control&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 4,
+      &quot;heightFt&quot;: 407.43653695985773,
+      &quot;iasKt&quot;: 60,
+      &quot;rotorRpm&quot;: 324
+    },
+    {
+      &quot;id&quot;: &quot;landing&quot;,
+      &quot;option&quot;: &quot;shared&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 5.3,
+      &quot;heightFt&quot;: 399.0137066201301,
+      &quot;iasKt&quot;: 60.999706907851525,
+      &quot;rotorRpm&quot;: 297.4998164052183
+    },
+    {
+      &quot;id&quot;: &quot;flare&quot;,
+      &quot;option&quot;: &quot;adaptive&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 6.6,
+      &quot;heightFt&quot;: 371.99801307179445,
+      &quot;iasKt&quot;: 61.735950620467825,
+      &quot;rotorRpm&quot;: 292.5366977112012
+    },
+    {
+      &quot;id&quot;: &quot;cushion&quot;,
+      &quot;option&quot;: &quot;timed&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 9.1,
+      &quot;heightFt&quot;: 291.3413774452718,
+      &quot;iasKt&quot;: 64.95132079589266,
+      &quot;rotorRpm&quot;: 303.90883224200917
+    },
+    {
+      &quot;id&quot;: &quot;overspeed&quot;,
+      &quot;option&quot;: &quot;load&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 14.5,
+      &quot;heightFt&quot;: 108.54752937696584,
+      &quot;iasKt&quot;: 70.7311439162627,
+      &quot;rotorRpm&quot;: 322.1581039477315
+    },
+    {
+      &quot;id&quot;: &quot;cyclic&quot;,
+      &quot;option&quot;: &quot;hold&quot;,
+      &quot;requested&quot;: &quot;hold&quot;,
+      &quot;at&quot;: 23,
+      &quot;heightFt&quot;: 51.70682009514228,
+      &quot;iasKt&quot;: 27.0142938435439,
+      &quot;rotorRpm&quot;: 305.12542342513336
+    },
+    {
+      &quot;id&quot;: &quot;finalPull&quot;,
+      &quot;option&quot;: &quot;now&quot;,
+      &quot;requested&quot;: null,
+      &quot;at&quot;: 24.3,
+      &quot;heightFt&quot;: 34.44088894019043,
+      &quot;iasKt&quot;: 20.699346189259987,
+      &quot;rotorRpm&quot;: 304.7165783699836
+    }
+  ],
+  &quot;parts&quot;: [
+    {
+      &quot;id&quot;: &quot;skidLeft&quot;,
+      &quot;label&quot;: &quot;Sol skid&quot;,
+      &quot;severity&quot;: 0.0866974976562712,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;skidRight&quot;,
+      &quot;label&quot;: &quot;Sağ skid&quot;,
+      &quot;severity&quot;: 0.08655994051840622,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;cabin&quot;,
+      &quot;label&quot;: &quot;Gövde/taban&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;cockpit&quot;,
+      &quot;label&quot;: &quot;Kokpit&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;tailBoom&quot;,
+      &quot;label&quot;: &quot;Kuyruk bumu&quot;,
+      &quot;severity&quot;: 0.39113884911513486,
+      &quot;state&quot;: &quot;Belirgin deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;tailRotor&quot;,
+      &quot;label&quot;: &quot;Kuyruk rotoru&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mainRotor&quot;,
+      &quot;label&quot;: &quot;Ana rotor&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;mast&quot;,
+      &quot;label&quot;: &quot;Mast&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;transmission&quot;,
+      &quot;label&quot;: &quot;Transmisyon bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;engine&quot;,
+      &quot;label&quot;: &quot;Motor bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;stabilizer&quot;,
+      &quot;label&quot;: &quot;Yatay stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;fin&quot;,
+      &quot;label&quot;: &quot;Dikey stabilize&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;controls&quot;,
+      &quot;label&quot;: &quot;Kumanda bağlantıları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;crosstube&quot;,
+      &quot;label&quot;: &quot;Skid çapraz boruları&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;glazing&quot;,
+      &quot;label&quot;: &quot;Cam yüzeyleri&quot;,
+      &quot;severity&quot;: 0,
+      &quot;state&quot;: &quot;Belirgin etki yok&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    },
+    {
+      &quot;id&quot;: &quot;blades&quot;,
+      &quot;label&quot;: &quot;Ana rotor palleri&quot;,
+      &quot;severity&quot;: 0.1429944800066525,
+      &quot;state&quot;: &quot;Hafif deformasyon&quot;,
+      &quot;detach&quot;: false,
+      &quot;directContact&quot;: false
+    }
+  ]
+}</pre></details></html>
