@@ -36,7 +36,9 @@ test('diagram click, 1 ft / 1 kt keyboard selection and numeric inputs',async({p
  await expect(page.locator('#ias-value')).toHaveText('53');
 });
 test('play, pause, rewind, reset and condition changes',async({page})=>{
- await page.locator('#start-lesson').click();
+ await page.locator('#start-height').fill('400');
+ await page.locator('#start-ias').fill('60');
+ await page.locator('#start-form button[type=submit]').click();
  await page.locator('#play').click();
  await expect.poll(async()=>Number(await page.locator('#seek').inputValue())).toBeGreaterThan(.2);
  await page.locator('#play').click();
@@ -50,7 +52,9 @@ test('play, pause, rewind, reset and condition changes',async({page})=>{
  await expect(page.locator('[name=flightArea]')).toHaveValue('water');
 });
 test('fullscreen keeps notifications, transport, instruments and decisions interactive',async({page})=>{
- await page.locator('#start-lesson').click();
+ await page.locator('#start-height').fill('400');
+ await page.locator('#start-ias').fill('60');
+ await page.locator('#start-form button[type=submit]').click();
  await page.locator('#scene-fullscreen').click();
  await expect(page.locator('#scene-fullscreen')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#fullscreen-transport #play')).toBeVisible();
