@@ -1,5 +1,8 @@
 name: AB-205 previews and approved releases
 on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish.yml]
   workflow_run:
     workflows: [AB-205 automatic tests]
     types: [completed]
@@ -17,6 +20,7 @@ concurrency:
 jobs:
   publish:
     if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_repository.full_name == github.repository)
@@ -34,15 +38,26 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: main
+      - name: Select latest tested main build after publisher maintenance
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/tests.yml/runs?branch=main&event=push&status=success&per_page=1" --jq '.workflow_runs[0].id')
+          [[ "$run_id" =~ ^[0-9]+$ ]] || exit 1
+          echo "LATEST_TEST_RUN=$run_id" >> "$GITHUB_ENV"
       - name: Prepare verified artifact without running its code
         env:
           GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN: ${{ inputs.source_run || github.event.workflow_run.id }}
+          SOURCE_RUN: ${{ inputs.source_run || github.event.workflow_run.id || env.LATEST_TEST_RUN }}
           PUBLISH_MODE: ${{ github.event_name == 'workflow_dispatch' && 'approve' || 'preview' }}
         run: python3 scripts/publish-pages.py
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: publication
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Publish previews and the approved version
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
