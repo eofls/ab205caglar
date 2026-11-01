@@ -1,0 +1,71 @@
+# v0.30.0 ağırlık/yoğunluk taraması — rehberli (referans kararlar) ve hazır akış; w: düşey temas m/s, gs: yer sürati m/s
+watch 400/60 6500 lb 0 ft rho 1.225 w 2.99 gs 1.5 td rpm 229
+watch 400/60 6500 lb 4000 ft rho 1.023 w 3.66 gs 2.2 td rpm 226
+watch 400/60 6500 lb 8000 ft rho 0.865 w 3.91 gs 3.6 td rpm 222
+watch 400/60 8000 lb 0 ft rho 1.225 w 4.65 gs 2.3 td rpm 219
+watch 400/60 8000 lb 4000 ft rho 1.023 w 4.34 gs 3.2 td rpm 220
+watch 400/60 8000 lb 8000 ft rho 0.865 w 2.48 gs 5.1 td rpm 231
+watch 400/60 9500 lb 0 ft rho 1.225 w 3.96 gs 3.6 td rpm 238
+watch 400/60 9500 lb 4000 ft rho 1.023 w 2.71 gs 5.8 td rpm 240
+watch 400/60 9500 lb 8000 ft rho 0.865 w 7.87 gs 17.9 td rpm 200
+watch 200/50 6500 lb 0 ft rho 1.225 w 0.76 gs 2.6 td rpm 243
+watch 200/50 6500 lb 4000 ft rho 1.023 w 0.59 gs 4.5 td rpm 235
+watch 200/50 6500 lb 8000 ft rho 0.865 w 2.14 gs 7.4 td rpm 225
+watch 200/50 8000 lb 0 ft rho 1.225 w 2.39 gs 3.5 td rpm 233
+watch 200/50 8000 lb 4000 ft rho 1.023 w 3.75 gs 7.1 td rpm 238
+watch 200/50 8000 lb 8000 ft rho 0.865 w 5.63 gs 13.4 td rpm 226
+watch 200/50 9500 lb 0 ft rho 1.225 w 3.67 gs 6.9 td rpm 234
+watch 200/50 9500 lb 4000 ft rho 1.023 w 7.28 gs 12.2 td rpm 216
+watch 200/50 9500 lb 8000 ft rho 0.865 w 7.48 gs 14.5 td rpm 211
+watch 100/70 6500 lb 0 ft rho 1.225 w 2.94 gs 1.6 td rpm 228
+watch 100/70 6500 lb 4000 ft rho 1.023 w 3.87 gs 2.5 td rpm 226
+watch 100/70 6500 lb 8000 ft rho 0.865 w 4.82 gs 3.6 td rpm 218
+watch 100/70 8000 lb 0 ft rho 1.225 w 4.82 gs 2.7 td rpm 217
+watch 100/70 8000 lb 4000 ft rho 1.023 w 6.04 gs 3.6 td rpm 207
+watch 100/70 8000 lb 8000 ft rho 0.865 w 7.06 gs 4.2 td rpm 199
+watch 100/70 9500 lb 0 ft rho 1.225 w 6.38 gs 3.4 td rpm 201
+watch 100/70 9500 lb 4000 ft rho 1.023 w 7.62 gs 4.1 td rpm 188
+watch 100/70 9500 lb 8000 ft rho 0.865 w 7.43 gs 4.5 td rpm 246
+guided 400/60 6500 lb 0 ft rho 1.225 w 2.30 gs 1.5 td rpm 231
+guided 400/60 6500 lb 4000 ft rho 1.023 w 2.73 gs 2.7 td rpm 228
+guided 400/60 6500 lb 8000 ft rho 0.865 w 3.19 gs 4.1 td rpm 225
+guided 400/60 8000 lb 0 ft rho 1.225 w 3.75 gs 2.3 td rpm 220
+guided 400/60 8000 lb 4000 ft rho 1.023 w 4.05 gs 3.6 td rpm 217
+guided 400/60 8000 lb 8000 ft rho 0.865 w 2.47 gs 7.9 td rpm 225
+guided 400/60 9500 lb 0 ft rho 1.225 w 4.35 gs 3.7 td rpm 212
+guided 400/60 9500 lb 4000 ft rho 1.023 w 3.78 gs 9.2 td rpm 212
+guided 400/60 9500 lb 8000 ft rho 0.865 w 9.72 gs 25.9 td rpm 175
+guided 200/50 6500 lb 0 ft rho 1.225 w 1.03 gs 2.6 td rpm 246
+guided 200/50 6500 lb 4000 ft rho 1.023 w 0.98 gs 7.8 td rpm 248
+guided 200/50 6500 lb 8000 ft rho 0.865 w 2.36 gs 15.7 td rpm 231
+guided 200/50 8000 lb 0 ft rho 1.225 w 2.78 gs 8.0 td rpm 228
+guided 200/50 8000 lb 4000 ft rho 1.023 w 3.06 gs 13.1 td rpm 227
+guided 200/50 8000 lb 8000 ft rho 0.865 w 6.71 gs 20.6 td rpm 204
+guided 200/50 9500 lb 0 ft rho 1.225 w 4.88 gs 10.7 td rpm 211
+guided 200/50 9500 lb 4000 ft rho 1.023 w 8.37 gs 17.7 td rpm 191
+guided 200/50 9500 lb 8000 ft rho 0.865 w 7.81 gs 20.0 td rpm 193
+guided 100/70 6500 lb 0 ft rho 1.225 w 1.85 gs 1.8 td rpm 232
+guided 100/70 6500 lb 4000 ft rho 1.023 w 2.52 gs 2.6 td rpm 228
+guided 100/70 6500 lb 8000 ft rho 0.865 w 3.29 gs 3.7 td rpm 224
+guided 100/70 8000 lb 0 ft rho 1.225 w 2.80 gs 3.1 td rpm 226
+guided 100/70 8000 lb 4000 ft rho 1.023 w 4.37 gs 4.4 td rpm 215
+guided 100/70 8000 lb 8000 ft rho 0.865 w 4.96 gs 5.4 td rpm 211
+guided 100/70 9500 lb 0 ft rho 1.225 w 3.60 gs 4.5 td rpm 227
+guided 100/70 9500 lb 4000 ft rho 1.023 w 5.17 gs 6.1 td rpm 206
+guided 100/70 9500 lb 8000 ft rho 0.865 w 6.13 gs 7.3 td rpm 199
+hard/fast 35 / 54
+mean w @ 6500 lb 2.55
+mean w @ 8000 lb 4.23
+mean w @ 9500 lb 6.01
+mean w @ 0 ft 3.33
+mean w @ 4000 ft 4.16
+mean w @ 8000 ft 5.30
+
+# Karşılaştırma: v0.27/energy-1.5 (önceki sürüm) özet
+hard/fast 44 / 54
+mean w @ 6500 lb 3.32
+mean w @ 8000 lb 6.00
+mean w @ 9500 lb 9.98
+mean w @ 0 ft 4.30
+mean w @ 4000 ft 5.82
+mean w @ 8000 ft 9.18

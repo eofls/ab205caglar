@@ -1,0 +1,192 @@
+[
+  {
+    "area": "terrain",
+    "time": 24.127495695524726,
+    "contact": {
+      "time": 23.327495695524725,
+      "part": "skidRight",
+      "point": [
+        1.2846453931004997,
+        -6.214426135290927,
+        -457.0211935349061
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "rough",
+        "label": "Toprak / taşlı düzensiz zemin",
+        "friction": 0.65,
+        "roughness": 0.65,
+        "slope": 0.03507114497645174
+      },
+      "supportHeightM": 0.09805191321834972,
+      "normalSpeedMps": 5.777262295771468,
+      "descentMps": 5.926559438156844,
+      "groundSpeedMps": 2.2950010061808253,
+      "rotorRpm": 214.30839734020546,
+      "engineRpm": 10.510128031555576,
+      "collective": 2.0445788442021584
+    },
+    "site": {
+      "id": "pilot",
+      "x": 0,
+      "z": -525.8239839533212,
+      "ux": 0,
+      "uz": -1,
+      "score": 39.831432134716216
+    },
+    "groundPhase": "Yerleşti",
+    "finite": true
+  },
+  {
+    "area": "airfield",
+    "time": 23.288084767360804,
+    "contact": {
+      "time": 22.488084767360803,
+      "part": "skidRight",
+      "point": [
+        80.70717947119567,
+        0.35084215256000395,
+        -430.1427702493234
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "rough",
+        "label": "Toprak / taşlı düzensiz zemin",
+        "friction": 0.65,
+        "roughness": 0.65,
+        "slope": 0.0013600396628656681
+      },
+      "supportHeightM": 0.02130206284995967,
+      "normalSpeedMps": 5.920073222688033,
+      "descentMps": 5.990444260202088,
+      "groundSpeedMps": 2.7699001097486127,
+      "rotorRpm": 220.44704729230173,
+      "engineRpm": 13.903523640788443,
+      "collective": 2.048964390355646
+    },
+    "site": {
+      "id": "pilot",
+      "x": 118.25333365044045,
+      "z": -503.5365404196072,
+      "ux": 0.29552020666133955,
+      "uz": -0.955336489125606,
+      "score": 24.16320475954387
+    },
+    "groundPhase": "Yerleşti",
+    "finite": true
+  },
+  {
+    "area": "forest",
+    "time": 21.74331578112146,
+    "contact": {
+      "time": 20.94331578112146,
+      "part": "mainRotor",
+      "point": [
+        6.799329151775808,
+        9.795429533050461,
+        -446.0198204621245
+      ],
+      "obstacle": true,
+      "surface": {
+        "kind": "forest",
+        "label": "Orman tabanı / ağaç engelleri",
+        "friction": 0.65,
+        "roughness": 0.65,
+        "slope": 0.03489293841905948
+      },
+      "supportHeightM": 13.209711259595615,
+      "normalSpeedMps": 6.62370680950044,
+      "descentMps": 6.496790923814365,
+      "groundSpeedMps": 5.340199175883238,
+      "rotorRpm": 318.77246731574047,
+      "engineRpm": 23.26766705542703,
+      "collective": 0.7000125771213433
+    },
+    "site": {
+      "id": "pilot",
+      "x": 0,
+      "z": -525.8239839533212,
+      "ux": 0,
+      "uz": -1,
+      "score": 39.831432134716216
+    },
+    "groundPhase": "Düzensiz zeminde takılma / sürüklenme",
+    "finite": true
+  },
+  {
+    "area": "mountain",
+    "time": 21.512321684975312,
+    "contact": {
+      "time": 20.71232168497531,
+      "part": "skidRight",
+      "point": [
+        1.282248049153896,
+        19.35937276289916,
+        -425.84550421444214
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "rough",
+        "label": "Toprak / taşlı düzensiz zemin",
+        "friction": 0.65,
+        "roughness": 0.9,
+        "slope": 0.05253852631028265
+      },
+      "supportHeightM": 0.1145237489531965,
+      "normalSpeedMps": 5.047461118132546,
+      "descentMps": 4.770331289765808,
+      "groundSpeedMps": 4.80182165874828,
+      "rotorRpm": 211.06518333762534,
+      "engineRpm": 25.13000033461295,
+      "collective": 2.1256805700784054
+    },
+    "site": {
+      "id": "pilot",
+      "x": 0,
+      "z": -504.80495271829056,
+      "ux": 0,
+      "uz": -1,
+      "score": 40.731063669918676
+    },
+    "groundPhase": "Düzensiz zeminde takılma / sürüklenme",
+    "finite": true
+  },
+  {
+    "area": "water",
+    "time": 26.667674389817858,
+    "contact": {
+      "time": 22.667674389817858,
+      "part": "skidLeft",
+      "point": [
+        -1.3132951057442777,
+        -1.3489841188540908e-10,
+        -446.5824775420891
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "water",
+        "label": "Su yüzeyi",
+        "friction": 0.2,
+        "roughness": 0,
+        "slope": 0
+      },
+      "supportHeightM": 0.01940097869968621,
+      "normalSpeedMps": 5.815348325974165,
+      "descentMps": 5.885720292876639,
+      "groundSpeedMps": 2.598653009911002,
+      "rotorRpm": 210.20084802522175,
+      "engineRpm": 13.095639894152237,
+      "collective": 2.02746234219106
+    },
+    "site": {
+      "id": "pilot",
+      "x": 0,
+      "z": -521.6418520461663,
+      "ux": 0,
+      "uz": -1,
+      "score": 300
+    },
+    "groundPhase": "Su teması / batma taslağı",
+    "finite": true
+  }
+]

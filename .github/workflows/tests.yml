@@ -31,6 +31,19 @@ jobs:
           path: ci-results/
           if-no-files-found: error
           retention-days: 14
+  claude:
+    name: Claude scenario tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Run Claude manoeuvre, emergency, area and cockpit tests
+        run: node --test --test-concurrency=4 claude/tests/*.test.mjs
   browser:
     name: Browser and WebGL smoke tests
     runs-on: ubuntu-24.04
@@ -56,7 +69,7 @@ jobs:
           retention-days: 14
   preview:
     name: Decision report and preview package
-    needs: [tests, browser]
+    needs: [tests, browser, claude]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

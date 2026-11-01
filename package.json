@@ -6,7 +6,10 @@
     "test": "node tests/ci.mjs",
     "test:browser": "playwright test",
     "report:decisions": "node scripts/decision-report.mjs",
-    "build:preview": "node scripts/build-static.mjs"
+    "build:preview": "node scripts/build-static.mjs",
+    "test:claude": "node --test --test-concurrency=4 claude/tests/*.test.mjs"
   },
-  "devDependencies": { "@playwright/test": "1.56.1" }
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
 }
