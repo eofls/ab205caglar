@@ -326,3 +326,5 @@ body.hide-transport .fullscreen-transport,body.hide-transport .scene-panel:is(:f
 @media(max-width:1000px){.cockpit-mode .narr{width:min(440px,calc(100% - 260px))!important;top:58px!important}}
 @media(max-width:700px){.cockpit-mode .narr{width:calc(100% - 150px)!important;left:auto!important;right:8px!important;transform:none!important}}
 .pp-manual{font:600 13px/1.2 inherit;padding:8px 14px;border-radius:8px;border:1px solid #2f5b46;background:#1d3a2d;color:#f2f5ee;cursor:pointer}.pp-manual:hover{background:#26493a}
+/* v0.41 tam ekranda paneller ve yazılar bir tık büyük (geniş ekran ve tablet yatay) */
+@media(min-width:900px) and (min-height:600px){.scene-panel:is(:fullscreen,.pseudo-fs) .fullscreen-ui{zoom:1.12}.scene-panel:is(:fullscreen,.pseudo-fs) .control-display{zoom:1.15}.scene-panel:is(:fullscreen,.pseudo-fs) .scene-toolbar{zoom:1.08}.scene-panel:is(:fullscreen,.pseudo-fs) .caution-panel{zoom:1.1}}

@@ -4,7 +4,7 @@ export function controlDisplay(p){
  const c=p.controls,unknown=p.quality==='unsupported';
  const direction=(rate,positive,negative,epsilon)=>unknown?'Hesap yok':p.contact?'Temas · sabit':rate>epsilon?positive:rate< -epsilon?negative:'Konum korunuyor';
  const forward=clamp(c.cyclicForward/.22,-1,1),right=clamp(c.cyclicRight/.22,-1,1);
- const cyclicDirection=[Math.abs(c.cyclicForwardRate)>.004?(c.cyclicForwardRate>0?'ileri':'geri'):'',Math.abs(c.cyclicRightRate)>.004?(c.cyclicRightRate>0?'sağa':'sola'):''].filter(Boolean).join(' / ');
+ const cyclicDirection=[Math.abs(c.cyclicForwardRate)>.012?(c.cyclicForwardRate>0?'ileri':'geri'):'',Math.abs(c.cyclicRightRate)>.012?(c.cyclicRightRate>0?'sağa':'sola'):''].filter(Boolean).join(' / ');
  const pn=c.programNotes??{},withNote=(base,k)=>pn[k]&&!unknown?base.replace(/·.*$/,'· '+pn[k]):base;
  const out={collective:{angle:unknown?0:clamp((c.collective-.3)/1.9,0,1)*-50,label:'Kollektif · '+(!unknown&&!p.contact&&Math.abs(c.collectiveRate)<=.015?(c.collective<.9?'aşağıda · sabit':c.collective>1.05?'yukarıda · sabit':'başlangıç konumu'):direction(c.collectiveRate,'yukarı','aşağı',.015))+(c.collective<.9&&c.collectiveRate>.015&&!p.contact?' · başlangıcın altında':''),arrow:!unknown&&!p.contact&&Math.abs(c.collectiveRate)>.015?(c.collectiveRate>0?'up':'down'):null},
  cyclic:{x:unknown?0:right*23,y:unknown?0:-forward*23,label:'Saykılık · '+(unknown?'hesap yok':p.contact?'temas · sabit':cyclicDirection||'konum korunuyor'),dx:!unknown&&!p.contact?c.cyclicRightRate:0,dy:!unknown&&!p.contact?-c.cyclicForwardRate:0},

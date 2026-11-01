@@ -18,5 +18,5 @@ export function flightOverlays(time,s,c,choices){
  const airflow=!vrs&&!p.powered&&!p.contact&&p.descentFpm>30&&p.rotorRpm>0;
  const prediction=end.reason==='contact'?[future.position[0],terrainHeight(future.position[0],future.position[2],c.flightArea)+.3,future.position[2]]:null;
  return {visible:true,targets,prediction,airflow,vrs,overspeed,flowDirection:flow.map(v=>v/norm),targetErrorM:error,
-  text:`${vrs?'VRS eğilimi · turuncu halka şematik. ':overspeed?'Rotor overspeed · kaynak maksimumunun üzerinde. ':''}${airflow?'Göreli hava akışı · şematik. ':''}${selected?`${target?.label??selected} aday saha hedef · `:''}${prediction?`T: mevcut kumandalarla tahmini temas${error===null?'':` · hedef sapması ${error.toFixed(0)} m`}`:'Temas tahmini yok'}`};
+  text:`${vrs?'güçlü çöküş eğilimi · turuncu halka şematik. ':overspeed?'Rotor overspeed · kaynak maksimumunun üzerinde. ':''}${airflow?'Göreli hava akışı · şematik. ':''}${selected?`${target?.label??selected} aday saha hedef · `:''}${prediction?`T: mevcut kumandalarla tahmini temas${error===null?'':` · hedef sapması ${error.toFixed(0)} m`}`:'Temas tahmini yok'}`};
 }
