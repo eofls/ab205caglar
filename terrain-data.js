@@ -122,7 +122,7 @@ function treeDensity(x,z,area){
  }return 0;
 }
 function treeSpec(x,z,area,h,kind){
- if(REAL(area)&&confinedBand(x,z,area)===1){const a=hash2(x,z+1),b=hash2(z,x);return {kind:'poplar',height:17+6*a,radius:1.7+.6*b};} /* v0.41 kapalı bölge: çevresi uzun kavak sırası */
+ if(REAL(area)&&confinedBand(x,z,area)===1){const a=hash2(x,z+1),b=hash2(z,x);return {kind:'poplar',height:13+5*a,radius:1.7+.6*b};} /* v0.41 kapalı bölge: çevresi uzun kavak sırası */
  if(REAL(area)){const c=REAL(area).treeCell(x,z)?.kind??0,a=hash2(x,z+1),b=hash2(z,x);
   if(c===1)return h<.45?{kind:'poplar',height:14+7*a,radius:1.8+.7*b}:{kind:'broad',height:9+5*a,radius:3.4+1.6*b};
   if(c===2)return {kind:'conifer',height:9+7*a,radius:2.4+1.2*b};if(c===3)return {kind:'broad',height:4+2*a,radius:2+.8*b};
@@ -242,10 +242,10 @@ export const POWER_LINE_SPEC={towerHeightM:TOWER_H,offsetsM:WIRE_OFFSETS,sagM:3.
 
 /* v0.39 Tepeler: KML iniş yerleri (tepe / kapalı). Tepe üstleri ve kapalı bölge ortaları ağaçsız ve kayasız tutulur
    (gerçekte de açık alan); MT_HILLS eski arayüz için [x, z, r, yükseklik] */
-const PAD_CLEAR={mountain:TEPE_SITES.map(s=>({x:s.x,z:s.z,r:s.kind==='confined'?24:30}))};
+const PAD_CLEAR={mountain:TEPE_SITES.map(s=>({x:s.x,z:s.z,r:s.kind==='confined'?55:30}))};
 const CONF_SITES=TEPE_SITES.filter(s=>s.kind==='confined');
-/* 1: kapalı bölgenin kenarındaki kavak halkası (24–48 m, seyrek aralıklı), 2: dışında seyreltilmiş örtü (48–150 m) */
-function confinedBand(x,z,area){if(area!=='mountain')return 0;for(const s of CONF_SITES){const d=Math.hypot(x-s.x,z-s.z);if(d<24||d>150)continue;if(d<48)return 1;return 2;}return 0;}
+/* 1: kapalı bölgenin kenarındaki kavak halkası (55–78 m), 2: dışında seyreltilmiş örtü (78–170 m) */
+function confinedBand(x,z,area){if(area!=='mountain')return 0;for(const s of CONF_SITES){const d=Math.hypot(x-s.x,z-s.z);if(d<55||d>170)continue;if(d<78)return 1;return 2;}return 0;}
 export const MT_HILLS=TEPE_SITES.filter(s=>s.kind==='pinnacle').map(s=>[s.x,s.z,260,terrainHeight(s.x,s.z,'mountain')]);
 /* v0.39.2 yol ızgara indeksi (40 m): yüzey sorgusu her yolu taramıyor (harita ve iniş yeri değerlendirmesi telefonda donuyordu) */
 const ROAD_G={};function roadGrid(area){if(ROAD_G[area])return ROAD_G[area];const g=new Map(),C=40;for(const f of REAL_AREAS[area].features){if(!f.tags.highway)continue;const p=f.points;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],seg=[a,b];for(let gi=Math.floor((Math.min(a[0],b[0])-8)/C);gi<=Math.floor((Math.max(a[0],b[0])+8)/C);gi++)for(let gj=Math.floor((Math.min(a[1],b[1])-8)/C);gj<=Math.floor((Math.max(a[1],b[1])+8)/C);gj++){const k=gi+','+gj;(g.get(k)??g.set(k,[]).get(k)).push(seg);}}}return ROAD_G[area]=g;}

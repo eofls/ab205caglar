@@ -57,7 +57,7 @@ function stepAircraft(st,tg,dt,ctx){
    vyDes=clamp((tg.vyFF??0)+(hT-agl)*(tg.hGain??.45),-(tg.maxDown??8),tg.maxUp??7);if(tg.vy!==undefined)vyDes=clamp(vyDes,-Math.abs(tg.vy)-.01,Math.abs(tg.vy)+.01);}
   // torque limit (IGV closed, partial power): power above the limit becomes descent
   if(fx.powerCap&&!st.autorot){const kt=Math.hypot(st.vx,st.vz)/KT,need=powerRequired(kt,Math.max(0,vyDes??0),agl);if(need>fx.powerCap)vyDes=Math.min(vyDes??0,(fx.powerCap-powerRequired(kt,0,agl))/.085);}
-  const fwd=ctx.maneuver&&!st.onGround&&Math.hypot(st.vx,st.vz)>15&&tg.vAccel===undefined&&!tg.vel,ay=clamp(((vyDes??0)-st.vy)*(tg.vGain??(fwd?.7:1.4)),-(tg.vAccel??(fwd?.9:3)),tg.vAccel??(fwd?.9:3)); /* v0.41 ileri uçuşta varyo kollektife gecikmeli cevap verir (≈2–3 s) */st.vy+=ay*dt;if(st.onGround&&st.vy>0){st.onGround=false;if(ctx.maneuver)st.contact=null;}}
+  const fwd=ctx.maneuver&&!st.onGround&&!st.autorot&&Math.hypot(st.vx,st.vz)>15&&tg.vAccel===undefined&&!tg.vel,ay=clamp(((vyDes??0)-st.vy)*(tg.vGain??(fwd?.7:1.4)),-(tg.vAccel??(fwd?.9:3)),tg.vAccel??(fwd?.9:3)); /* v0.41 ileri uçuşta varyo kollektife gecikmeli cevap verir (≈2–3 s) */st.vy+=ay*dt;if(st.onGround&&st.vy>0){st.onGround=false;if(ctx.maneuver)st.contact=null;}}
  st.x+=st.vx*dt;st.z+=st.vz*dt;st.y+=st.vy*dt;
  const g2=terrainHeight(st.x,st.z,area);
  /* v0.34.1 rotor / fuselage into trees or buildings (forest, villages): an obstacle contact, the airframe hangs in them */
