@@ -1,6 +1,6 @@
 const ignore=new Set(['mode','scenario','customStart','startHeightFt','startIasKt']);
 export function sameConditions(a,b){const cfg=s=>Object.entries(s.config).filter(([k])=>!ignore.has(k)).sort(([a],[b])=>a.localeCompare(b));return JSON.stringify([a.scenario.height,a.scenario.ias,cfg(a)])===JSON.stringify([b.scenario.height,b.scenario.ias,cfg(b)]);}
-const names={approach:'uzak hedef yaklaşması',cyclic:'saykılık / ufkiyet',finalPull:'ertelenmiş son kollektif',flare:'fleyır',priority:'ilk müdahale',recovery:'rotor devri müdahalesi',landing:'iniş sahası',cushion:'son kollektif',vrs:'VRS müdahalesi',overspeed:'yüksek devir müdahalesi',yaw:'pedal düzeltmesi',criticalRotor:'kritik rotor enerjisi'};
+const names={approach:'uzak hedef yaklaşması',cyclic:'saykılık / ufkiyet',finalPull:'ertelenmiş son kollektif',flare:'fleyır',priority:'ilk müdahale',recovery:'rotor devri müdahalesi',landing:'iniş sahası',cushion:'son kollektif',vrs:'Güçlü çöküş müdahalesi',overspeed:'yüksek devir müdahalesi',yaw:'pedal düzeltmesi',criticalRotor:'kritik rotor enerjisi'};
 const signed=(x,d=1)=>(x>0?'+':'')+x.toFixed(d);
 export function decisionEffect(a,b){
  if(a.time<a.scenario.duration||b.time<b.scenario.duration)return 'İki koşu da tamamlandığında karar–sonuç farkı gösterilir.';

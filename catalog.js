@@ -2,7 +2,7 @@ import {profileDecisions} from './scenario-profiles.js';
 import {DEFAULT_AIRCRAFT} from './aircraft-data.js';
 import {SAFE_DECISIONS} from './scenario-lesson.js';
 export const SOURCES = {
-  dynamics:{title:'FAA / NASA · rotor dinamiği',file:'FAA HFH Bölüm 11; NASA TP-2005-213477; NASA Lift Equation',pages:'HFH 11-2–11-4, 11-9–11-10, 11-15–11-16',printed:'Açık kaynak incelemesi',status:'VRS, düşük rotor devri ve overspeed ayrı olgular; deneysel katsayılar AB-205 verisi değildir'},
+  dynamics:{title:'FAA / NASA · rotor dinamiği',file:'FAA HFH Bölüm 11; NASA TP-2005-213477; NASA Lift Equation',pages:'HFH 11-2–11-4, 11-9–11-10, 11-15–11-16',printed:'Açık kaynak incelemesi',status:'güçlü çöküş, düşük rotor devri ve overspeed ayrı olgular; deneysel katsayılar AB-205 verisi değildir'},
   movements:{title:'Uçuş Hareketleri',file:'Uçuş Hareketleri(2).pdf',id:'libfile_c390ef0b8fec819198ccaaeaca393c9d',pages:'PDF 94–98, 99–110',printed:'2-2–2-18',status:'Havır, giriş, flare, düzeltme ve son kollektif nitel eşleştirmesi; UH-1 eğitim usulleri AB-205 sayısal katsayısı değildir'},
   tr: {title:'UH-1 / AB-205 Operatör Kitabı',file:'2-UH-1-AB-205-Operator-Manual.pdf',id:'libfile_8bed0326f6bc8191b7e4ac118f4754fb',pages:'PDF 16, 24, 28, 90–95, 185–187, 197–198',printed:'2-3, 2-11, 2-15, 5-1–5-6, 9-2–9-4, 9-14–9-15',status:'İlgili bölümler incelendi; yürürlük ve hava aracı konfigürasyonu teyit bekliyor'},
   tm: {title:'TM 55-1520-210-10',file:'2.TM 55-1520-210-10 UH-1 OPERATOR MANUAL.pdf',id:'libfile_ce2ec0d705e88191a06aef329d2b746e',pages:'PDF 403–405, 416',printed:'9-1–9-3; Şekil 9-3, 9-13',status:'Karşılaştırma kaynağı; UH-1 hükümleri otomatik AB-205 limiti değildir'},

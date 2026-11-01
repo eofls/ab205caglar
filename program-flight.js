@@ -86,7 +86,7 @@ function stepAircraft(st,tg,dt,ctx){
     • tepe / sırt rüzgârı: rüzgâr yamaca çarpınca yukarı, rüzgâraltında aşağı akım (yerden uzaklaştıkça azalır) → güç / kollektif
     • GKK ve geriye savrulma (blowback) ile enine akım: 10–25 kt'ta burun kalkar, gövde sağa yıkılır → ileri ve sol saykılık
     • öteleme eğilimi: havırda kuyruk rotoru helikopteri sağa iter → sol saykılık, sol kızak alçak
-    • girdap halkası: güçlüyken 15 kt altında 300 ft/dk üzeri alçalış → titreşim, güç artınca alçalış artar
+    • güçlü çöküş: güçlüyken 15 kt altında 300 ft/dk üzeri alçalış → titreşim, güç artınca alçalış artar
     • rüzgârgülü etkisi / LTE: havırda yan-arka rüzgâr baş çevirmek ister → pedal iş yükü */
  const W=ctx.wind??{x:0,z:0},Ws=Math.hypot(W.x,W.z),aglNow=Math.max(0,st.y-g2),airX=st.vx-W.x,airZ=st.vz-W.z;let gust=0,wv=0;
  if(Ws>.5&&!st.onGround){gust=(Math.sin(st.t*.73)*.5+Math.sin(st.t*1.91+1)*.3+Math.sin(st.t*3.7+2)*.2)*Ws*.25;const gk=Math.min(1,Ws/10);st.pitch+=Math.sin(st.t*2.9)*gk*.004;st.roll+=Math.sin(st.t*2.3+1)*gk*.006;
@@ -145,7 +145,7 @@ function simulate(config,choices){
   samples.push(snap(st,ctx));
   if(ctx.end!=null&&st.t>=ctx.end)break;
  }
-if(ctx.vrsEv?.length)ctx.events.push({at:ctx.vrsEv[0],kind:'Anlatım',title:'Girdap halkası belirtileri',text:'Güçlüyken 15 knot altında 300 ft/dk üzeri alçalış: titreşim; kollektif artınca alçalış artar. Kurtarma: ileri saykılıkla sürat kazan, kollektifi azalt.',target:'cyclic',source:['faa']});
+if(ctx.vrsEv?.length)ctx.events.push({at:ctx.vrsEv[0],kind:'Anlatım',title:'Güçlü çöküş belirtileri',text:'Güçlüyken 15 knot altında 300 ft/dk üzeri alçalış: titreşim; kollektif artınca alçalış artar. Kurtarma: ileri saykılıkla sürat kazan, kollektifi azalt.',target:'cyclic',source:['faa']});
  const last=samples.at(-1);return {init:INIT,ctx0:{wind:ctx.wind,area:ctx.area,maneuver:ctx.maneuver,water:false,lights:new Set(),warn:{rpm:false,fire:false}},samples,dt,duration:last.t,wing:ctx.wing??[],cover:ctx.cover??null,endReason:ctx.endReason,events:ctx.events.sort((a,b)=>a.at-b.at),decisions:ctx.decisions,lz:ctx.lz,notes:ctx.notes,contact:samples.find(s=>s.contact)?.contact??null};
 }
 function snap(st,ctx){return {t:st.t,x:st.x,y:st.y,z:st.z,vx:st.vx,vy:st.vy,vz:st.vz,hdg:st.hdg,pitch:st.pitch,roll:st.roll,rpm:st.rpm,eng:st.eng,col:st.col,pw:st.pw,dcol:(st.col-st.colPrev)/.05,cyc:[...st.cyc],dcyc:[(st.cyc[0]-st.cfPrev)/.05,(st.cyc[1]-st.crPrev)/.05],ped:st.ped,dped:(st.ped-st.pedPrev)/.05,rotorAngle:st.rotorAngle,onGround:st.onGround,contact:st.contact,autorot:st.autorot,phase:ctx.phase,reason:ctx.reason,lights:[...ctx.lights],warn:{...ctx.warn},panelOff:ctx.panelOff,smoke:ctx.smoke,smokeKind:ctx.smokeKind??'engine',vib:Math.max(ctx.fx.vib??0,(ctx.etl??0)*.28),etl:ctx.etl??0,lz:ctx.lz,yawRate:st.yawRate,gust:ctx.gust??0,wv:ctx.wv??0,...controlNotes(st,ctx)};}

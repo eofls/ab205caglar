@@ -60,7 +60,7 @@ export function controlTargets(s,p,choices,sink){
  }
  if(!powered&&(second==='distant'||second?.startsWith('site-'))&&approach!=='brake'&&!cushion){speed=63;if(!second?.startsWith('site-'))guidance=null;}
  if((flare||approach==='brake')&&guidance){const maxAir=speed*1852/3600*p.tasFactor,ax=guidance.groundX-p.windX,az=guidance.groundZ-p.windZ,len=Math.hypot(ax,az);if(len>maxAir){guidance={...guidance,groundX:p.windX+ax/len*maxAir,groundZ:p.windZ+az/len*maxAir};}}
- if(!powered&&vrs==='exit'&&!cushion&&agl>15){collective=Math.min(collective,.65+B);speed=Math.max(p.ias,30);guidance=null;phase='VRS eğiliminden çıkış · hava sürati kazanma';}
+ if(!powered&&vrs==='exit'&&!cushion&&agl>15){collective=Math.min(collective,.65+B);speed=Math.max(p.ias,30);guidance=null;phase='güçlü çöküş eğiliminden çıkış · hava sürati kazanma';}
  if(!powered&&vrs==='pull'&&!cushion&&terminal!=='hold'){collective=Math.max(collective,1.6);guidance=null;speed=p.ias;phase='Kollektifi artırma · güç/hatve talebi';}
  if(!powered&&overspeed==='load'&&terminal!=='hold'&&s.omega*30/Math.PI>324){collective=Math.max(collective,clamp(.70+B+(globalThis.EXP?.ogain??.025)*(s.omega*30/Math.PI-324),.70+B,(globalThis.EXP?.ocap??1.25)+B));if(!flare&&!cushion)phase='Yüksek rotor devri · yükleme';}
  if(!powered&&critical==='unload'&&!cushion&&agl>15&&ttg>3&&s.omega*30/Math.PI<p.rpm*.94){collective=Math.min(collective,.55+B);phase='Kritik rotor enerjisi · kollektif yükünü azaltma';}
