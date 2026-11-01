@@ -46,8 +46,8 @@ function stepAircraft(st,tg,dt,ctx){
      (a plain velocity-vector controller cut the corner - a reversal slowed to a stop instead of turning) */
   if(gsNow>12&&spD>12&&!tg.vectorOnly){const trNow=Math.atan2(st.vx,-st.vz),trD=Math.atan2(dx,-dz),aLat=G*Math.tan((tg.bank??25)*Math.PI/180)*(fx.heavy?.6:1);
    const eT=wrap(trD-trNow),spT=Math.abs(eT)>1&&!tg.keepSpeed?Math.min(spD,26):spD; // a reversal is flown slow: tighter, quicker turn
-   const w=clamp(eT*(tg.turnGain??.6),-aLat/gsNow,aLat/gsNow),nv=gsNow+clamp((spT-gsNow)*k,-a,a)*dt,nt=trNow+w*dt;dvx=(Math.sin(nt)*nv-st.vx)/dt;dvz=(-Math.cos(nt)*nv-st.vz)/dt;}
-  else{let ax=(dx-st.vx)*k,az=(dz-st.vz)*k;const m=Math.hypot(ax,az);if(m>a){ax*=a/m;az*=a/m;}dvx=ax;dvz=az;}}
+   let w=clamp(eT*(tg.turnGain??.6),-aLat/gsNow,aLat/gsNow);{const wp=st.wTurn??0,dwm=(G*Math.tan(25*Math.PI/180)/gsNow)/2.2*dt;w=clamp(w,wp-dwm,wp+dwm);st.wTurn=w;} /* v0.41 yatışa giriş/çıkış ~2 s: ani saykılık ve dönüş çıkışı yok */const nv=gsNow+clamp((spT-gsNow)*k,-a,a)*dt,nt=trNow+w*dt;dvx=(Math.sin(nt)*nv-st.vx)/dt;dvz=(-Math.cos(nt)*nv-st.vz)/dt;}
+  else{st.wTurn=0;let ax=(dx-st.vx)*k,az=(dz-st.vz)*k;const m=Math.hypot(ax,az);if(m>a){ax*=a/m;az*=a/m;}dvx=ax;dvz=az;}}
  st.vx+=dvx*dt;st.vz+=dvz*dt;
  // vertical
  if(!st.onGround||(tg.vy!==undefined&&tg.vy>0)||(tg.heightFt!==undefined&&tg.heightFt>1.5)){

@@ -33,17 +33,30 @@ const AIR={h:500,v:80,area:'terrain'};
 /* v0.35.9 meydan turu (talimat 5-6 b/c, kurs yansısı): 3500 ft MSL rüzgâraltı (meydan 2686 ft → ≈800 ft yer),
    kalkış ve yan bacak 70 kt +500 ft/dk, rüzgâraltı 90 kt düz uçuş torku, esas bacak 70 kt −500 ft/dk, son yaklaşma 70 kt / 3200 ft (≈500 ft yer) */
 const PAT_STD=['Bacaklara dönüş öncesi temizlik','Rüzgâraltı raporu','Rüzgâraltının son 1/3’ünde iniş öncesi kontroller','Esas bacağın son 1/3’ünde son yaklaşma sürati ve irtifası','Sürat ±10 kt, irtifa ±100 ft, yatış 15° ±5'];
+/* v0.41 meydan turu (kullanıcının harita çizimi + talimat): bacaklar düz hatlar (pist çerçevesi), dönüşler 15° yatışla ve
+   dönüş öncesi pay bırakılarak yapılır (r = V²/(g·tan15°), pay = r·tan(Δ/2)); dönüş noktası geride kalınca daire çizilmez.
+   06: kalkış panel hattı uzantısında meydan sınırına kadar, sağa 15° dönüşle doğrudan yan bacak; rüzgâraltı demiryolu hattının
+   hemen yanından (ilerideki otoyolu kesmeden); esas bacağa 90°, meydan tam sağda; son yaklaşmaya 70 kt ile giriş.
+   24 bunun aynası (soldan). GKK 2. panele inişte 3. panelde (24'te 2. panelde) kaybedilir. */
+const PATG={'06':{A:[1400,-159],B:[1300,690],C:[-1480,540],D:[-1490,-159],land:2,from:1},'24':{A:[-1450,-159],B:[-1460,620],C:[1300,690],D:[1360,-159],land:3,from:4}};
 const patChecks=(id)=>D(id,'Rüzgâraltında iniş öncesi kontroller',[opt('do','Son 1/3’te çeklistten yap','Standart.'),opt('skip','Yaklaşmada yaparım','Son yaklaşmada dikkat bölünür.',{},true,'İniş öncesi kontroller zamanında yapılmadı.')]);
-const patLegs=(rw,side,pts,land,dk)=>[
-  say('Kalkış bacağı',`${rw} pisti, ${side==='sağ'?'sağdan':'soldan'} meydan turu. ${pts.from}. panelden havırdan kalkış; istikamet değiştirilmeden 70 knot, +500 ft/dk.`,'g:ias'),{t:'liftoff',ft:3},{t:'hover',dur:2},{t:'takeoff',kt:70,fpm:500,dft:300},
-  {t:'goto',along:pts.p[0][0],across:pts.p[0][1],kt:70,ft:500,notes:[[6,'Kalkış bacağı','Panel hattı uzantısında yer izi; istikamet değiştirilmeden yan bacak kesişimine kadar tırmanış.','out'],[18,'“YAN BACAK TEMİZ”','Yan bacak gözle kontrol edilir: trafik varsa “takip ediyorum”, yoksa yüksek sesle “YAN BACAK TEMİZ”.',side==='sağ'?'look:right':'look:left']]},
-  say('Yan bacak',`Yan bacak kesişiminde ${side}a dönüş, 150° istikamet; 70 knot, +500 ft/dk ile tırmanışa devam. Meydan turu irtifasına 100 ft kala “SON 100 FİT”; rüzgâraltından katılan trafik yoksa “DUMAN KAPI TEMİZ”.`,'out'),{t:'goto',along:pts.p[1][0],across:pts.p[1][1],kt:70,ft:800},
-  say('Rüzgâraltı',`${side==='sağ'?'Sağa':'Sola'} dönüşle rüzgâraltı: 90 knot, 3500 ft (≈800 ft yer), düz uçuş torku.`,'g:torque'),
-  {t:'goto',along:pts.p[2][0],across:pts.p[2][1],kt:90,ft:800,notes:[[4,'“RÜZGÂRALTI”','Dönüşle beraber kuleye rüzgâraltı raporu.','out'],[12,'“DÜZ UÇUŞ TORKUM {TQ}, YAKIT {FUEL} LİBRE”','İlk 1/3’te düz uçuş torku yüksek sesle söylenir; hemen ardından yakıt hesabı başlatılır.','g:torque'],[50,'İniş öncesi kontroller','Rüzgâraltının son 1/3’ü: RPM 6600; motor ve transmisyon göstergeleri yeşilde; ikaz paneli temiz; emniyet kemerleri.','g:rpm'],[58,'“KAPI TEMİZ, ESAS BACAK TEMİZ”',`Esas bacaktan katılan trafik yoksa: “BEYSUKENT KAPI TEMİZ, ESAS BACAK TEMİZ.”`,side==='sağ'?'look:right':'look:left']],...patChecks(dk)},
-  say('Esas bacak',`Esas bacak kesişiminde ${side}a dönüş, 330° istikamet: 70 knot, −500 ft/dk süzülüş. “KISA MEYDAN TURU VE SON YAKLAŞMA HATTI TEMİZ.”`,'g:vsi'),{t:'goto',along:pts.p[3][0],across:pts.p[3][1],kt:70,ft:500},
-  say('Son yaklaşma',`“SON YAKLAŞMA HATTI TEMİZ.” ${side==='sağ'?'Sağa':'Sola'} dönüşle son yaklaşma: 70 knot / 3200 ft (≈500 ft yer); ${land}. panele havıra kadar yaklaşma.`,side==='sağ'?'look:right':'look:left'),{t:'approach',kind:'hover',angle:9,pad:'panel',panel:land,rev:rw==='24'},{t:'setdown'},{t:'ground',dur:3}];
-const PAT06=()=>patLegs('06','sağ',{from:1,p:[PT2.A,PT2.B,PT.C,PT.D]},2,'pt-checks');
-const PAT24=()=>patLegs('24','sol',{from:4,p:[PT2.D,PT2.C,PT.B,PT.A]},3,'pt-checks-24');
+const patLegs=(rw,side)=>{const g=PATG[rw],P0=[PANEL_ALONG[g.from-1],PANEL_ACROSS],PL=[PANEL_ALONG[g.land-1],PANEL_ACROSS],look=side==='sağ'?'look:right':'look:left',Side=side==='sağ'?'Sağa':'Sola',sd=side==='sağ'?'sağdan':'soldan';
+ const xw=rw==='06'?'güneydoğu':'kuzeybatı',dw=rw==='06'?'güneybatı':'kuzeydoğu',bs=rw==='06'?'kuzeybatı':'güneydoğu';
+ return [
+  say('Kalkış bacağı',`${rw} pisti, ${sd} meydan turu. ${g.from}. panelden havırdan kalkış; istikamet değiştirilmeden 70 knot, +500 ft/dk. Meydan sınırı geçilince ${side}a 15° yatışla doğrudan yan bacağa.`,'g:ias'),{t:'liftoff',ft:3},{t:'hover',dur:2},{t:'takeoff',kt:60,fpm:500,dft:60},
+  {t:'leg',a:P0,b:g.A,c:g.B,kt:70,ft:800,fpm:500,phase:'Kalkış bacağı',notes:[[6,'Kalkış bacağı','Panel hattı uzantısında yer izi; pistin sonuna kadar istikamet değiştirilmez.','out'],[-14,'“YAN BACAK TEMİZ”','Yan bacak gözle kontrol edilir: trafik varsa “takip ediyorum”, yoksa yüksek sesle “YAN BACAK TEMİZ”.',look]],
+   ...D(rw==='06'?'pt-xw':'pt-xw-24','Yan bacağa dönüş',[opt('std','Meydan sınırını geçince, temizlikten sonra','Standart: pist ve kalkış hattı trafiği kesilmez.'),opt('early','Pist üzerinde erken dön','Kalkış/iniş trafiğinin hattı kesilir.',{b:[rw==='06'?950:-950,-159]},true,'Yan bacağa meydan sınırı geçilmeden dönüldü: kalkış hattındaki trafikle çakışma riski.')])},
+  say('Yan bacak',`${Side} dönüş, ${xw} istikametinde yan bacak: 70 knot, +500 ft/dk. Meydan turu irtifasına 100 ft kala “SON 100 FİT”; rüzgâraltından katılan trafik yoksa “GİRİŞ KAPISI TEMİZ”.`,'out'),
+  {t:'leg',a:g.A,b:g.B,c:g.C,kt:70,ft:800,fpm:500,phase:'Yan bacak',notes:[[-10,'“RÜZGÂRALTI TEMİZ”','Rüzgâraltına dönüş öncesi bacak ve dönüş tarafı kontrol edilir.',look]]},
+  say('Rüzgâraltı',`${Side} dönüşle rüzgâraltı (${dw} istikameti): demiryolu hattının hemen yanından, otoyolu kesmeden; 90 knot, 3500 ft (≈800 ft yer), düz uçuş torku.`,'g:torque'),
+  {t:'leg',a:g.B,b:g.C,c:g.D,kt:90,ft:800,fpm:500,slowAt:350,slowKt:70,phase:'Rüzgâraltı',notes:[[4,'“RÜZGÂRALTI”','Dönüşle beraber kuleye rüzgâraltı raporu.','out'],[12,'“DÜZ UÇUŞ TORKUM {TQ}, YAKIT {FUEL} LİBRE”','İlk 1/3’te düz uçuş torku yüksek sesle söylenir; hemen ardından yakıt hesabı başlatılır.','g:torque'],[-22,'İniş öncesi kontroller','Rüzgâraltının son 1/3’ü: RPM 6600; motor ve transmisyon göstergeleri yeşilde; ikaz paneli temiz; emniyet kemerleri.','g:rpm'],[-9,'“ESAS BACAK TEMİZ”','Esas bacaktan katılan trafik yoksa: “KAPI TEMİZ, ESAS BACAK TEMİZ.” Sürat esas bacak için 70 knota azaltılır.',look]],...patChecks(rw==='06'?'pt-checks':'pt-checks-24')},
+  say(`Esas bacak`,`${Side} 90° dönüşle esas bacak (${bs} istikameti): meydan tam ${side}da; 70 knot, −500 ft/dk süzülüş. “KISA MEYDAN TURU VE SON YAKLAŞMA HATTI TEMİZ.”`,'g:vsi'),
+  {t:'leg',a:g.C,b:g.D,c:PL,kt:70,ft:500,fpm:500,phase:'Esas bacak',notes:[[-8,'“SON YAKLAŞMA HATTI TEMİZ”','Son yaklaşma hattı ve iniş paneli kontrol edilir.',look]],
+   ...D(rw==='06'?'pt-base':'pt-base-24','Esas bacağa dönüş anı',[opt('std','İniş paneli 45° arkada kalınca','Esas bacak ve son yaklaşma planlanan boyda.'),opt('late','Geç dönüş','Esas bacak uzar, son yaklaşma hattı aşılır.',{b:[rw==='06'?-1850:1700,-159],a:[rw==='06'?-1850:1700,540]},true,'Esas bacağa geç dönüldü: son yaklaşma uzadı, düzeltme için yatış artırılmak istenir (15° aşılmaz).')])},
+  say('Son yaklaşma',`${Side} dönüşle son yaklaşma: 70 knot / 3200 ft (≈500 ft yer); ${g.land}. panele havıra kadar yaklaşma. Geçiş kaldırıcı kuvvet ${rw==='06'?'3':'2'}. panelin üzerinde kaybedilir.`,look),
+  {t:'approach',kind:'hover',angle:9,pad:'panel',panel:g.land,rev:rw==='24',etlAt:127,...D(rw==='06'?'pt-final':'pt-final-24','Son yaklaşma sürati',[opt('std','70 knot ile gir, açı kesilince yer hızı analizi','Standart.'),opt('fast','90 knotla gir, yakında yavaşla','Açı kesildikten sonra sürat kesmek için burun fazla kalkar; panel görüşten çıkar, açı korunamaz.',{late:true},true,'Son yaklaşmaya yüksek süratle girildi: yavaşlama geç ve sert, açı bozuldu.')])},{t:'setdown'},{t:'ground',dur:3}];};
+const PAT06=()=>patLegs('06','sağ');
+const PAT24=()=>patLegs('24','sol');
 
 /* ---------------- v0.39 Tepeler sahası: KML iniş yerleri ve MT paternleri ----------------
    Yüksek keşif dairevi paternde (iniş yeri pilotun sağında, 30–45° gözetleme açısı, 70 kt, R/A irtifası), keşfi müteakip
@@ -370,6 +383,13 @@ export function maneuverDirector(m,config,choices,ctx,{st,pickLZ}){
     if(d<120){if(!S.said){S.said=1;ev(t,'Anlatım','Rüzgâraltı – esas bacak kesişimi','Keşif tamamlandı: esas bacağa dönüş noktasındayız; son yaklaşma yer izi ve temas noktası belirlendi.','lz');}return done()??{...base,speedKt:70,track:st.track,heightFt:aglFt};}
     return {...base,speedKt:70,track:Math.atan2(dx,-dz),heightFt:s0.agl/FT,accel:1,bank:20};}
    case 'goto':{const p=rwPoint(S.along,S.across),dx=p.x-st.x,dz=p.z-st.z,d=Math.hypot(dx,dz);ctx.phase=S.kt>=85?'Rüzgâraltı':'Patern';const behind=d<450&&Math.abs(wrap(Math.atan2(dx,-dz)-st.track))>1.75; /* v0.37 dönüş noktası geride kaldıysa daire çizme, sonraki bacağa geç */if(d<140||behind)return done()??{...base,speedKt:S.kt,track:st.track,heightFt:S.ft};const tgt=S.ft,cur=aglFt,vy=Math.sign(tgt-cur)*Math.min(Math.abs(tgt-cur)*FT*.2,500*FT/60);return {...base,speedKt:S.kt,track:Math.atan2(dx,-dz),vy,accel:1,bank:20};}
+   case 'leg':{/* v0.41 düz bacak takibi (pist çerçevesi): hatta yaklaşma açısı ≤35°, sonraki bacağa 15° yatışla dönüş payı bırakılır */
+    const pa=rwPoint(...S.a),pb=rwPoint(...S.b),brg=Math.atan2(pb.x-pa.x,-(pb.z-pa.z)),ux=Math.sin(brg),uz=-Math.cos(brg),rx=st.x-pb.x,rz=st.z-pb.z,toGo=-(rx*ux+rz*uz),xt=rx*Math.cos(brg)+rz*Math.sin(brg);
+    ctx.phase=S.phase??'Patern';const bank=S.bank??18;let lead=0;if(S.c){const pc=rwPoint(...S.c),b2=Math.atan2(pc.x-pb.x,-(pc.z-pb.z)),dA=Math.abs(wrap(b2-brg)),v=Math.max(20*KT,Math.min(gs,((S.slowKt??S.kt)+12)*KT)),r=v*v/(G*Math.tan(bank*R));lead=r*Math.tan(dA/2);}
+    S.eta=(toGo-lead)/Math.max(gs,10);
+    if(toGo<=lead+4)return done()??{...base,speedKt:S.slowKt??S.kt,track:st.track,heightFt:S.ft,bank};
+    const turning=Math.abs(wrap(brg-st.track))>.3,kt2=S.slowAt&&toGo-lead<S.slowAt?S.slowKt:turning?Math.min(S.kt,Math.max(s0.kt,55)):S.kt,track=brg-clamp(xt/300,-.45,.45),dh=S.ft-aglFt,vy=Math.sign(dh)*Math.min(Math.abs(dh)*FT*.25,(S.fpm??500)*FT/60);
+    return {...base,speedKt:kt2,track,vy,accel:.7,bank};}
    case 'approach':return approachSeg(st,S,s0,pad,ctx,base,area,ev,done,t,m);
    case 'slopeLand':{ctx.phase='Yamaç inişi';if(st.onGround){if(!S.msg){S.msg=1;ev(t,'Yamaç',`Eğim ${slopeDeg(st.x,st.z,area).toFixed(1)}°`,S.roll?'Yokuş aşağı kızak önce temas etti: kızak dönme noktası oldu, dinamik devrilme eğilimi (kritik açı ≈ 15°; yuvarlanma oranı arttıkça daha küçük). Saykılıkla düzeltilmez; kollektif yumuşakça azaltılır, gerekirse havıra kalkılır.':'Yokuş yukarı kızak önce; kollektif yavaşça indirildi.');}if(el>3)return done()??{...base,vy:0};return {...base,vy:0};}return {...base,vel:[0,0],vy:-.25,heading:s0.hdg,contactPart:S.roll?'skidRight':'skidLeft'};}
    case 'hautorot':return hoverAutorot(st,S,s0,ctx,base,ev,done,t,agl,false);
@@ -474,13 +494,15 @@ function approachSeg(st,seg,s0,pad,ctx,base,area,ev,done,t,m){
  if(D>400&&pad.kind!=='rw'&&pad.kind!=='panel')seg.ft=b;const ft=seg.ft,corr=clamp(wrap(b-ft),-.3,.3),passed=(dx*Math.sin(ft)-dz*Math.cos(ft))<0,dir=passed?(D<50?ft:b):ft+corr; /* steer to the pad until 400 m, then hold the final course; overshoot = turn back */
  /* v0.35.7 the glide path is referenced to the pad (tepe / sırt above the ground under the approach) */
  const gP=terrainHeight(pad.x,pad.z,area),gH=terrainHeight(st.x,st.z,area),hp=st.y-gP,termH=seg.kind==='hover'?3*FT:0,hDes=Math.max(termH,Math.min(hp+3,D*Math.tan(ang)+termH)),hOut=Math.max(D>40?6:0,hDes+gP-gH);const obsH0=()=>D>25?obstacleTopNear(st.x+st.vx*1.5,st.z+st.vz*1.5,area,8)-gH+3.5:0;
- const touch=(runon?(seg.touchKt??25):0)*KT,aDec=seg.late?1.6:.85;let sp=Math.sqrt(Math.max(0,touch*touch+2*aDec*Math.max(0,D-(seg.late?40:2))));sp=clamp(sp,touch,70*KT);
+ const touch=(runon?(seg.touchKt??25):0)*KT,aDec=seg.late?1.6:.85;let sp=Math.sqrt(Math.max(0,touch*touch+2*aDec*Math.max(0,D-(seg.late?40:2))));
+ if(!runon&&!seg.late){const E=seg.etlAt??110,vE=20*KT;sp=D<E?Math.sqrt(2*(vE*vE/(2*E))*D):Math.sqrt(vE*vE+2*.8*(D-E));} /* v0.41 GKK iniş noktasından ~E m önce (2. panele inişte 3. panelde) kaybedilir; yaklaşmada sürat kademeli */
+ sp=clamp(sp,touch,(seg.late?90:70)*KT);
  if(seg.press&&D<60)sp=Math.max(sp,10*KT);
  if(!runon&&D>4)sp=Math.max(sp,Math.min(2.5*KT,D*.25)); // never stall short of the pad (a late, hard stop still creeps on to it)
  if(runon&&!seg.n1&&D<380){seg.n1=1;ev(t,'Anlatım','Yaklaşma oranı','Açı kollektifle korunur; yer hızı artar gibi görünene kadar sürat muhafaza edilir, sonra alçalma ve yakınlaşma oranı yavaş yavaş azaltılır.','g:ias');}
  if(runon&&!seg.n2&&agl<7){seg.n2=1;ev(t,'Anlatım','Temas öncesi','GKK üzerinde bir süratle: kollektifle süzülüş oranı, saykılıkla ufkiyet ve yer izi, pedallarla baş istikameti.','collective');}
  if(!runon&&!seg.n1&&agl<95&&D<520){seg.n1=1;ev(t,'Anlatım','Yer hızı analizi','Açı sabit; yer hızı hızlı yürüyüşe düşecek şekilde saykılıkla yavaşlanır, açı kollektifle korunur.','collective');}
- if(!runon&&!seg.n2&&D<45&&kt<20){seg.n2=1;ev(t,'Anlatım','Son kısım','Geçiş kaldırıcı kuvvet kaybedilirken güç ihtiyacı artar: kollektif yukarı, sol pedal.','pedals');}
+ if(!runon&&!seg.n2&&D<(seg.etlAt??110)+15&&kt<24){seg.n2=1;ev(t,'Anlatım','Son kısım · GKK kaybı',(seg.etlAt?(seg.panel===2?'3':'2')+'. panelin üzerinde ':'')+'geçiş kaldırıcı kuvvet kaybedilirken güç ihtiyacı artar: kollektif yukarı, sol pedal; yer hızı hızlı yürüyüş.','pedals');}
  ctx.phase=runon?'Alçak yaklaşma':seg.kind==='hover'?'Normal yaklaşma':seg.angle>14?'Derin yaklaşma':'Yaklaşma';ctx.reason=`${Math.round(D)} m · ${Math.round(agl/FT)} ft · ${(sp/KT).toFixed(0)} kt`;
  /* simulated fixed pedal: nose off the track until the throttle aligns it just before touchdown */
  let yo=(seg.yawOff??0)*R;if(yo&&seg.trAlign&&!seg.noAlign){if(agl<2.2&&!seg.aligned){seg.aligned=t;ev(t,'Anlatım',seg.trAlign==='right'?'Gaz azaltıldı':'GKK kaybediliyor',seg.trAlign==='right'?'Baştaki sağa sapma gazla yenildi: baş iniş istikametinde, kollektifle temas yastıklanır.':'Güç artınca baş sağa geldi; şerit istikametini geçince gaz yavaşça kısılır, istikamette temas.','throttle',{throttle:.5});ctx.mThr='azaltıldı';}if(seg.aligned)yo*=Math.max(0,1-(t-seg.aligned)/1.5);}
@@ -495,6 +517,6 @@ function approachSeg(st,seg,s0,pad,ctx,base,area,ev,done,t,m){
  /* v0.35.8 level until the approach angle is intercepted (açı kesildi), then the glide path: straight in, no turns */
  if(seg.icptAbove===undefined)seg.icptAbove=hp-termH>D*Math.tan(ang)+1;
  if(!seg.icpt){if(seg.icptAbove||hp-termH>=D*Math.tan(ang)-1||D<120){seg.icpt=t;ev(t,'Anlatım','Yaklaşma açısı kesildi',`${Math.round(hp/FT)} ft, ${Math.round(D)} m: kollektif azaltılarak ${(seg.angle??9).toFixed(0)}° açı tesis edilir; sürat yer hızı analizine kadar korunur.`,'collective');}
-  else{ctx.phase='Yaklaşma · açıyı kesmek için düz uçuş';return {...base,vel,heightFt:Math.max(obsH0(),(hp+gP-gH))/FT,hGain:.5,maxDown:2,accel:1.4,heading:hdg};}}
+  else{ctx.phase='Yaklaşma · açıyı kesmek için düz uçuş';return {...base,vel,heightFt:Math.max(obsH0(),(hp+gP-gH))/FT,hGain:.5,maxDown:2,accel:1.4,heading:hdg,bank:seg.bank??18};}}
  if(runon&&(agl<1.5||(passed&&agl<4)))return {...base,vel,vy:seg.settle?-1.8:-.45,maxDown:2,heading:hdg};
- const obsH=D>25?obstacleTopNear(st.x+st.vx*1.5,st.z+st.vz*1.5,area,8)-gH+3.5:0;return {...base,vel,heightFt:Math.max(obsH,hOut+(seg.down&&D<300?-6:0))/FT,hGain:seg.late?.35:.6,maxDown:seg.late?7:clamp(kt*.12,1.3,4.5),accel:1.4,heading:hdg};} /* v0.39 düşük süratte alçalış oranı sınırlı: girdap halkası koşulu oluşmaz */
+ const obsH=D>25?obstacleTopNear(st.x+st.vx*1.5,st.z+st.vz*1.5,area,8)-gH+3.5:0;return {...base,vel,heightFt:Math.max(obsH,hOut+(seg.down&&D<300?-6:0))/FT,hGain:seg.late?.35:.6,maxDown:seg.late?7:clamp(kt*.12,1.3,4.5),accel:1.4,heading:hdg,bank:seg.bank??18};} /* v0.39 düşük süratte alçalış oranı sınırlı: girdap halkası koşulu oluşmaz */
