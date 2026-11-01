@@ -29,7 +29,7 @@ export class SceneView{
   try{this.renderer=new T.WebGLRenderer({antialias:true,alpha:false});}catch(first){
    try{this.renderer=new T.WebGLRenderer({antialias:false,alpha:false,powerPreference:'low-power'});}catch(second){this.fallback=new CanvasScene(host,second);return;}
   }
-  const r=this.renderer;r.setPixelRatio(Math.min(devicePixelRatio,LITE?1.5:2));r.shadowMap.enabled=true;r.shadowMap.type=T.PCFSoftShadowMap;r.outputColorSpace=T.SRGBColorSpace;r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=.95;r.setClearColor('#c7d3ce');host.appendChild(r.domElement);r.domElement.setAttribute('aria-label','AB-205 ve koordinata dayalı Gölbaşı arazisi. Sürükle: dön, tekerlek: yaklaş, sağ sürükle: kaydır.');
+  const r=this.renderer;r.setPixelRatio(Math.min(devicePixelRatio,LITE?1.5:2));r.shadowMap.enabled=true;r.shadowMap.type=T.PCFSoftShadowMap;r.outputColorSpace=T.SRGBColorSpace;r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=.95;r.setClearColor('#c7d3ce');host.appendChild(r.domElement);r.domElement.setAttribute('aria-label','AB-205 ve koordinata dayalı uçuş sahası. Sürükle: dön, tekerlek: yaklaş, sağ sürükle: kaydır.');
   /* v0.33.1: a lost WebGL context (tablet app switch, GPU reset) is waited for and restored - three.js re-uploads
      geometry and textures; only if it does not come back is the simplified canvas view used */
   r.debug.checkShaderErrors=false;
