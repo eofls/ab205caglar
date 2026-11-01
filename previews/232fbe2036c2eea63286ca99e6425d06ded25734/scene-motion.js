@@ -1,0 +1,3 @@
+import {flightState} from './flight-dynamics.js';
+export {terrainHeight} from './flight-dynamics.js';
+export function sampleScene(time,scenario,config,choices=[]){const state=flightState(Math.max(0,Math.min(time,scenario.duration)),scenario,config,choices);return {position:state.ground?.position??state.position,heading:Math.PI/2-state.heading,pitch:-(state.ground?.pitch??state.pitch),roll:state.ground?.roll??state.roll??0,rotorAngle:state.rotorAngle+(state.ground?.rotorAngleDelta??0),tailAngle:(state.rotorAngle+(state.contact?.part==='tailRotor'?0:state.ground?.rotorAngleDelta??0))*5.55,powered:state.powered,progress:time/(scenario.duration||1),visualOnly:false,branch:'physical',physicalState:state};}
