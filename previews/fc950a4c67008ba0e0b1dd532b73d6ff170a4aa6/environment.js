@@ -164,11 +164,11 @@ export function updateDownwash(points,{time,position,agl,rpmRatio,area,ground,co
  const {N,seeds}=points.userData,pos=points.geometry.attributes.position.array,alpha=points.geometry.attributes.alpha.array,size=points.geometry.attributes.size.array;
  const surf=surfaceProfile(position[0],position[2],area),water=surf.kind==='water',paved=surf.kind==='paved',forest=area==='forest';
  points.material.uniforms.color.value.set(water?'#eef4f6':paved?'#b9b6ad':forest?'#6f7a4a':area==='mountain'?'#a59d8c':'#bda983');
- const strength=Math.max(0,Math.min(1,(1-agl/16)))*Math.min(1,Math.max(0,rpmRatio-.25)/.55)*(paved?.35:1)+(impact>0?impact:0);
+ const strength=Math.max(0,Math.min(1,(1-agl/16)))*Math.min(1,Math.max(0,rpmRatio-.25)/.55)*({paved:.04,grass:.32,forest:.3,wetland:.15,rock:.4,water:1}[surf.kind]??.6)+(impact>0?impact:0); /* v0.41 asfaltta toz yok denecek kadar az, çimde az; toprak / anızda orta */
  const gy=terrainHeight(position[0],position[2],area)+(water?.1:.05);
  for(let i=0;i<N;i++){const s=seeds[i],age=((time+s.off)%s.life)/s.life,r=3+age*(water?16:20)*s.sp*(1+impact*.8),a=s.a+age*.4;
   pos[i*3]=position[0]+Math.cos(a)*r;pos[i*3+2]=position[2]+Math.sin(a)*r;pos[i*3+1]=gy+.3+age*(water?2.5:3.5)*(.4+s.up)+(forest?age*2:0);
-  const vis=strength*(1-age)*Math.min(1,age*6)*(i<N*Math.min(1,strength*1.3)?1:0);alpha[i]=Math.min(.75,vis*(water?.75:.55));size[i]=(water?1.6:2.6)+age*(water?3:6);}
+  const vis=strength*(1-age)*Math.min(1,age*6)*(i<N*Math.min(1,strength*1.3)?1:0);alpha[i]=Math.min(.6,vis*(water?.7:.38));size[i]=(water?1.6:2.6)+age*(water?3:6);}
  points.visible=strength>.01;points.geometry.attributes.position.needsUpdate=points.geometry.attributes.alpha.needsUpdate=points.geometry.attributes.size.needsUpdate=true;
 }
 
