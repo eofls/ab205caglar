@@ -12,7 +12,8 @@ import {renderDebrief} from './debrief.js';
 import {ManualInput} from './manual-input.js';
 import {manualRun,flightState as rawFlightState} from './flight-dynamics.js';
 setManualInputSource(id=>manualRun(id));
-import {FLIGHT_AREAS} from './terrain-data.js';
+import {FLIGHT_AREAS,areaElevationM} from './terrain-data.js';
+import {torquePsi} from './performance.js';
 import {alternativeResults} from './counterfactual.js';
 import {contactAssessment} from './contact-assessment.js';
 import {componentDamage} from './component-damage.js';
@@ -106,7 +107,9 @@ function render(){
  window.__heliAudio.update(soundInputs(flight,state.power),session.playing);
  renderControls($('control-display'),flight);
  $('live-airspeed').textContent=flight.quality==='unsupported'?'— KIAS':flight.iasKt.toFixed(1)+' KIAS';
- $('live-altitude').textContent=flight.heightAglFt.toFixed(1)+' ft AGL';
+ {const pos=flight.position??[0,0,0],ar=session.config.flightArea??'terrain',elev=areaElevationM(pos[0],pos[2],ar)/.3048,msl=Math.round((elev+flight.heightAglFt)/10)*10; /* v0.41 altimetreyle aynı barometrik irtifa (29.92) */
+  $('live-altitude').textContent=msl.toLocaleString('tr-TR')+' ft';$('live-altitude').title=`Barometrik irtifa (altimetre, 29.92). Yerden yükseklik ≈ ${Math.round(flight.heightAglFt)} ft.`;
+  const tq=torquePsi(flight,session.config,elev);$('live-torque').textContent=(flight.powered===false?0:tq).toFixed(0)+' PSI';}
  $('live-descent').textContent=flight.quality==='unsupported'?'— ft/dk':(Math.abs(flight.descentFpm)<.5?'0':(flight.descentFpm<0?'+':'−')+Math.abs(flight.descentFpm).toFixed(0))+' ft/dk'; /* v0.38.2 varyo: + tırmanış, − alçalış */
  const result=contactAssessment(flight),badge=$('contact-result');
  {let box=$('damage-parts');if(!box){box=document.createElement('div');box.id='damage-parts';box.className='damage-parts';badge.after(box);}const show=session.time>=s.duration&&result.available&&flight.contact;box.hidden=!show;if(show){const cd=componentDamage(flight),rows=cd.parts.filter(q=>q.severity>=.08).sort((a,b)=>b.severity-a.severity);box.innerHTML='<b>Parça bazlı hasar değerlendirmesi</b>'+(rows.length?'<ul>'+rows.map(q=>`<li><span class="dp-name">${esc(q.label)}${q.directContact?' · ilk temas':''}${q.detach?' · ayrılma':''}</span><span class="dp-bar"><i style="width:${Math.round(q.severity*100)}%"></i></span><span class="dp-state">${esc(q.state)}</span></li>`).join('')+'</ul>':'<p>Belirgin parça hasarı öngörülmedi.</p>')+'<small>Benzetim tahmini; gerçek kırılma eşikleri ve iç hasar doğrulanmış değildir.</small>';}}badge.hidden=!(session.time>=s.duration&&result.available);if(!badge.hidden){badge.textContent=`Temas sertliği %${result.severity.percent} · ${result.severity.label} · ${result.damage}`;badge.style.setProperty('--contact-color',result.severity.color);badge.title=result.severity.note+' '+result.reason;}
