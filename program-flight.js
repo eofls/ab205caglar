@@ -13,7 +13,7 @@ export const KT=1852/3600,FT=.3048,G=9.81;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),wrap=a=>Math.atan2(Math.sin(a),Math.cos(a)),brg=(x0,z0,x1,z1)=>Math.atan2(x1-x0,-(z1-z0));
 export function isProgramFlight(c){if(!c)return false;if(c.program==='maneuver')return true;if(c.program==='emergency')return emergencyById(c.emergencyId).kind==='program';return false;}
 // ---------- power required (fraction of 80 KIAS cruise power) and collective ----------
-export function powerRequired(kt,climbMps=0,agl=99){const v=Math.max(0,kt);const p=.52+.73/(1+(v/28)**2)+.42*(v/80)**3;const ige=agl<6?.16*(1-agl/6)*(1-.55*Math.min(1,v/22)):0; /* v0.35.7 ground cushion is lost as speed builds */return p-ige+.085*climbMps;}
+export function powerRequired(kt,climbMps=0,agl=99){const v=Math.max(0,kt);const p=.52+.73/(1+(v/28)**2)+.30*(v/80)**3; /* v0.41 düz uçuş 90 kt ≈ OGE havırın %81’i → ≈26 PSI (kullanıcı referansı 25–27) */const ige=agl<6?.16*(1-agl/6)*(1-.55*Math.min(1,v/22)):0; /* v0.35.7 ground cushion is lost as speed builds */return p-ige+.085*climbMps;}
 // ---------- forced / precautionary landing zone for powered programs ----------
 export function pickProgramLZ(st,area,{urgency='asap',runon=false,trees=false,water=false,maxR=1800,minR=120,course=null,bankDeg=25,glide=5.7}={}){
  let best=null;const c0=course??Math.atan2(st.vx,-st.vz),cands=[];
@@ -46,8 +46,8 @@ function stepAircraft(st,tg,dt,ctx){
      (a plain velocity-vector controller cut the corner - a reversal slowed to a stop instead of turning) */
   if(gsNow>12&&spD>12&&!tg.vectorOnly){const trNow=Math.atan2(st.vx,-st.vz),trD=Math.atan2(dx,-dz),aLat=G*Math.tan((tg.bank??25)*Math.PI/180)*(fx.heavy?.6:1);
    const eT=wrap(trD-trNow),spT=Math.abs(eT)>1&&!tg.keepSpeed?Math.min(spD,26):spD; // a reversal is flown slow: tighter, quicker turn
-   const w=clamp(eT*(tg.turnGain??.6),-aLat/gsNow,aLat/gsNow),nv=gsNow+clamp((spT-gsNow)*k,-a,a)*dt,nt=trNow+w*dt;dvx=(Math.sin(nt)*nv-st.vx)/dt;dvz=(-Math.cos(nt)*nv-st.vz)/dt;}
-  else{let ax=(dx-st.vx)*k,az=(dz-st.vz)*k;const m=Math.hypot(ax,az);if(m>a){ax*=a/m;az*=a/m;}dvx=ax;dvz=az;}}
+   let w=clamp(eT*(tg.turnGain??.6),-aLat/gsNow,aLat/gsNow);{const wp=st.wTurn??0,dwm=(G*Math.tan(25*Math.PI/180)/gsNow)/2.2*dt;w=clamp(w,wp-dwm,wp+dwm);st.wTurn=w;} /* v0.41 yatışa giriş/çıkış ~2 s: ani saykılık ve dönüş çıkışı yok */const nv=gsNow+clamp((spT-gsNow)*k,-a,a)*dt,nt=trNow+w*dt;dvx=(Math.sin(nt)*nv-st.vx)/dt;dvz=(-Math.cos(nt)*nv-st.vz)/dt;}
+  else{st.wTurn=0;let ax=(dx-st.vx)*k,az=(dz-st.vz)*k;const m=Math.hypot(ax,az);if(m>a){ax*=a/m;az*=a/m;}dvx=ax;dvz=az;}}
  st.vx+=dvx*dt;st.vz+=dvz*dt;
  // vertical
  if(!st.onGround||(tg.vy!==undefined&&tg.vy>0)||(tg.heightFt!==undefined&&tg.heightFt>1.5)){
@@ -57,7 +57,7 @@ function stepAircraft(st,tg,dt,ctx){
    vyDes=clamp((tg.vyFF??0)+(hT-agl)*(tg.hGain??.45),-(tg.maxDown??8),tg.maxUp??7);if(tg.vy!==undefined)vyDes=clamp(vyDes,-Math.abs(tg.vy)-.01,Math.abs(tg.vy)+.01);}
   // torque limit (IGV closed, partial power): power above the limit becomes descent
   if(fx.powerCap&&!st.autorot){const kt=Math.hypot(st.vx,st.vz)/KT,need=powerRequired(kt,Math.max(0,vyDes??0),agl);if(need>fx.powerCap)vyDes=Math.min(vyDes??0,(fx.powerCap-powerRequired(kt,0,agl))/.085);}
-  const ay=clamp(((vyDes??0)-st.vy)*(tg.vGain??1.4),-(tg.vAccel??3),tg.vAccel??3);st.vy+=ay*dt;if(st.onGround&&st.vy>0){st.onGround=false;if(ctx.maneuver)st.contact=null;}}
+  const fwd=ctx.maneuver&&!st.onGround&&!st.autorot&&Math.hypot(st.vx,st.vz)>15&&tg.vAccel===undefined&&!tg.vel,ay=clamp(((vyDes??0)-st.vy)*(tg.vGain??(fwd?.7:1.4)),-(tg.vAccel??(fwd?.9:3)),tg.vAccel??(fwd?.9:3)); /* v0.41 ileri uçuşta varyo kollektife gecikmeli cevap verir (≈2–3 s) */st.vy+=ay*dt;if(st.onGround&&st.vy>0){st.onGround=false;if(ctx.maneuver)st.contact=null;}}
  st.x+=st.vx*dt;st.z+=st.vz*dt;st.y+=st.vy*dt;
  const g2=terrainHeight(st.x,st.z,area);
  /* v0.34.1 rotor / fuselage into trees or buildings (forest, villages): an obstacle contact, the airframe hangs in them */
@@ -74,9 +74,10 @@ function stepAircraft(st,tg,dt,ctx){
  st.yawRate+=(rate-st.yawRate)*Math.min(1,dt*3);st.hdg=wrap(st.hdg+st.yawRate*dt);
  // attitude from accelerations (+ trim nose-down with speed)
  const ca=Math.cos(st.hdg),sa=Math.sin(st.hdg),along=(dvx*sa-dvz*ca),lat=(dvx*ca+dvz*sa)+(gs*st.yawRate*.0);
- const kt=gs/KT,pitchT=st.onGround?0:Math.atan2(along,G)+kt*.0013+(tg.pitchBias??0),rollT=st.onGround?0:Math.atan2(lat+gs*(st.track-st.trackPrev||0)/dt*.0,G)+(fx.roll??0)*Math.PI/180;
+ let gPitch=0,gRoll=0;{const ag=st.y-terrainHeight(st.x,st.z,area);if(st.onGround||(tg.slopeAtt&&ag<1.4)){const e=3,gx=(terrainHeight(st.x+e,st.z,area)-terrainHeight(st.x-e,st.z,area))/(2*e),gzz=(terrainHeight(st.x,st.z+e,area)-terrainHeight(st.x,st.z-e,area))/(2*e),k=st.onGround?1:clamp(1-ag/1.4,0,1);gPitch=-Math.atan(gx*Math.sin(st.hdg)-gzz*Math.cos(st.hdg))*k;gRoll=-Math.atan(gx*Math.cos(st.hdg)+gzz*Math.sin(st.hdg))*k;}} /* v0.41 yerde gövde zemin eğimine oturur (yamaç) */
+ let kt=gs/KT,pitchT=st.onGround?gPitch:Math.atan2(along,G)+kt*.0016+(tg.pitchBias??0),rollT=st.onGround?gRoll:Math.atan2(lat+gs*(st.track-st.trackPrev||0)/dt*.0,G)+(fx.roll??0)*Math.PI/180+(gs<12?clamp((st.vx*ca+st.vz*sa)*.03,-.09,.09):0); /* v0.41 yana havırda gövde uçuş tarafına yatık */
  const turnRoll=st.onGround?0:Math.atan2(gs*wrap(track-(st.trackPrev??track))/Math.max(dt,1e-3),G);st.trackPrev=track;
- const sm=Math.min(1,dt*(fx.heavy?1.4:2.6));st.pitch+=(pitchT-st.pitch)*sm;st.roll+=(clamp(rollT+turnRoll*0,-.6,.6)-st.roll)*sm;
+ const sm=Math.min(1,dt*(fx.heavy?1.4:2.6));if(!st.onGround&&tg.slopeAtt){pitchT+=gPitch;rollT+=gRoll;}st.pitchT=pitchT;st.rollT=clamp(rollT,-.6,.6);st.pitch+=(pitchT-st.pitch)*sm;st.roll+=(clamp(rollT+turnRoll*0,-.6,.6)-st.roll)*sm;
  /* v0.35.7 transverse flow / ETL shudder: 8–22 kt, strongest near 15 kt, then smooth */
  {const ek=gs/KT;ctx.etl=!st.onGround&&!st.autorot&&ek>10&&ek<20&&st.y-g2<45?Math.sin(Math.PI*(ek-10)/10)*.7:0;if(ctx.etl>0){st.pitch+=Math.sin(st.t*31)*ctx.etl*.0025;st.roll+=Math.cos(st.t*27)*ctx.etl*.0035;}}
  if(fx.vib&&!st.onGround){const w=Math.sin(st.t*37)*fx.vib*.006;st.pitch+=w;st.roll+=Math.cos(st.t*41)*fx.vib*.006;}
@@ -86,7 +87,7 @@ function stepAircraft(st,tg,dt,ctx){
     • tepe / sırt rüzgârı: rüzgâr yamaca çarpınca yukarı, rüzgâraltında aşağı akım (yerden uzaklaştıkça azalır) → güç / kollektif
     • GKK ve geriye savrulma (blowback) ile enine akım: 10–25 kt'ta burun kalkar, gövde sağa yıkılır → ileri ve sol saykılık
     • öteleme eğilimi: havırda kuyruk rotoru helikopteri sağa iter → sol saykılık, sol kızak alçak
-    • girdap halkası: güçlüyken 15 kt altında 300 ft/dk üzeri alçalış → titreşim, güç artınca alçalış artar
+    • güçlü çöküş: güçlüyken 15 kt altında 300 ft/dk üzeri alçalış → titreşim, güç artınca alçalış artar
     • rüzgârgülü etkisi / LTE: havırda yan-arka rüzgâr baş çevirmek ister → pedal iş yükü */
  const W=ctx.wind??{x:0,z:0},Ws=Math.hypot(W.x,W.z),aglNow=Math.max(0,st.y-g2),airX=st.vx-W.x,airZ=st.vz-W.z;let gust=0,wv=0;
  if(Ws>.5&&!st.onGround){gust=(Math.sin(st.t*.73)*.5+Math.sin(st.t*1.91+1)*.3+Math.sin(st.t*3.7+2)*.2)*Ws*.25;const gk=Math.min(1,Ws/10);st.pitch+=Math.sin(st.t*2.9)*gk*.004;st.roll+=Math.sin(st.t*2.3+1)*gk*.006;
@@ -106,9 +107,9 @@ function stepAircraft(st,tg,dt,ctx){
  if(st.autorot&&!st.onGround){const dyn=324+60*(.42-st.col)+80*Math.max(0,-st.pitch);rTgt=clamp(.5*rTgt+.5*dyn,285,337);}st.rpm+=clamp(rTgt-st.rpm,-(tg.rpmRate??25)*dt,(tg.rpmRate??25)*dt);st.eng+=clamp(eTgt-st.eng,-1600*dt,1600*dt);
  st.rotorAngle+=st.rpm*Math.PI/30*dt;
  // control positions (display units of the physics controller: collective 1 = cruise trim)
- const climb=st.vy-wv,needP=st.autorot?.42:powerRequired(iasNow,climb,Math.max(0,st.y-g2))+(ctx.vrsAt?.25:0);let col=tg.collective??(st.onGround&&!tg.vy?(st.eng>3000?.55:.4):needP);if(fx.bounce)col+=Math.sin(st.t*19)*.12;if(fx.colHard!==undefined)col=fx.colHard;
+ const climb=st.vy-wv,needP=st.autorot?.42:powerRequired(iasNow,climb,Math.max(0,st.y-g2))+(ctx.vrsAt?.25:0);st.pw=(st.pw??needP)+(needP-(st.pw??needP))*Math.min(1,dt/1.1); /* v0.41 tork kollektifi ~1 s gecikmeyle izler */let col=tg.collective??(st.onGround&&!tg.vy?(st.eng>3000?.55:.4):needP);if(fx.bounce)col+=Math.sin(st.t*19)*.12;if(fx.colHard!==undefined)col=fx.colHard;
  st.colPrev=st.col;st.col+=(col-st.col)*Math.min(1,dt*4);
- const cf=fx.cycHard?.[0]??clamp(st.pitch*.9+cfOff,-.24,.24),cr=fx.cycHard?.[1]??clamp(st.roll*.55+crOff,-.24,.24);st.cfPrev=st.cyc[0];st.crPrev=st.cyc[1];st.cyc=[st.cyc[0]+(cf-st.cyc[0])*Math.min(1,dt*4),st.cyc[1]+(cr-st.cyc[1])*Math.min(1,dt*4)];
+ const cf=fx.cycHard?.[0]??clamp((st.pitchT??st.pitch)*.9+cfOff,-.24,.24),cr=fx.cycHard?.[1]??clamp((st.rollT??st.roll)*.55+crOff,-.24,.24); /* v0.41 saykılık titreşim / rüzgâr sarsıntısını izlemez: yalnız kumanda niyeti */st.cfPrev=st.cyc[0];st.crPrev=st.cyc[1];st.cyc=[st.cyc[0]+(cf-st.cyc[0])*Math.min(1,dt*2.2),st.cyc[1]+(cr-st.cyc[1])*Math.min(1,dt*2.2)];
  const drive=st.eng>5000&&!st.autorot,ped=fx.pedalFixed??clamp((drive?-(st.col-.85)*.7:.28+Math.max(0,st.col-.45)*.3)+(tg.yawRate??0)*.6+pedOff,-1,1); /* v0.39 motor tahrik etmezken tork yok: sağ pedal; otorotasyonda ilk kollektifle mast sürtünmesi → sağ pedal (kitap) */st.pedPrev=st.ped;st.ped+=(ped-st.ped)*Math.min(1,dt*4);
 }
 /* v0.34.1 what each control is doing in this emergency (kumanda görünümü): short notes beside the schematic positions,
@@ -145,10 +146,10 @@ function simulate(config,choices){
   samples.push(snap(st,ctx));
   if(ctx.end!=null&&st.t>=ctx.end)break;
  }
-if(ctx.vrsEv?.length)ctx.events.push({at:ctx.vrsEv[0],kind:'Anlatım',title:'Girdap halkası belirtileri',text:'Güçlüyken 15 knot altında 300 ft/dk üzeri alçalış: titreşim; kollektif artınca alçalış artar. Kurtarma: ileri saykılıkla sürat kazan, kollektifi azalt.',target:'cyclic',source:['faa']});
+if(ctx.vrsEv?.length)ctx.events.push({at:ctx.vrsEv[0],kind:'Anlatım',title:'Güçlü çöküş belirtileri',text:'Güçlüyken 15 knot altında 300 ft/dk üzeri alçalış: titreşim; kollektif artınca alçalış artar. Kurtarma: ileri saykılıkla sürat kazan, kollektifi azalt.',target:'cyclic',source:['faa']});
  const last=samples.at(-1);return {init:INIT,ctx0:{wind:ctx.wind,area:ctx.area,maneuver:ctx.maneuver,water:false,lights:new Set(),warn:{rpm:false,fire:false}},samples,dt,duration:last.t,wing:ctx.wing??[],cover:ctx.cover??null,endReason:ctx.endReason,events:ctx.events.sort((a,b)=>a.at-b.at),decisions:ctx.decisions,lz:ctx.lz,notes:ctx.notes,contact:samples.find(s=>s.contact)?.contact??null};
 }
-function snap(st,ctx){return {t:st.t,x:st.x,y:st.y,z:st.z,vx:st.vx,vy:st.vy,vz:st.vz,hdg:st.hdg,pitch:st.pitch,roll:st.roll,rpm:st.rpm,eng:st.eng,col:st.col,dcol:(st.col-st.colPrev)/.05,cyc:[...st.cyc],dcyc:[(st.cyc[0]-st.cfPrev)/.05,(st.cyc[1]-st.crPrev)/.05],ped:st.ped,dped:(st.ped-st.pedPrev)/.05,rotorAngle:st.rotorAngle,onGround:st.onGround,contact:st.contact,autorot:st.autorot,phase:ctx.phase,reason:ctx.reason,lights:[...ctx.lights],warn:{...ctx.warn},panelOff:ctx.panelOff,smoke:ctx.smoke,smokeKind:ctx.smokeKind??'engine',vib:Math.max(ctx.fx.vib??0,(ctx.etl??0)*.28),etl:ctx.etl??0,lz:ctx.lz,yawRate:st.yawRate,gust:ctx.gust??0,wv:ctx.wv??0,...controlNotes(st,ctx)};}
+function snap(st,ctx){return {t:st.t,x:st.x,y:st.y,z:st.z,vx:st.vx,vy:st.vy,vz:st.vz,hdg:st.hdg,pitch:st.pitch,roll:st.roll,rpm:st.rpm,eng:st.eng,col:st.col,pw:st.pw,dcol:(st.col-st.colPrev)/.05,cyc:[...st.cyc],dcyc:[(st.cyc[0]-st.cfPrev)/.05,(st.cyc[1]-st.crPrev)/.05],ped:st.ped,dped:(st.ped-st.pedPrev)/.05,rotorAngle:st.rotorAngle,onGround:st.onGround,contact:st.contact,autorot:st.autorot,phase:ctx.phase,reason:ctx.reason,lights:[...ctx.lights],warn:{...ctx.warn},panelOff:ctx.panelOff,smoke:ctx.smoke,smokeKind:ctx.smokeKind??'engine',vib:Math.max(ctx.fx.vib??0,(ctx.etl??0)*.28),etl:ctx.etl??0,lz:ctx.lz,mark:ctx.mark??null,yawRate:st.yawRate,gust:ctx.gust??0,wv:ctx.wv??0,...controlNotes(st,ctx)};}
 // ---------- emergency decisions (karar vererek ilerle) ----------
 export function emergencyDecisionDefs(e){
  const defs={};const first=e.act??(e.steps.find(s=>s.startsWith('!'))??e.steps[0]??'Usulü uygula').replace(/^!/,'');
@@ -398,8 +399,8 @@ export function programState(time,config,choices,template){
  const contact=s.contact&&time>=s.contact.time-1e-9?s.contact:null;
  const ground=contact?{duration:Math.max(0,s.t-contact.time),elapsed:Math.max(0,s.t-contact.time),settled:gs<.3,bouncing:false,mechanics:{water:!!contact.water,surface:contact.surface,rollover:false,snag:false},secondaryContacts:[],position:[s.x,s.y,s.z],velocityMps:[s.vx,0,s.vz],groundSpeedMps:gs,rotorRpm:s.rpm,engineRpm:s.eng,rotorAngleDelta:0,pitch:s.pitch,roll:s.roll,phase:s.phase}:null;
  const controls={...template.controls,reason:s.reason,phase:s.phase,collective:s.col,targetCollective:s.col,collectiveRate:s.dcol,cyclicForward:s.cyc[0],cyclicRight:s.cyc[1],cyclicForwardRate:s.dcyc[0],cyclicRightRate:s.dcyc[1],pedal:s.ped,pedalRate:s.dped,pedalTarget:s.ped,programNotes:s.ctrl,throttle:s.throttle,flare:/fleyır/i.test(s.phase),cushion:/son kollektif/i.test(s.phase),guidance:null,managed:true,speedKt:air/KT,holdCyclic:false,levelCyclic:false};
- const share=powered?Math.min(1.2,powerRequired(air/KT,s.vy,s.y-g)):0;
+ const share=powered?Math.min(1.2,s.pw??powerRequired(air/KT,s.vy,s.y-g)):0;
  return {...template,time,position:[s.x,s.y,s.z],velocityMps:[s.vx,s.vy,s.vz],heightAglFt:Math.max(0,(s.y-g)/FT),iasKt:Math.max(0,air+(s.gust??0))/KT/tasFactor(config),tasKt:air/KT,airMass:{...(template.airMass??{}),upMps:s.wv??0},groundSpeedKt:gs/KT,descentFpm:-s.vy/FT*60,verticalAccelerationMps2:(s.vy-p.vy)/run.dt,rotorRpm:s.rpm,engineRpm:s.eng,rotorAngle:s.rotorAngle,heading:s.hdg,pitch:s.pitch,roll:s.roll,
   contact,ground,controls,powered,availablePowerFraction:powered?1:0,shaftPowerW:(template.referenceShaftPowerW??template.shaftPowerW??600000)*share,pilotSite:s.lz?{id:'pilot',label:'P',x:s.lz.x,z:s.lz.z,quality:s.lz.score??0,surfaceLabel:s.lz.label}:null,landingTargets:[],obstacleAhead:null,pilotForecast:null,quality:'program',
-  program:{kind:config.program,id:config.program==='maneuver'?config.maneuverId:config.emergencyId,phase:s.phase,lights:s.lights,warn:s.warn,panelOff:s.panelOff,smoke:s.smoke,smokeKind:s.smokeKind,vibration:s.vib,etl:s.etl??0,yawRate:s.yawRate,autorotation:s.autorot}};}
+  program:{kind:config.program,id:config.program==='maneuver'?config.maneuverId:config.emergencyId,lz:s.lz??null,mark:s.mark??null,phase:s.phase,lights:s.lights,warn:s.warn,panelOff:s.panelOff,smoke:s.smoke,smokeKind:s.smokeKind,vibration:s.vib,etl:s.etl??0,yawRate:s.yawRate,autorotation:s.autorot}};}
 export function programEnd(config,choices){const r=programRun(config,choices);return {time:r.duration,reason:r.endReason,contact:r.contact};}

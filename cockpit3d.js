@@ -240,7 +240,7 @@ export class Cockpit{
  /* v0.38.2 small round button at a panel corner: brings that panel fully into view (second press: back) */
  addFocus(name){const [f,w,h]=this.panelFrame(name)??[];if(!f)return;const r=.0045,g=new T.Group();g.position.set(w/2-r*2,h/2-r*2,.008); /* v0.38.3 small */f.add(g);
   const ring=new T.Mesh(new T.RingGeometry(r*.62,r,24),new T.MeshBasicMaterial({color:'#ffd25a'}));g.add(ring);const dot=new T.Mesh(new T.CircleGeometry(r*.62,24),new T.MeshBasicMaterial({color:'#1b2a24'}));dot.position.z=-.0005;g.add(dot);
-  const hit=new T.Mesh(new T.CircleGeometry(r*1.5,12),new T.MeshBasicMaterial({visible:false}));hit.position.z=.002;hit.userData.ctrl='focus:'+name;g.add(hit);this.picks.push(hit);(this.focusBtns??={})[name]=g;}
+  const coarse=(()=>{try{return globalThis.matchMedia?.('(pointer:coarse)').matches;}catch{return false;}})(),hit=new T.Mesh(new T.CircleGeometry(r*(coarse?2.2:1.5),12),new T.MeshBasicMaterial({visible:false}));hit.position.z=.002;hit.userData.ctrl='focus:'+name;if(coarse){g.scale.setScalar(2);g.position.set(w/2-r*4,h/2-r*4,.008);} /* v0.41 tablette parmakla basılabilecek büyüklük */g.add(hit);this.picks.push(hit);(this.focusBtns??={})[name]=g;}
  focusView(name,eye){const [f,w,h]=this.panelFrame(name)??[];if(!f)return null;f.updateWorldMatrix(true,false);const root=this.group.parent;const c=root.worldToLocal(new T.Vector3().setFromMatrixPosition(f.matrixWorld)).sub(eye);
   const d=c.length();return {yaw:Math.atan2(c.z,c.x),pitch:Math.atan2(c.y,Math.hypot(c.x,c.z)),fov:Math.max(22,Math.min(80,2*Math.atan(Math.max(w,h)*.62/d)*180/Math.PI))};}
  click(id){if(id?.startsWith('focus:'))return {focus:id.slice(6)};
