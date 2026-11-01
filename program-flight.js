@@ -74,7 +74,7 @@ function stepAircraft(st,tg,dt,ctx){
  st.yawRate+=(rate-st.yawRate)*Math.min(1,dt*3);st.hdg=wrap(st.hdg+st.yawRate*dt);
  // attitude from accelerations (+ trim nose-down with speed)
  const ca=Math.cos(st.hdg),sa=Math.sin(st.hdg),along=(dvx*sa-dvz*ca),lat=(dvx*ca+dvz*sa)+(gs*st.yawRate*.0);
- const kt=gs/KT,pitchT=st.onGround?0:Math.atan2(along,G)+kt*.0013+(tg.pitchBias??0),rollT=st.onGround?0:Math.atan2(lat+gs*(st.track-st.trackPrev||0)/dt*.0,G)+(fx.roll??0)*Math.PI/180;
+ const kt=gs/KT,pitchT=st.onGround?0:Math.atan2(along,G)+kt*.0016+(tg.pitchBias??0),rollT=st.onGround?0:Math.atan2(lat+gs*(st.track-st.trackPrev||0)/dt*.0,G)+(fx.roll??0)*Math.PI/180;
  const turnRoll=st.onGround?0:Math.atan2(gs*wrap(track-(st.trackPrev??track))/Math.max(dt,1e-3),G);st.trackPrev=track;
  const sm=Math.min(1,dt*(fx.heavy?1.4:2.6));st.pitch+=(pitchT-st.pitch)*sm;st.roll+=(clamp(rollT+turnRoll*0,-.6,.6)-st.roll)*sm;
  /* v0.35.7 transverse flow / ETL shudder: 8–22 kt, strongest near 15 kt, then smooth */
