@@ -28,7 +28,7 @@ test('v0.35 manoeuvre list: exactly the asked items in order, every one flown to
 test('v0.35 autorotations end on the runway at walking speed; power recovery and go-around never touch down',()=>{
  for(const id of ['std-autorot','turn-autorot','forced-ground']){const r=programRun(mCfg(MANEUVERS.find(m=>m.id===id)),[]);assert.ok(r.contact,id);assert.equal(r.contact.surface.kind,'paved',id);assert.ok(r.contact.groundSpeedMps<4.2,`${id} ${r.contact.groundSpeedMps}`);}
  for(const id of ['forced-power','forced-goaround']){const r=programRun(mCfg(MANEUVERS.find(m=>m.id===id)),[]);assert.ok(!r.contact,id);}
- const ga=programRun(mCfg(MANEUVERS.find(m=>m.id==='forced-goaround')),[]);assert.ok(ga.events.some(e=>e.title==='Pas geç!'));
+ const ga=programRun(mCfg(MANEUVERS.find(m=>m.id==='forced-goaround')),[]);assert.ok(ga.events.some(e=>e.title==='“PAS GEÇİYORUM”'));
 });
 test('v0.35 every decision option of every manoeuvre is flown to an end in guided mode',()=>{
  for(const m of MANEUVERS){const defs=maneuverDecisionDefs(m);for(const d of Object.values(defs))for(const o of d.options){const s=new Session(mCfg(m,{mode:'guided'}));for(let k=0;k<12;k++){s.seek(999);if(!s.pending)break;s.choose(s.pending.id,s.pending.id===d.id?o.id:s.pending.reference);}assert.ok(!s.pending,`${m.id} ${d.id}=${o.id}`);assert.ok(s.scenario.duration<(m.id==='pattern'?700:m.site?480:399),`${m.id} ${d.id}=${o.id} endless`);}}

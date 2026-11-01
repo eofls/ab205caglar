@@ -205,12 +205,15 @@ const s=sampleScene(session.time,session.scenario,session.config,session.choices
    const fire=!!pg?.warn?.fire&&pg?.smokeKind!=='cabin'&&(s.physicalState.engineRpm??0)>500;this.flame.visible=fire;if(fire){const f=.9+Math.sin(tNow*23)*.18+Math.sin(tNow*37)*.12;this.flame.scale.set(1.3*f,1.5*f,1);}}
   {const show=session.config.mode==='manual'&&!this.cockpit&&(typeof document==='undefined'||document.getElementById('ghost-toggle')?.checked!==false);this.ghost.root.visible=show;
    if(show){try{const gc={...session.config,mode:'watch',manualRunId:''},g=sampleScene(session.time,{...session.baseScenario,duration:1e9},gc,[]);this.ghost.root.position.set(...g.position);this.ghost.root.rotation.order='YZX';this.ghost.root.rotation.set(g.roll,g.heading,g.pitch);this.ghost.rotor.rotation.y=g.rotorAngle;this.ghost.tail.rotation.z=g.tailAngle;}catch{this.ghost.root.visible=false;}}}
-  {/* v0.35 second helicopter (kol lideri / destek unsuru): the own flight path shifted in time and offset sideways */const W=this.wingHeli;let on=false;
-   try{const c=session.config;if(c.program==='maneuver'){const run=programRun(c,c.mode==='guided'?(session.answers??[]):[]),keys=run.wing??[],t=session.time;let k=null,prev=null;for(const q of keys){if(q.at<=t+1e-6){prev=k;k=q;}}
-     if(k&&!k.off){const b=prev&&!prev.off?Math.min(1,(t-k.at)/5):1,mix=f=>(prev&&!prev.off?prev[f]??0:k[f]??0)*(1-b)+(k[f]??0)*b,ts=Math.max(0,Math.min(run.duration,t+mix('shift'))),q=sampleScene(ts,session.scenario,c,session.choices());
+  {/* v0.41 kol helikopterleri (lider / destek unsuru, 3. helikopter): kendi uçuş izimiz zamanda kaydırılmış ve yana ofsetli; düzen değişikliği ~10 s yumuşak geçiş */
+   if(!this.wingHeli2){this.wingHeli2=createHelicopter();this.wingHeli2.root.visible=false;this.scene.add(this.wingHeli2.root);}
+   let on1=false;const c=session.config;let run=null,keys=[],t=session.time;try{if(c.program==='maneuver'){run=programRun(c,c.mode==='guided'?(session.answers??[]):[]);keys=run.wing??[];}}catch(e){console.warn(e);}
+   [this.wingHeli,this.wingHeli2].forEach((W,j)=>{let on=false;try{if(run){const get=q=>q?(j?q.w2:(q.off?null:q)):null;let k=null,prev=null;for(const q of keys){if(q.at<=t+1e-6){prev=k;k=q;}}
+     const K=get(k),P=get(prev);if(K){const raw=P?Math.min(1,(t-k.at)/10):1,b=raw*raw*(3-2*raw),mix=f=>(P?P[f]??0:K[f]??0)*(1-b)+(K[f]??0)*b,ts=Math.max(0,Math.min(run.duration,t+mix('shift'))),q=sampleScene(ts,session.scenario,c,session.choices());
       const th=q.heading,r=mix('right'),u=mix('up'),x=q.position[0]+Math.sin(th)*r,z=q.position[2]+Math.cos(th)*r,y=Math.max(terrainHeight(x,z,this.flightArea),q.position[1]+u);
-      W.root.position.set(x,y,z);W.root.rotation.order='YZX';W.root.rotation.set(q.roll,th,q.pitch);W.rotor.rotation.y=q.rotorAngle+1.3;W.tail.rotation.z=q.tailAngle;on=true;}}}catch(e){console.warn(e);}
-   W.root.visible=on;this.wingOn=on;}
+      W.root.position.set(x,y,z);W.root.rotation.order='YZX';W.root.rotation.set(q.roll,th,q.pitch);W.rotor.rotation.y=q.rotorAngle+1.3+j;W.tail.rotation.z=q.tailAngle;on=true;}}}catch(e){console.warn(e);}
+    W.root.visible=on;if(!j)on1=on;});
+   this.wingOn=on1;}
   {const near=this.cockpit||this.camera.position.distanceTo(p)<90,S=near?34:160;if(this.sunS!==S){this.sunS=S;Object.assign(this.sun.shadow.camera,{left:-S,right:S,top:S,bottom:-S});this.sun.shadow.camera.updateProjectionMatrix();this.sun.shadow.normalBias=near?.012:.04;}}
   this.sun.position.copy(p).add(new T.Vector3(100,180,70));this.sun.target.position.copy(p);if(!this.sun.target.parent)this.scene.add(this.sun.target);
   const a=this.guide.geometry.attributes.position;a.setXYZ(0,p.x,terrainHeight(p.x,p.z,this.flightArea)+.08,p.z);a.setXYZ(1,p.x,p.y,p.z);a.needsUpdate=true;this.guide.geometry.computeBoundingSphere();this.guide.computeLineDistances();
