@@ -1,5 +1,7 @@
 # AB-205 Senaryo Laboratuvarı — v0.40.0-validation
 
+> Asistanlar için çalışma notu: `AGENTS.md`. Sürüm notları: `project-status.md`.
+
 Önce `docs/VALIDATION-REPORT.md` dosyasını okuyun. Bu bir doğrulama altyapısı/düzeltme sürümüdür; gerçek uçuş veya yapısal doğrulama onayı değildir. Canlı siteye otomatik yayımlanmadı.
 
 ## Çalıştırma

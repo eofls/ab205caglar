@@ -1,3 +1,7 @@
+# v0.40.1 — 1 Kasım 2026 (Claude birleştirme)
+
+0.40.0 değişiklikleri Claude tarafındaki projeyle birleştirildi. Hava sürati / rüzgâr dönüşümüyle yalama uçuşunda yer sürati arttığı için arazi uçuşu manevrası ağaca çarpıyordu; yalama uçuşunda ileri bakış mesafesi uzatıldı. Claude test seti (claude/tests, 200/200), manevra / emercensi / karar taramaları (claude/sweeps), veri üretim araçları (claude/tools) ve eski sürüm notları (docs/claude-gecmis) depoya eklendi. node tests/ci.mjs 184/184 (eğim sınırlaması bilinen uyarı). Tarayıcıda telefon ve masaüstü açılışı hatasız.
+
 # v0.40.0-validation — 28 Ekim 2026
 
 Ortak IAS/TAS/rüzgâr ve kütle başlangıcı, program RPM/önbellek anahtarı, uzun/büyük kayıt yükleme, güvenli çevrimdışı kurulum ve ortak temas sonrası gösterge durumu düzeltildi. 42/42 regresyon kontrolü geçti. Ana kabul seti 32/33: eğimli zemin kayması açık. 64 program sayısal taramadan geçti. Otorotasyon için 17 kalibrasyon ve 7 aynı grafik ara noktası denge karşılaştırması; bağımsız uçuş doğrulaması değildir. Gerçek kayıt karşılaştırma araçları ve kaynak/sınır raporu docs/VALIDATION-REPORT.md içinde. Tarayıcı/WebGL doğrulanmadı. Bu sürüm canlı yayımlanmadı.

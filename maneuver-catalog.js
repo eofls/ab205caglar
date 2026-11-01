@@ -420,7 +420,7 @@ function napSeg(st,S,s0,ctx,base,area,ev,done,t,agl){const el=t-s0.t,P=NAP[S.mod
   let tr=S.tr??course;if(S.weave||S.mode==='noe'){let best=null;for(let k=-3;k<=3;k++){const c=course+k*15*R;let h=-1e9;for(let d=60;d<=320;d+=40)h=Math.max(h,terrainHeight(st.x+Math.sin(c)*d,st.z-Math.cos(c)*d,area));const x2=st.x+Math.sin(c)*400,z2=st.z-Math.cos(c)*400,out=Math.max(0,Math.hypot(x2,z2)-(area==='mountain'||area==='terrain'?3900:2200))*.2;const v=h+Math.abs(k)*1.2+out;if(!best||v<best.v)best={c,v};}
     if(S.tr===undefined||best.v<S.trV-3||Math.abs(wrap(best.c-S.tr))<.01)S.tr=best.c,S.trV=best.v;else S.trV=best.v;tr=S.tr;}else{S.tr=tr=course;}
   {const wx=st.x+Math.sin(tr)*gs*7,wz=st.z-Math.cos(tr)*gs*7,w=wireNear(wx,wz,area,60);if(w!==null&&!(ctx.wireSaid??=new Set()).has(w)){ctx.wireSaid.add(w);ev(t,'Anlatım','“TEL, SAAT 12”','Kumandalarda olmayan pilot: “TEL, SAAT 12.” Kumandalardaki pilot: “GÖRÜYORUM, DİREK ÜZERİNDEN GEÇİYORUM.” Teller direk üzerinden, en yüksek noktadan geçilir; altından geçilmez.','out');}}
-  const top=aheadTop(st,area,tr,Math.max(60,gs*(S.mode==='noe'?3:5)))-terrainHeight(st.x,st.z,area);S.hFt=Math.max(P.ft*(S.lowRef?.35:1)+Math.max(0,top/FT)*(S.lowRef?.5:1),S.mode==='noe'?25:40);}
+  const top=aheadTop(st,area,tr,Math.max(80,gs*(S.mode==='noe'?4.5:5)))-terrainHeight(st.x,st.z,area);S.hFt=Math.max(P.ft*(S.lowRef?.35:1)+Math.max(0,top/FT)*(S.lowRef?.5:1),S.mode==='noe'?25:40);}
  return {...base,speedKt:S.kt,track:S.tr,heightFt:S.hFt,maxUp:P.max+2,maxDown:P.max,hGain:.7,accel:1.4,bank:30};}
 /* autorotation (standart / dönüşlü / mecburi iniş): entry, steady glide to the gate on the final course, flare at
    ~100 ft, initial collective at 15 ft, and the terminations: yere kadar, güçlü kurtarma, pas geçme */
