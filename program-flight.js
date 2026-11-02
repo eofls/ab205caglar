@@ -75,9 +75,9 @@ function stepAircraft(st,tg,dt,ctx){
  // attitude from accelerations (+ trim nose-down with speed)
  const ca=Math.cos(st.hdg),sa=Math.sin(st.hdg),along=(dvx*sa-dvz*ca),lat=(dvx*ca+dvz*sa)+(gs*st.yawRate*.0);
  let gPitch=0,gRoll=0;{const ag=st.y-terrainHeight(st.x,st.z,area);if(st.onGround||(tg.slopeAtt&&ag<1.4)){const e=3,gx=(terrainHeight(st.x+e,st.z,area)-terrainHeight(st.x-e,st.z,area))/(2*e),gzz=(terrainHeight(st.x,st.z+e,area)-terrainHeight(st.x,st.z-e,area))/(2*e),k=st.onGround?1:clamp(1-ag/1.4,0,1);gPitch=-Math.atan(gx*Math.sin(st.hdg)-gzz*Math.cos(st.hdg))*k;gRoll=-Math.atan(gx*Math.cos(st.hdg)+gzz*Math.sin(st.hdg))*k;}} /* v0.41 yerde gövde zemin eğimine oturur (yamaç) */
- let kt=gs/KT,pitchT=st.onGround?gPitch:Math.atan2(along,G)+kt*.0016+(tg.pitchBias??0),rollT=st.onGround?gRoll:Math.atan2(lat+gs*(st.track-st.trackPrev||0)/dt*.0,G)+(fx.roll??0)*Math.PI/180+(gs<12?clamp((st.vx*ca+st.vz*sa)*.03,-.09,.09):0); /* v0.41 yana havırda gövde uçuş tarafına yatık */
+ let kt=gs/KT;const W0=ctx.wind??{x:0,z:0},iasA=Math.hypot(st.vx-W0.x,st.vz-W0.z)/KT/(ctx.tasFactor??1),trimD=iasA<=20?iasA*.015:.3+6*Math.pow((iasA-20)/70,1.4),accP=Math.atan2(along,G);let pitchT=st.onGround?gPitch:(ctx.maneuver&&!st.autorot?Math.min(accP,5*Math.PI/180):accP)+trimD*Math.PI/180+(tg.pitchBias??0) /* v0.42 baş durumu hava süratine göre (70 kt ≈ 4°, 90 kt ≈ 6° burun aşağı); hızlanma ≤5° burun aşağı */,rollT=st.onGround?gRoll:Math.atan2(lat+gs*(st.track-st.trackPrev||0)/dt*.0,G)+(fx.roll??0)*Math.PI/180+(gs<12?clamp((st.vx*ca+st.vz*sa)*.03,-.09,.09):0); /* v0.41 yana havırda gövde uçuş tarafına yatık */
  const turnRoll=st.onGround?0:Math.atan2(gs*wrap(track-(st.trackPrev??track))/Math.max(dt,1e-3),G);st.trackPrev=track;
- const sm=Math.min(1,dt*(fx.heavy?1.4:2.6));if(!st.onGround&&tg.slopeAtt){pitchT+=gPitch;rollT+=gRoll;}st.pitchT=pitchT;st.rollT=clamp(rollT,-.6,.6);st.pitch+=(pitchT-st.pitch)*sm;st.roll+=(clamp(rollT+turnRoll*0,-.6,.6)-st.roll)*sm;
+ const sm=Math.min(1,dt*(fx.heavy?1.2:ctx.maneuver?1.6:2.2)); /* v0.42 gövde duruşu daha yumuşak değişir */if(!st.onGround&&tg.slopeAtt){pitchT+=gPitch;rollT+=gRoll;}st.pitchT=pitchT;st.rollT=clamp(rollT,-.6,.6);st.pitch+=(pitchT-st.pitch)*sm;st.roll+=(clamp(rollT+turnRoll*0,-.6,.6)-st.roll)*sm;
  /* v0.35.7 transverse flow / ETL shudder: 8–22 kt, strongest near 15 kt, then smooth */
  {const ek=gs/KT;ctx.etl=!st.onGround&&!st.autorot&&ek>10&&ek<20&&st.y-g2<45?Math.sin(Math.PI*(ek-10)/10)*.7:0;if(ctx.etl>0){st.pitch+=Math.sin(st.t*31)*ctx.etl*.0025;st.roll+=Math.cos(st.t*27)*ctx.etl*.0035;}}
  if(fx.vib&&!st.onGround){const w=Math.sin(st.t*37)*fx.vib*.006;st.pitch+=w;st.roll+=Math.cos(st.t*41)*fx.vib*.006;}
@@ -96,7 +96,7 @@ function stepAircraft(st,tg,dt,ctx){
  let cfOff=0,crOff=0;
  if(!st.onGround&&driven){const e2=iasNow>8&&iasNow<28?Math.sin(Math.PI*(iasNow-8)/20):0;cfOff+=.05*e2;crOff-=.035*e2;
   if(Math.hypot(st.vx,st.vz)<3&&aglNow<15){crOff-=.03;st.roll-=.026*Math.min(1,dt*4);}
-  if(st.vy<-1.6&&iasNow<15&&aglNow>15){if(!ctx.vrsAt){ctx.vrsAt=st.t;(ctx.vrsEv??=[]).push(st.t);}st.pitch+=Math.sin(st.t*23)*.006;st.roll+=Math.cos(st.t*19)*.008;}else ctx.vrsAt=0;}
+  if(st.vy<-1.6&&iasNow<15&&aglNow>15&&(!ctx.maneuver||ctx.allowVrs)){if(!ctx.vrsAt){ctx.vrsAt=st.t;(ctx.vrsEv??=[]).push(st.t);}st.pitch+=Math.sin(st.t*23)*.006;st.roll+=Math.cos(st.t*19)*.008;}else ctx.vrsAt=0;}
  let pedOff=0;if(Math.hypot(st.vx,st.vz)<5&&Ws>1&&!st.onGround){const rel=wrap(Math.atan2(-W.x,W.z)-st.hdg);pedOff=Math.sin(rel)*Math.min(1,Ws/12)*.25;}
  ctx.aero={ias:iasNow,cfOff,crOff,pedOff};
  // rotor / engine
@@ -108,9 +108,9 @@ function stepAircraft(st,tg,dt,ctx){
  st.rotorAngle+=st.rpm*Math.PI/30*dt;
  // control positions (display units of the physics controller: collective 1 = cruise trim)
  const climb=st.vy-wv,needP=st.autorot?.42:powerRequired(iasNow,climb,Math.max(0,st.y-g2))+(ctx.vrsAt?.25:0);st.pw=(st.pw??needP)+(needP-(st.pw??needP))*Math.min(1,dt/1.1); /* v0.41 tork kollektifi ~1 s gecikmeyle izler */let col=tg.collective??(st.onGround&&!tg.vy?(st.eng>3000?.55:.4):needP);if(fx.bounce)col+=Math.sin(st.t*19)*.12;if(fx.colHard!==undefined)col=fx.colHard;
- st.colPrev=st.col;st.col+=(col-st.col)*Math.min(1,dt*4);
- const cf=fx.cycHard?.[0]??clamp((st.pitchT??st.pitch)*.9+cfOff,-.24,.24),cr=fx.cycHard?.[1]??clamp((st.rollT??st.roll)*.55+crOff,-.24,.24); /* v0.41 saykılık titreşim / rüzgâr sarsıntısını izlemez: yalnız kumanda niyeti */st.cfPrev=st.cyc[0];st.crPrev=st.cyc[1];st.cyc=[st.cyc[0]+(cf-st.cyc[0])*Math.min(1,dt*2.2),st.cyc[1]+(cr-st.cyc[1])*Math.min(1,dt*2.2)];
- const drive=st.eng>5000&&!st.autorot,ped=fx.pedalFixed??clamp((drive?-(st.col-.85)*.7:.28+Math.max(0,st.col-.45)*.3)+(tg.yawRate??0)*.6+pedOff,-1,1); /* v0.39 motor tahrik etmezken tork yok: sağ pedal; otorotasyonda ilk kollektifle mast sürtünmesi → sağ pedal (kitap) */st.pedPrev=st.ped;st.ped+=(ped-st.ped)*Math.min(1,dt*4);
+ st.colPrev=st.col;st.col+=(col-st.col)*Math.min(1,dt*2.6);
+ const cf=fx.cycHard?.[0]??clamp((st.pitchT??st.pitch)*.9+cfOff,-.24,.24),cr=fx.cycHard?.[1]??clamp((st.rollT??st.roll)*.55+crOff,-.24,.24); /* v0.41 saykılık titreşim / rüzgâr sarsıntısını izlemez: yalnız kumanda niyeti */st.cfPrev=st.cyc[0];st.crPrev=st.cyc[1];st.cyc=[st.cyc[0]+(cf-st.cyc[0])*Math.min(1,dt*1.6),st.cyc[1]+(cr-st.cyc[1])*Math.min(1,dt*1.6)];
+ const drive=st.eng>5000&&!st.autorot,ped=fx.pedalFixed??clamp((drive?-(st.col-.85)*.7:.28+Math.max(0,st.col-.45)*.3)+(tg.yawRate??0)*.6+pedOff,-1,1); /* v0.39 motor tahrik etmezken tork yok: sağ pedal; otorotasyonda ilk kollektifle mast sürtünmesi → sağ pedal (kitap) */st.pedPrev=st.ped;st.ped+=(ped-st.ped)*Math.min(1,dt*2.6);
 }
 /* v0.34.1 what each control is doing in this emergency (kumanda görünümü): short notes beside the schematic positions,
    plus the throttle (gaz kolu), which the schematic does not draw */
