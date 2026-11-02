@@ -182,7 +182,7 @@ let last=performance.now();function frame(now){const delta=(now-last)/1000;last=
   const run=manualRun(session.config.manualRunId),finished=session.scenario.endReason==='contact'||(isManualProgram(session.config)&&session.time>=session.scenario.duration-.06); /* v0.41 elle program uçuşunun sonunda kayıt durur: son kare bozulmaz */
   if(session.playing&&session.time>=3.98&&(!finished||changed))run.record(session.time,inp);
   manualInput.view?.();}
- if(session.playing){session.tick(Math.min(delta,.25));if(!session.playing&&session.pending)autoResume=true;render();if(!session.playing||now-lastSave>1000){save();lastSave=now;}}try{sceneView.draw();}catch(e){console.error('3B çizim hatası',e);}requestAnimationFrame(frame);}
+ if(session.playing){session.tick(Math.min(delta,.25));if(!session.playing&&session.pending)autoResume=true;render();if(!session.playing||now-lastSave>6000){save();lastSave=now;}} /* v0.42 oynatırken kayıt 6 s'de bir (her saniye kaydetmek kısa takılmalara yol açıyordu); duraklatınca / sayfadan çıkınca hemen kaydedilir */try{sceneView.draw();}catch(e){console.error('3B çizim hatası',e);}requestAnimationFrame(frame);}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){session.pause();save();render();}});window.addEventListener('pagehide',save);
 fillForm();render();if(restoreMessage)$('save-status').textContent=restoreMessage;else save();requestAnimationFrame(frame);
 
