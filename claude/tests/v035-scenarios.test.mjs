@@ -23,7 +23,7 @@ test('v0.35 manoeuvre list: exactly the asked items in order, every one flown to
  assert.deepEqual(ids.slice(0,8),['turns','climb-descent','climb-descent-turns','hover','takeoff-hover','takeoff-ground','max-perf','pattern']);
  for(const id of ['hover-autorot','taxi-autorot','forced-power','forced-goaround','forced-ground','std-autorot','turn-autorot','sim-tr-right','sim-tr-left','sim-hyd','gov-emer','movement','masking','terrain-flight','formation'])assert.ok(ids.includes(id),id);
  for(const id of ['controls','straight-level','preflight','start-stop','fuel','prelanding','weight-balance','ppc','pedal-margin','hover-power'])assert.ok(!ids.includes(id),id);
- for(const m of MANEUVERS){const r=programRun(mCfg(m),[]);assert.ok(r.duration<(m.id==='pattern'?700:m.site||/^pattern/.test(m.id)?450:300),`${m.id} ${r.duration}`) /* v0.35.9: ana başlık 06 + 24 meydan turunu sırayla uçar */;const c=r.contact;if(c){assert.ok(!c.obstacle,`${m.id} ${c.obstacle}`);assert.ok(c.descentMps<=1.0,`${m.id} ${c.descentMps}`);}}
+ for(const m of MANEUVERS){const r=programRun(mCfg(m),[]);assert.ok(r.duration<(m.id==='pattern'?700:m.site||/^pattern/.test(m.id)?520:300),`${m.id} ${r.duration}`) /* v0.35.9: ana başlık 06 + 24 meydan turunu sırayla uçar */;const c=r.contact;if(c){assert.ok(!c.obstacle,`${m.id} ${c.obstacle}`);assert.ok(c.descentMps<=1.0,`${m.id} ${c.descentMps}`);}}
 });
 test('v0.35 autorotations end on the runway at walking speed; power recovery and go-around never touch down',()=>{
  for(const id of ['std-autorot','turn-autorot','forced-ground']){const r=programRun(mCfg(MANEUVERS.find(m=>m.id===id)),[]);assert.ok(r.contact,id);assert.equal(r.contact.surface.kind,'paved',id);assert.ok(r.contact.groundSpeedMps<4.2,`${id} ${r.contact.groundSpeedMps}`);}

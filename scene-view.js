@@ -179,7 +179,7 @@ if(!m.transparent)return;if(m.userData.outsideOpacity===undefined)m.userData.out
   const overlays=flightOverlays(session.time,session.scenario,session.config,session.choices());
   this.fields.visible=overlays.visible;
   this.overlays=overlays;
-  const entries=[...overlays.targets,...(overlays.prediction?[{id:'prediction',label:'T',position:overlays.prediction}]:[])],signature=entries.map(t=>t.id).join('|');
+  const entries=[...overlays.targets] /* v0.42 tahmini temas (T, beyaz koni) sahnede gösterilmez */,signature=entries.map(t=>t.id).join('|');
   if(signature!==this.markerSignature){
    for(const child of [...this.fields.children]){child.geometry?.dispose();child.material?.map?.dispose();child.material?.dispose();this.fields.remove(child);}
    this.fieldMarkers=[];this.fieldLabels=[];this.markerSignature=signature;
