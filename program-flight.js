@@ -342,7 +342,7 @@ function autorotPhase(st,t,e,ctx,base,lz,term,config,ev,setLz){
  const engT=ctx.engineOut||ctx.eng===0||e.landing==='restart'?(st.eng>4000?1500:0):6600*0+1200;
  if(!lz){lz={x:st.x+Math.sin(st.track)*aglFt*FT*4,z:st.z-Math.cos(st.track)*aglFt*FT*4,label:'Süzülüş istikameti'};setLz(lz);ctx.lz=lz;}
  const dx=lz.x-st.x,dz=lz.z-st.z,D=Math.hypot(dx,dz),b=D>15?Math.atan2(dx,-dz):st.track,runon=(term??(e.landing==='autorotRunon'?'runon':'minrun'))==='runon';
- const late=ctx.restartTry&&(ctx.lowRestart||ctx.restartFail)?.35:ctx.lowRpm?.45:1;
+ const late=ctx.restartTry&&(ctx.lowRestart||ctx.restartFail)?.35:ctx.lowRpm?.3:1;
  /* v0.35 rising ground (dağlık): the flare gate is judged on the lower of the height over the ground below and the
     height over the field, and over the terrain the next 3 s will cross, so a hillside does not come up under a late flare */
  let gAhead=terrainHeight(st.x,st.z,area);for(let d=20;d<=gs*3;d+=20)gAhead=Math.max(gAhead,terrainHeight(st.x+st.vx/Math.max(gs,1)*d,st.z+st.vz/Math.max(gs,1)*d,area));const hGate=Math.min(aglFt,(st.y-Math.max(gAhead,terrainHeight(lz.x,lz.z,area)))/FT);
