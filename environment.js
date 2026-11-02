@@ -124,7 +124,7 @@ export function createWater(){
 // ---------- Distant terrain ring (beyond the 6 km physics tile, visual horizon only) ----------
 /* v0.39 gerçek sahalar: zemin düzlemi yarıçapı, geniş uydu görüntüsü ve kapsadığı yarıçap */
 function filteredTexture(url,filter,N){const c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.fillStyle='#9a8a6c';x.fillRect(0,0,N,N);const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=4;const im=new Image();im.onload=()=>{x.filter=filter;x.drawImage(im,0,0,N,N);x.filter='none';t.needsUpdate=true;};im.src=url;return t;}
-export const REAL_GROUND={forest:{half:4000,outer:9400},water:{half:4000,outer:9400},airfield:{half:3000,wide:'guvercinlik-s2-genis.jpg',wideR:7000,outer:9000},terrain:{half:4500,wide:'golbasi-s2-genis.jpg',wideR:9500,outer:9400},mountain:{half:4500,wide:'tepeler-s2-genis.jpg',wideR:9500,outer:9400}};
+export const REAL_GROUND={forest:{half:4000,outer:9400},water:{half:4000,outer:9400},airfield:{half:3000,wide:'guvercinlik-s2-genis.jpg',wideR:7000,outer:9000},terrain:{half:4500,wide:'golbasi-s2-genis.jpg',wideR:9500,outer:9400},mountain:{half:6500,wide:'tepeler-s2-genis.jpg',wideR:9500,outer:9400}};
 export function createHorizon(area){
  const RG=REAL_GROUND[area],half=RG?.half??3000,edge=half-10,inner=half-50,outer=RG?.outer??9000,seg=200,rings=30,pos=[],col=[],idx=[],uv=[],real=!!RG?.wide,wr=RG?.wideR??7000; /* v0.37 meydan, v0.39 arazi ve tepeler: gerçek arazi + geniş uydu görüntüsü */
  const base={terrain:[.55,.52,.40],airfield:[.50,.50,.38],forest:[.20,.30,.18],mountain:[.42,.42,.40],water:[.12,.30,.38]}[area]??[.5,.5,.4];

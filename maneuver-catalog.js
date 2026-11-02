@@ -109,12 +109,12 @@ function siteSegs(id,kind,{land=true,takeoff=true,high=true,decision=null,radius
  if(!land)return out;
  out.push(
   say('Rüzgâraltı',I((s,p)=>`Keşif tamam: düz uçuş süratinde (90 knot) rüzgâraltı – esas bacak kesişimine, ${p.raFt} ft. Rüzgâraltının son 1/3’ünde iniş öncesi kontroller.`),'g:ias'),
-  {t:'wp',to:'ra',kt:90,ftMsl:'ra',phase:'Rüzgâraltı',keepTurn:high?1:0,...(decision??{}),notes:[[6,'“DÜZ UÇUŞ TORKUM {TQ}”','Rüzgâraltında düz uçuş torku söylenir.','g:torque'],
+  {t:'wp',to:'ra',kt:90,ftMsl:'ra',phase:'Rüzgâraltı',keepTurn:high?1:0,...(decision??{}),notes:[[0,'“DÜZ UÇUŞ TORKUM {TQ}”','Rüzgâraltında düz uçuşa geçildi: düz uçuş torku söylenir.','g:torque','lvl'],
    [-34,'İniş öncesi kontroller','“GAZ KOLU TAM AÇIK, RPM 6600, EKİP, YOLCU VE GÖREV TEÇHİZATI EMNİYETTE.”','throttle'],[-22,'“ESAS BACAK TEMİZ”','Esas bacağa dönüş tarafı ve esas bacak gözle kontrol edilir: trafik yok, “ESAS BACAK TEMİZ”.',I((s,p)=>'look:'+turnSide(s,p,'base'))],
    [-14,'İrtifa kaybı',I((s,p)=>`“ESAS BACAKTA ${p.raFt-p.syFt} FİT İRTİFA VERECEĞİM, SON YAKLAŞMAYA ${p.syFt} FİTTE GİRECEĞİM.”`),'g:alt']]},
   say('Esas bacak',I((s,p)=>`Esas bacağa dönüş: 70 knot, ${p.syFt} ft’e süzülüş. İniş yeri gözden kaybedilmez.`),'g:vsi'),
   {t:'wp',to:'sy',kt:70,ftMsl:'sy',fpm:700,phase:'Esas bacak',notes:[[-12,'“SON YAKLAŞMA HATTI TEMİZ”','Esas bacak kontrolleri: son yaklaşma hattı gözle kontrol edilir.',I((s,p)=>'look:'+turnSide(s,p,'final'))]]},
-  say('Son yaklaşma',confined?'Son yaklaşma hattında açı kesilene kadar düz ve ufki uçuş; açı: temas noktasının engellerin en az 10 ft üzerinden görüldüğü açı.':'Son yaklaşma hattında açı kesilene kadar düz ve ufki uçuş; açı normal ile derin yaklaşma açısı arasında.','lz'),
+  say('Son yaklaşmaya dönüş','Esas bacaktan son yaklaşma hattına dönüş: iniş yeri gözden kaybedilmez.','lz'),
   {t:'approach',kind:'hover',angle:confined?9:9,obsCross:confined?1:0,confined:confined?1:0,lowRecon:1,pad:'site',...(apDecision??{})},{t:'hover',ft:3,dur:2},say('Havırdan iniş','Havırda 3 ft: zemin ve skid koyma noktası kontrol edildi; kollektif yavaşça aşağı, iniş.','out'),{t:'setdown'},
   {t:'ground',dur:4,notes:[[1,'Yerde','Skidler emniyetle oturdu; kollektif tam aşağı, saykılık ve pedallarla denge kontrol edildi. Çevre temizliği.','out']]});
  if(!takeoff)return out;
@@ -412,7 +412,7 @@ export function maneuverDirector(m,config,choices,ctx,{st,pickLZ}){
     const alt=s0.agl/FT+(S.fpm?S.fpm*Math.min(el,dur)/60:0)-(S.altLoss?Math.min(200,el*10):0);if(el>=dur)return done()??{...base,speedKt:S.kt,track:s0.track+S.deg*R,heightFt:alt};return {...base,speedKt:S.kt,track:tr,heightFt:alt,accel:2.5,gain:2,bank:Math.max(25,S.bank+5)};}
    case 'wp':{const sp=ctx.site,pt=ctx.pat;if(!S.P){if(S.to==='ra')S.P=pt.ra;else if(S.to==='sy')S.P=pt.sy;else if(S.to==='site')S.P=[sp.x,sp.z];else if(S.to==='join'){const b=Math.atan2(st.x-sp.x,-(st.z-sp.z))+Math.PI/2,r=S.r??300;S.P=[sp.x+Math.sin(b)*r,sp.z-Math.cos(b)*r];}else S.P=S.to;
      const f=S.ftMsl==='ra'?pt.raFt:S.ftMsl==='sy'?pt.syFt:S.ftMsl;S.msl=f!==undefined?f*FT-(ctx.base??0):undefined;}
-    ctx.phase=S.phase??'Uçuş';const dx=S.P[0]-st.x,dz=S.P[1]-st.z,d=Math.hypot(dx,dz),b=Math.atan2(dx,-dz);S.eta=d/Math.max(12,gs);
+    ctx.phase=S.phase??'Uçuş';const dx=S.P[0]-st.x,dz=S.P[1]-st.z,d=Math.hypot(dx,dz),b=Math.atan2(dx,-dz);S.eta=d/Math.max(12,gs);S.flags??={};if(Math.abs(st.vy)<.6&&Math.abs(wrap(b-st.track))<.15&&kt>=S.kt-5){S.lv=(S.lv??0)+(st.t-(S.lt??st.t));}else S.lv=0;S.lt=st.t;if(S.lv>2.5)S.flags.lvl=1;
     if(S.to==='ra'&&!S.markSaid&&Math.abs(wrap(b-st.track))<.45&&d<4500){S.markSaid=1;S.markT=t;ctx.mark={x:S.P[0],z:S.P[1]};const rel=wrap(b-st.hdg)/R,clk=((Math.round(rel/30)+12-1)%12+12)%12+1;ev(t,'Anlatım','“R/A – E/B KESİŞİM NOKTASI”',`“RÜZGÂRALTI – ESAS BACAK KESİŞİM NOKTASI SAAT ${clk} İSTİKAMETİNDE, ${(d/1852).toFixed(1).replace('.',',')} MİL; ${ctx.pat?.raFt??''} FİT.” Nokta görüldü ve işaretlendi.`,'mark');}
     if(S.endOnMark&&S.markSaid&&t-S.markT>8){ctx.abort=1;ctx.mark=null;return done()??{...base,speedKt:S.kt,track:st.track,heightFt:aglFt};}
     if(d<(S.tol??130)||d<500&&Math.abs(wrap(b-st.track))>1.9){if(S.to==='ra')ctx.mark=null;return done()??{...base,speedKt:S.kt,track:st.track,heightFt:aglFt};}
@@ -547,7 +547,8 @@ function approachSeg(st,seg,s0,pad,ctx,base,area,ev,done,t,m){
  if(seg.climbOut&&t-seg.climbOut<25){ctx.phase='Pas geçme · yeniden yaklaşma';const back=t-seg.climbOut<12;return {...base,speedKt:60,track:back?st.track:b+Math.PI*.9,heightFt:Math.max(agl/FT,300),vy:back?3:0,accel:1.5};}
  if(!seg.started&&seg.obsAngle){const fc=pad.course??b,ux=Math.sin(fc),uz=-Math.cos(fc),gP0=terrainHeight(pad.x,pad.z,area);let req=0;for(let d=12;d<=450;d+=8){const x=pad.x-ux*d,z=pad.z-uz*d,top=obstacleTopNear(x,z,area,5);if(top>terrainHeight(x,z,area)+1)req=Math.max(req,Math.atan2(top+3.05+1.5-gP0,d-6));}seg.angle=clamp(req/R+1,8,22);ev(t,'Anlatım','Yaklaşma açısı',`Temas noktası engellerin 10 ft üzerinden görülecek açı: ≈${seg.angle.toFixed(0)}°. Kuyruk rotoru engellerin en az 10 ft üzerinden geçer; GKK engeller üzerinde kaybedilir.`,'lz');}
  ang=(seg.angle??9)*R;
- if(!seg.started){seg.started=t;seg.ft=pad.course!==undefined&&(pad.kind==='rw'||pad.kind==='panel')?pad.course:b;ev(t,'Yaklaşma',runon?'Alçak yaklaşma · ruleli iniş':seg.kind==='hover'?'Havıra kadar yaklaşma':'Yere kadar yaklaşma',`Açı ${(seg.angle??9).toFixed(0)}°, mesafe ${Math.round(D)} m.`,'out');}
+ if(!seg.started){seg.started=t;seg.ft=pad.course!==undefined&&(pad.kind==='rw'||pad.kind==='panel')?pad.course:b;}
+ if(!seg.apSaid&&(Math.abs(wrap(b-st.track))<.26||D<300)){seg.apSaid=t;ev(t,'Yaklaşma',runon?'Alçak yaklaşma · ruleli iniş':seg.kind==='hover'?'Havıra kadar yaklaşma':'Yere kadar yaklaşma',`Son yaklaşma hattındayım: açı ${(seg.angle??9).toFixed(0)}°, mesafe ${Math.round(D)} m. Açı kesilene kadar irtifa ve sürat korunur.`,'lz');} /* v0.42 açı son yaklaşma hattına dönüldükten sonra söylenir */
  if(D>400&&pad.kind!=='rw'&&pad.kind!=='panel')seg.ft=b;const ft=seg.ft,corr=clamp(wrap(b-ft),-.3,.3),passed=(dx*Math.sin(ft)-dz*Math.cos(ft))<0,dir=passed?(D<50||runon?ft:b):ft+corr; /* steer to the pad until 400 m, then hold the final course; overshoot = turn back */
  /* v0.35.7 the glide path is referenced to the pad (tepe / sırt above the ground under the approach) */
  const gP=terrainHeight(pad.x,pad.z,area),gH=terrainHeight(st.x,st.z,area),hp=st.y-gP,termH=seg.kind==='hover'?3*FT:0,hDes=Math.max(termH,Math.min(hp+3,D*Math.tan(ang)+termH)),hOut=Math.max(D>40?6:0,hDes+gP-gH);const obsH0=()=>D>25?obstacleTopNear(st.x+st.vx*1.5,st.z+st.vz*1.5,area,8)-gH+3.5:0;
@@ -580,7 +581,7 @@ function approachSeg(st,seg,s0,pad,ctx,base,area,ev,done,t,m){
  if(seg.pio&&D<200){ctx.fx.pio=Math.max(ctx.fx.pio??0,t+4);}
  /* v0.35.8 level until the approach angle is intercepted (açı kesildi), then the glide path: straight in, no turns */
  if(seg.icptAbove===undefined)seg.icptAbove=hp-termH>D*Math.tan(ang)+1;
- if(!seg.icpt){if(seg.icptAbove||hp-termH>=D*Math.tan(ang)-1||D<120){seg.icpt=t;if(seg.lowRecon)ev(t+.5,'Alçak keşif','Alçak keşif başladı','Açı kesildi, kollektif aşağı tatbik edildi: alçak keşif başlar. “ENGELLER: YAKLAŞMA HATTINDA ENGEL VE YÜKSEKLİKLERİ…” Yaklaştıkça küçük ayrıntılar değerlendirilir.','lz');ev(t,'Anlatım','Yaklaşma açısı kesildi',`${Math.round(hp/FT)} ft, ${Math.round(D)} m: kollektif azaltılarak ${(seg.angle??9).toFixed(0)}° açı tesis edilir; sürat yer hızı analizine kadar korunur.`,'out');}
+ if(!seg.icpt){if(seg.icptAbove||hp-termH>=D*Math.tan(ang)-1||D<120){seg.icpt=t;if(seg.lowRecon)ev(t+.5,'Alçak keşif','Alçak keşif başladı','Açı kesildi, kollektif aşağı tatbik edildi: alçak keşif başlar. “ENGELLER: YAKLAŞMA HATTINDA ENGEL VE YÜKSEKLİKLERİ…” Yaklaştıkça küçük ayrıntılar değerlendirilir.','lz');ev(t,'Anlatım','Yaklaşma açısı kesildi',`“AÇIDAYIM.” ${Math.round(hp/FT)} ft, ${Math.round(D)} m: kollektif aşağı tatbik edildi, ${(seg.angle??9).toFixed(0)}° süzülüş hattına oturuldu; sürat yer hızı analizine kadar korunur.`,'out');}
   else{ctx.phase='Yaklaşma · açıyı kesmek için düz uçuş';return {...base,vel,heightFt:Math.max(obsH0(),(hp+gP-gH))/FT,hGain:.5,maxDown:2,accel:1.4,heading:hdg,bank:seg.bank??18};}}
  if(runon&&agl<4.5){const g=Math.hypot(st.vx,st.vz),v2=[Math.sin(ft)*g*.995,-Math.cos(ft)*g*.995];return {...base,vel:v2,vy:seg.settle?-1.8:agl<1.5||passed?-.45:-.8,maxDown:2,heading:hdg,pitchBias:-.04,accel:.6};} /* v0.41 temas öncesi ufki duruş: sürat artmaz, burun düşmez */
  let obsH=D>25?obstacleTopNear(st.x+st.vx*1.5,st.z+st.vz*1.5,area,8)-gH+3.5:0;

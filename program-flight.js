@@ -20,7 +20,7 @@ export function pickProgramLZ(st,area,{urgency='asap',runon=false,trees=false,wa
  /* v0.34.1 time to land, not straight distance: a field closer than the descent needs costs S-turns, and a turn costs
     its arc at the bank limit - so "mümkün olan en kısa zamanda" picks the field that is reached first */
  const agl0=Math.max(0,st.y-terrainHeight(st.x,st.z,area)),need=Math.max(0,agl0-10)*glide,v0=Math.max(25,Math.hypot(st.vx,st.vz)),turnM=v0*v0/(G*Math.tan(bankDeg*Math.PI/180));
- for(let r=minR;r<=maxR;r+=r<600?60:110)for(let k=0;k<28;k++){const a=k/28*2*Math.PI,x=st.x+Math.sin(a)*r,z=st.z-Math.cos(a)*r;{const L=area==='terrain'||area==='mountain'?4200:2700;if(Math.abs(x)>L||Math.abs(z)>L)continue;}
+ for(let r=minR;r<=maxR;r+=r<600?60:110)for(let k=0;k<28;k++){const a=k/28*2*Math.PI,x=st.x+Math.sin(a)*r,z=st.z-Math.cos(a)*r;{const L=area==='mountain'?6200:area==='terrain'?4200:2700;if(Math.abs(x)>L||Math.abs(z)>L)continue;}
   const sf=surfaceProfile(x,z,area);if(water){if(sf.kind!=='water')continue;const v=1-r/maxR*.5;if(!best||v>best.value)best={x,z,score:1,value:v,label:sf.label,bearing:a};continue;}
   let q=assessSpot(x,z,area,{bearing:a});let score=trees?q.fallback*(q.score>0?1:.9):q.score;
   if(trees){/* v0.39 ağaçlara iniş: açık saha değil, en kısa ve seyrek ağaçlı bölge (kitap 9.1.42) */const tr=treesNear(x,z,12,area).filter(t=>Math.hypot(t.x-x,t.z-z)<12);if(tr.length<2)continue;const hA=tr.reduce((s2,t)=>s2+t.height,0)/tr.length;score=Math.max(.2,1-hA/22);q={...q,label:`Ağaçlar · ortalama ${Math.round(hA/.3048)} ft`};}

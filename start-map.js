@@ -46,7 +46,7 @@ export class StartMap{
   const base=document.createElement('canvas');base.width=w;base.height=w;const b=base.getContext('2d');b.imageSmoothingEnabled=true;b.drawImage(off,0,0,w,w);
   /* v0.39 gerçek sahalarda uydu görüntüsü (Sentinel-2, ±4.5 km) altlık; kabartma gölgesi hafifçe üstünde */
   if(area==='terrain'||area==='mountain'){const im=(StartMap.sat??={})[area]??=(()=>{const i=new Image();i.onload=()=>{if(this.area===area)this.redraw(true);};i.src='assets/terrain/'+(area==='mountain'?'tepeler':'golbasi')+'-s2.jpg';return i;})();
-   if(im.complete&&im.naturalWidth){const k=im.naturalWidth/9000,sx=(v.cx-v.half+4500)*k,sy=(v.cz-v.half+4500)*k,sw=2*v.half*k;b.filter='saturate(0.8) hue-rotate(7deg) brightness(0.95)';b.drawImage(im,sx,sy,sw,sw,0,0,w,w);b.filter='none';b.globalAlpha=.25;b.globalCompositeOperation='multiply';b.drawImage(off,0,0,w,w);b.globalAlpha=1;b.globalCompositeOperation='source-over';}}
+   if(im.complete&&im.naturalWidth){const SR=area==='mountain'?6500:4500,k=im.naturalWidth/(2*SR),sx=(v.cx-v.half+SR)*k,sy=(v.cz-v.half+SR)*k,sw=2*v.half*k;b.filter='saturate(0.8) hue-rotate(7deg) brightness(0.95)';b.drawImage(im,sx,sy,sw,sw,0,0,w,w);b.filter='none';b.globalAlpha=.25;b.globalCompositeOperation='multiply';b.drawImage(off,0,0,w,w);b.globalAlpha=1;b.globalCompositeOperation='source-over';}}
   const px=(x,z)=>[(x-(v.cx-v.half))/(2*v.half)*w,(z-(v.cz-v.half))/(2*v.half)*w],scale=w/(2*v.half);
   // roads / taxiways
   b.strokeStyle='#d8c8a4';b.lineCap='round';if(area==='forest')for(const r of FOREST_ROADS){b.lineWidth=Math.max(1,6*scale);b.beginPath();for(let t=-3000;t<=3000;t+=20){const q=r.along==='z'?px(r.f(t),t):px(t,r.f(t));t>-3000?b.lineTo(...q):b.moveTo(...q);}b.stroke();}

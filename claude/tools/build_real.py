@@ -15,7 +15,7 @@ def demAt(x,z):  # bilinear in arcsec grid
     i=np.floor(fx).astype(int);j=np.floor(fy).astype(int);i=np.minimum(i,934);j=np.minimum(j,718);u=fx-i;v=fy-j
     return (dem[j,i]*(1-u)+dem[j,i+1]*u)*(1-v)+(dem[j+1,i]*(1-u)+dem[j+1,i+1]*u)*v
 # ---- trees from imagery ----
-RI=4500;NI=2048
+RI=int(__import__('os').environ.get('RI','4500'));NI=int(__import__('os').environ.get('NI','2048'))
 s=woody(W+img)            # 0..1 per image px (4.39 m)
 a=np.asarray(Image.open(W+img).convert('RGB')).astype(np.float32);R_,G_,B_=a[...,0],a[...,1],a[...,2];L=(R_+G_+B_)/3
 greenish=nd.uniform_filter(np.clip((G_-R_+2)/10,0,1),5)
@@ -51,7 +51,7 @@ for e in osm:
         if 0<=xi<NI and 0<=yi<NI:dens[max(0,yi-1):yi+2,max(0,xi-1):xi+2]=np.maximum(dens[max(0,yi-1):yi+2,max(0,xi-1):xi+2],.9)
 rows=mask(lambda t:t.get('natural')=='tree_row',8,fill=False);dens[rows]=np.maximum(dens[rows],.8)
 # resample to 10 m cells
-NC=900
+NC=RI*2//10
 def cells(arr,fn=np.mean):
     ys=(np.arange(NC)+.5)*10/(2*RI)*NI  # centre px
     yy,xx=np.meshgrid(ys,ys,indexing='ij')
@@ -73,7 +73,7 @@ def rle(b):
         out+=bytes([j-i,v]);i=j
     return base64.b64encode(bytes(out)).decode()
 # ---- surface classes (20 m) ----
-NS=450
+NS=RI*2//20
 def cells20(arr):
     ys=(np.arange(NS)+.5)*20/(2*RI)*NI;yy,xx=np.meshgrid(ys,ys,indexing='ij')
     return nd.map_coordinates(nd.uniform_filter(arr.astype(np.float32),5),[yy-.5,xx-.5],order=1)
@@ -87,10 +87,10 @@ sc[Bd>.35]=5;sc[Wt>.5]=4
 def grid(Rg,N):
     c=np.linspace(-Rg,Rg,N);xx,zz=np.meshgrid(c,c);return demAt(xx,zz)
 base=float(demAt(np.array(0.),np.array(0.)))
-gi=grid(4500,301);go=grid(9500,191)
+NG=RI*2//30+1;gi=grid(RI,NG);go=grid(9500,191)
 # canopy removal where the 30 m cell is mostly trees
 Dg=nd.map_coordinates(D,[ (np.arange(301)*30)/10, (np.arange(301)*30)/10 ],order=1) if False else None
-ys=np.arange(301)*30/10;yy,xx=np.meshgrid(ys,ys,indexing='ij');Dg=nd.map_coordinates(nd.uniform_filter(D,3),[np.minimum(yy,899),np.minimum(xx,899)],order=1)
+ys=np.arange(NG)*30/10;yy,xx=np.meshgrid(ys,ys,indexing='ij');Dg=nd.map_coordinates(nd.uniform_filter(D,3),[np.minimum(yy,NC-1),np.minimum(xx,NC-1)],order=1)
 op=nd.grey_opening(gi,size=3);gi=np.where(Dg>.35,gi-(gi-op)*np.clip((Dg-.35)/.3,0,1),gi)
 enc=lambda g:base64.b64encode(np.round((g-base)*4).astype('<i2').tobytes()).decode()
 # ---- features ----
@@ -106,7 +106,7 @@ for e in osm:
     if not keep:continue
     if 'highway' in keep and keep['highway'] in('proposed','construction','footway','path','steps'):continue
     if any(k in keep for k in ['building','highway','power','waterway']) or keep.get('natural')=='water' or keep.get('landuse') in('residential','quarry','industrial','cemetery'):
-        pts=e['p'];B=4480
+        pts=e['p'];B=RI-20
         inside=lambda q:abs(q[0])<=B and abs(q[1])<=B
         if all(inside(q) for q in pts):feats.append({'tags':keep,'points':pts});continue
         if 'building' in keep or keep.get('natural')=='water' or 'landuse' in keep:continue   # polygons crossing the edge are dropped
@@ -139,10 +139,10 @@ js=f"""// Gerçek uçuş sahası ({name}). Merkez K{lat0} D{lon0}, yerel çerçe
 // Ağaç ve zemin ızgaraları: Sentinel-2 cloudless 2023 (EOX, CC BY-NC-SA 4.0; Copernicus Sentinel verisi) görüntüsünden
 // ağaç tepesi tespiti + OpenStreetMap (ODbL) orman / meyve bahçesi / tek ağaç / ağaç sırası. Yapılar, yollar, enerji hatları: OSM.
 export const {key}={{"name":{json.dumps(name)},"lat0":{lat0},"lon0":{lon0},"base":{base:.2f},"scale":0.25,
-"inner":{{"R":4500,"N":301,"data":"{enc(gi)}"}},
+"inner":{{"R":{RI},"N":{NG},"data":"{enc(gi)}"}},
 "outer":{{"R":9500,"N":191,"data":"{enc(go)}"}},
-"trees":{{"R":4500,"cell":10,"N":{NC},"rle":"{rle(tb)}"}},
-"surface":{{"R":4500,"cell":20,"N":{NS},"rle":"{rle(sc)}"}},
+"trees":{{"R":{RI},"cell":10,"N":{NC},"rle":"{rle(tb)}"}},
+"surface":{{"R":{RI},"cell":20,"N":{NS},"rle":"{rle(sc)}"}},
 "features":{json.dumps(feats,separators=(',',':'))}}};
 """
 open(sys.argv[11],'w').write(js)
