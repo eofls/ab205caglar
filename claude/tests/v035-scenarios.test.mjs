@@ -7,8 +7,8 @@ import {programRun} from '../../program-flight.js';
 import {buildCues,interpretStep} from '../../narration.js';
 const mCfg=(m,extra={})=>({...DEFAULT_CONFIG,program:'maneuver',maneuverId:m.id,customStart:true,startHeightFt:m.start.h,startIasKt:m.start.v,flightArea:m.start.area??'terrain',startX:m.start.x??0,startZ:m.start.z??0,headingDeg:m.start.hdg??0,mode:'watch',...extra});
 test('v0.35 emergency list: the 31 asked for, in book order, each with its own flight area',()=>{
- assert.equal(EMERGENCIES.length,31);const refs=EMERGENCIES.map(e=>e.ref);
- for(const id of ['engine-partial','engine-total','engine-hover','engine-low','engine-restart','droop-comp','compressor-stall','igv-closed','igv-open','engine-overspeed','driveshaft','fire-ground','fire-flight','electrical-fire','hydraulic','control-stiffness','servo-cyclic','servo-collective','rotor-system','mast-bumping','dc-generator','trees','ditch-power','ditch-nopower'])assert.ok(EMERGENCIES.some(e=>e.id===id),id);
+ assert.equal(EMERGENCIES.length,30); /* v0.42 'Yangın – yerde' kullanıcı isteğiyle çıkarıldı */const refs=EMERGENCIES.map(e=>e.ref);
+ for(const id of ['engine-partial','engine-total','engine-hover','engine-low','engine-restart','droop-comp','compressor-stall','igv-closed','igv-open','engine-overspeed','driveshaft','fire-flight','electrical-fire','hydraulic','control-stiffness','servo-cyclic','servo-collective','rotor-system','mast-bumping','dc-generator','trees','ditch-power','ditch-nopower'])assert.ok(EMERGENCIES.some(e=>e.id===id),id);
  assert.ok(!EMERGENCIES.some(e=>/start/.test(e.id)&&e.id!=='engine-restart'),'no engine-start fire');
  for(const e of EMERGENCIES)assert.ok(['terrain','airfield','forest','water','mountain'].includes(e.area),e.id);
  assert.equal(EMERGENCIES.find(e=>e.id==='trees').area,'forest');assert.equal(EMERGENCIES.find(e=>e.id==='ditch-power').area,'water');

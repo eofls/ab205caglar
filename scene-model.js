@@ -93,9 +93,9 @@ function setupDoors(heli){const cabin=heli.parts.cabin;if(!cabin)return;heli.doo
   const front=id.startsWith('front'),hinge=new T.Vector3(front?box.max.x:box.min.x,(box.min.y+box.max.y)/2,id.endsWith('L')?box.min.z:box.max.z),pivot=new T.Group();pivot.name='door-'+id;pivot.position.copy(hinge);cabin.add(pivot);
   for(const m of ms){m.position.sub(hinge);pivot.add(m);}pivot.userData={rest:hinge.clone(),side:id.endsWith('L')?-1:1,front};heli.doors[id]=pivot;}}
 export function setDoors(heli,{front=0,slide=0,jettison=0}={}){const D=heli.doors;if(!D)return;
- for(const [id,p] of Object.entries(D)){const u=p.userData;if(u.front){const k=Math.min(1,front);p.rotation.y=-u.side*k*1.05;p.position.copy(u.rest);p.visible=true;
+ for(const [id,p] of Object.entries(D)){const u=p.userData;if(u.front){const k=Math.min(1,front);p.rotation.set(0,-u.side*k*1.05,0);p.position.copy(u.rest);p.visible=true; /* v0.42 atılan kapı başka senaryoda eski hâline döner */
    if(jettison>0){/* atılan kapı: dışa ve aşağı düşer, sonra gizlenir */p.position.z+=u.side*jettison*2.5;p.position.y-=jettison*jettison*4.9;p.rotation.x=u.side*jettison*.8;p.visible=jettison<2.2;}}
-  else{p.position.copy(u.rest);p.position.x-=Math.min(1,slide)*1.25;}}}
+  else{p.rotation.set(0,0,0);p.visible=true;p.position.copy(u.rest);p.position.x-=Math.min(1,slide)*1.25;}}}
 /* Synchronous: returns the part hierarchy at once; the supplied meshes fill it as soon as the files are loaded (heli.ready). */
 export function createHelicopter(){
  const root=new T.Group();root.name='AB-205 Jandarma (kullanıcı modeli)';const parts={};
