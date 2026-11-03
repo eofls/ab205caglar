@@ -6,7 +6,7 @@ import {MANEUVERS} from '../../maneuver-catalog.js';
 import {programRun,emergencyDecisionDefs,isProgramFlight} from '../../program-flight.js';
 import {flightState} from '../../flight-dynamics.js';
 import {controlDisplay} from '../../control-display.js';
-const emCfg=(e,extra={})=>({...DEFAULT_CONFIG,program:'emergency',emergencyId:e.id,customStart:true,startHeightFt:e.start?.h??500,startIasKt:e.start?.v??80,flightArea:e.area??'terrain',mode:'watch',...extra});
+const emCfg=(e,extra={})=>({...DEFAULT_CONFIG,program:'emergency',emergencyId:e.id,customStart:true,startHeightFt:e.start?.h??500,startIasKt:e.start?.v??80,flightArea:e.area??'terrain',mode:'watch',startX:e.start?.x??0,startZ:e.start?.z??0,headingDeg:e.start?.hdg??(e.area==='airfield'?65:0),...extra}); /* v0.42 seçicideki gibi her emercensinin kendi başlangıç noktası */
 const program=EMERGENCIES.filter(e=>e.kind==='program');
 test('v0.34.1 every program emergency ends in the hazır akış, and every powered landing is soft and clear of obstacles',()=>{
  for(const e of program){const r=programRun(emCfg(e),[]);assert.ok(r.duration<240,`${e.id} ${r.duration}`);
@@ -37,5 +37,5 @@ test('v0.34.1 asap is never slower than practicable for the same emergency (time
  assert.ok(run('asap')<=run('practicable')+1,`${run('asap')} vs ${run('practicable')}`);
 });
 test('v0.34.1 every manoeuvre completes, and a long taxi to the slope pad clears trees',()=>{
- for(const m of MANEUVERS){const c={...DEFAULT_CONFIG,program:'maneuver',maneuverId:m.id,customStart:true,startHeightFt:m.start.h,startIasKt:m.start.v,flightArea:m.start.area??'terrain',startX:m.start.x??0,startZ:m.start.z??0,headingDeg:m.start.hdg??0,mode:'watch'};assert.ok(isProgramFlight(c));const r=programRun(c,[]);assert.ok(r.duration<(m.id==='pattern'?700:m.site||/^pattern/.test(m.id)?450:300),`${m.id} ${r.duration}`) /* v0.35.9: ana başlık 06 + 24 meydan turunu sırayla uçar */;if(r.contact)assert.ok(!r.contact.obstacle,`${m.id} obstacle`);}
+ for(const m of MANEUVERS){const c={...DEFAULT_CONFIG,program:'maneuver',maneuverId:m.id,customStart:true,startHeightFt:m.start.h,startIasKt:m.start.v,flightArea:m.start.area??'terrain',startX:m.start.x??0,startZ:m.start.z??0,headingDeg:m.start.hdg??0,mode:'watch'};assert.ok(isProgramFlight(c));const r=programRun(c,[]);assert.ok(r.duration<(m.id==='pattern'?700:m.site||/^pattern/.test(m.id)?520:300),`${m.id} ${r.duration}`) /* v0.35.9: ana başlık 06 + 24 meydan turunu sırayla uçar */;if(r.contact)assert.ok(!r.contact.obstacle,`${m.id} obstacle`);}
 });

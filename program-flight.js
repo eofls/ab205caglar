@@ -5,7 +5,7 @@ import {tasFactor,windVector,velocityForTrack} from './flight-reference.js';
 // limits; attitude, collective, cyclic and pedal positions are derived from the accelerations and a power-required
 // curve. Emergency effects (yaw, roll, vibration, RPM excursions, torque limit, heavy controls, hardovers) act on top.
 // Engine-power-loss emergencies (tam / kısmi güç kaybı, şaft, kavrama) stay on the blade/energy physics.
-import {terrainHeight,surfaceProfile,obstacleTopNear,treesNear,wireTopNear} from './terrain-data.js';
+import {terrainHeight,surfaceProfile,obstacleTopNear,treesNear,wireTopNear,RUNWAY} from './terrain-data.js';
 import {assessSpot} from './landing-zone.js';
 import {emergencyById,URGENCY_TEXT} from './emergency-catalog.js';
 import {maneuverById,maneuverDirector} from './maneuver-catalog.js';
@@ -15,12 +15,12 @@ export function isProgramFlight(c){if(!c)return false;if(c.program==='maneuver')
 // ---------- power required (fraction of 80 KIAS cruise power) and collective ----------
 export function powerRequired(kt,climbMps=0,agl=99){const v=Math.max(0,kt);const p=.52+.73/(1+(v/28)**2)+.30*(v/80)**3; /* v0.41 düz uçuş 90 kt ≈ OGE havırın %81’i → ≈26 PSI (kullanıcı referansı 25–27) */const ige=agl<6?.16*(1-agl/6)*(1-.55*Math.min(1,v/22)):0; /* v0.35.7 ground cushion is lost as speed builds */return p-ige+.085*climbMps;}
 // ---------- forced / precautionary landing zone for powered programs ----------
-export function pickProgramLZ(st,area,{urgency='asap',runon=false,trees=false,water=false,maxR=1800,minR=120,course=null,bankDeg=25,glide=5.7}={}){
+export function pickProgramLZ(st,area,{urgency='asap',runon=false,trees=false,water=false,maxR=1800,minR=120,course=null,bankDeg=25,glide=5.7,cone=null}={}){
  let best=null;const c0=course??Math.atan2(st.vx,-st.vz),cands=[];
  /* v0.34.1 time to land, not straight distance: a field closer than the descent needs costs S-turns, and a turn costs
     its arc at the bank limit - so "mümkün olan en kısa zamanda" picks the field that is reached first */
  const agl0=Math.max(0,st.y-terrainHeight(st.x,st.z,area)),need=Math.max(0,agl0-10)*glide,v0=Math.max(25,Math.hypot(st.vx,st.vz)),turnM=v0*v0/(G*Math.tan(bankDeg*Math.PI/180));
- for(let r=minR;r<=maxR;r+=r<600?60:110)for(let k=0;k<28;k++){const a=k/28*2*Math.PI,x=st.x+Math.sin(a)*r,z=st.z-Math.cos(a)*r;{const L=area==='terrain'||area==='mountain'?4200:2700;if(Math.abs(x)>L||Math.abs(z)>L)continue;}
+ for(let r=minR;r<=maxR;r+=r<600?60:110)for(let k=0;k<28;k++){const a=k/28*2*Math.PI,x=st.x+Math.sin(a)*r,z=st.z-Math.cos(a)*r;{const L=area==='mountain'?6200:area==='terrain'?4200:2700;if(Math.abs(x)>L||Math.abs(z)>L)continue;}
   const sf=surfaceProfile(x,z,area);if(water){if(sf.kind!=='water')continue;const v=1-r/maxR*.5;if(!best||v>best.value)best={x,z,score:1,value:v,label:sf.label,bearing:a};continue;}
   let q=assessSpot(x,z,area,{bearing:a});let score=trees?q.fallback*(q.score>0?1:.9):q.score;
   if(trees){/* v0.39 ağaçlara iniş: açık saha değil, en kısa ve seyrek ağaçlı bölge (kitap 9.1.42) */const tr=treesNear(x,z,12,area).filter(t=>Math.hypot(t.x-x,t.z-z)<12);if(tr.length<2)continue;const hA=tr.reduce((s2,t)=>s2+t.height,0)/tr.length;score=Math.max(.2,1-hA/22);q={...q,label:`Ağaçlar · ortalama ${Math.round(hA/.3048)} ft`};}
@@ -28,11 +28,11 @@ export function pickProgramLZ(st,area,{urgency='asap',runon=false,trees=false,wa
   /* v0.35 the field's own height: a field up the slope (dağlık) leaves less glide; one above the glide reach is skipped */
   const hzC=st.y-terrainHeight(x,z,area);if(glide<5&&area==='mountain'&&hzC<(r+turnM*Math.abs(wrap(a-c0)))/(glide*1.1)+25)continue;const needC=Math.max(0,hzC-10)*glide;
   const turnA=Math.abs(wrap(a-c0)),eff=(r<needC?needC+(needC-r)*.8:r)+turnA*turnM,dist=urgency==='practicable'?eff/5000:eff/1500;
-  const v=score*(urgency==='practicable'&&q.surface==='paved'?1.25:1)-dist*.6;cands.push({x,z,score,value:v,label:q.label,slopeDeg:q.slopeDeg,bearing:a});}
+  const v=score*(urgency==='practicable'&&q.surface==='paved'?1.25:1)-dist*.6-turnA*.3-(cone!==null&&turnA>cone?1:0); /* v0.42 öndeki saha tercih edilir: geri dönüş yok */cands.push({x,z,score,value:v,label:q.label,slopeDeg:q.slopeDeg,bearing:a});}
  if(water)return best;
  /* v0.34.1 the final approach must clear trees / buildings: the best few fields are checked along the approach from
     here; a run-on needs a shallow final (≤8°), a normal approach ≤15° */
- cands.sort((p,q)=>q.value-p.value);for(const c of cands.slice(0,24)){if(c.score<=0)continue;const wo={},ang=clearAngle(c,c.bearing,area,terrainHeight(c.x,c.z,area),wo)*180/Math.PI,lim=trees?90:runon?8:15;if(ang>lim){c.value-=Math.min(.6,(ang-lim)*.06);c.score*=.7;}if(wo.wire!==undefined){c.value-=.9-wo.wire/1000;c.wireAhead=wo.wire;} /* v0.39 tel önüne iniş seçilmez */c.appDeg=ang;if(!best||c.value>best.value)best=c;}
+ cands.sort((p,q)=>q.value-p.value);for(const c of cands.slice(0,24)){if(c.score<=0)continue;const wo={},ang=clearAngle(c,c.bearing,area,terrainHeight(c.x,c.z,area),wo)*180/Math.PI,lim=trees?90:runon||glide<5?8:15;if(ang>lim){c.value-=1.2+Math.min(.6,(ang-lim)*.06);c.score*=.5;} /* v0.42 yaklaşma hattında engel olan saha seçilmez */if(wo.wire!==undefined){c.value-=.9-wo.wire/1000;c.wireAhead=wo.wire;} /* v0.39 tel önüne iniş seçilmez */c.appDeg=ang;if(!best||c.value>best.value)best=c;}
  return best??cands[0]??null;}
 // ---------- kinematic step ----------
 function stepAircraft(st,tg,dt,ctx){
@@ -69,15 +69,16 @@ function stepAircraft(st,tg,dt,ctx){
  if(st.onGround){if(st.contact?.water){st.y=Math.max(g2-2.4,st.y-.3*dt);}else if(ctx.treeRest!=null&&ctx.treeRest>g2){ctx.treeRest=Math.max(g2,ctx.treeRest-1.2*dt);st.y=ctx.treeRest;}else st.y=g2;}
  // heading: nose on the track in forward flight, commanded heading in the hover; emergency yaw on top
  const gs=Math.hypot(st.vx,st.vz),track=gs>1?Math.atan2(st.vx,-st.vz):st.track;st.track=track;
- let want=tg.heading??(gs>7&&!st.onGround?track:st.hdg);if(fx.yaw&&!st.onGround)want+=fx.yaw*Math.PI/180;if(fx.yawKick&&st.t<fx.yawKick.until&&!st.onGround)want+=fx.yawKick.deg*Math.PI/180*Math.min(1,(fx.yawKick.until-st.t)/2);
+ let want=tg.heading??(gs>7&&!st.onGround?track:st.hdg);if(fx.yaw&&!st.onGround&&gs>7)want+=fx.yaw*Math.PI/180*(fx.trLoss?(st.autorot?-clamp((st.col-.6)/1.1,0,1)*.6:clamp((st.col-.3)/.6,.15,1.4)):1); /* v0.42 kuyruk rotoru kaybı: sapma güçle orantılı; otorotasyonda burun istikamete gelir, son kollektifte sola döner */ /* v0.42 havırda sabit sapma ofseti başı döndürmez */if(fx.pedalFixed!==undefined&&ctx.pedCol0!==undefined&&!st.onGround&&!fx.spin&&!fx.lte){const off=clamp((st.col-ctx.pedCol0)*45,-30,30)*(st.eng<6250?.4:1);want=(gs>7?track:st.hdg0??st.hdg)+off*Math.PI/180;if(Math.abs(off)>8&&!ctx.pedMsg){ctx.pedMsg=1;ctx.events.push({at:st.t,kind:'Anlatım',title:off>0?'Güç arttı · burun sağa':'Güç azaldı · burun sola',text:off>0?'Pedal sabit: kollektif artırılınca tork artar, burun sağa döner; yana kayış başlar. Güç değişimleri küçük ve yavaş yapılır.':'Pedal sabit: kollektif azaltılınca tork azalır, burun sola döner. Gerekirse gaz kolu ile tork ayarlanır.',source:['tr']});}} /* v0.42 sabit pedal: burun gücün değişimine göre sapar */if(gs<=7)st.hdg0??=st.hdg;else st.hdg0=undefined;
+ if(fx.yawKick&&st.t<fx.yawKick.until&&!st.onGround)want+=fx.yawKick.deg*Math.PI/180*Math.min(1,(fx.yawKick.until-st.t)/2);
  let rate=tg.yawRate!==undefined?tg.yawRate:clamp(wrap(want-st.hdg)*1.6,-.4,.4);if(fx.spin)rate=fx.spin;if(st.onGround&&!tg.taxi&&!fx.spin)rate*=.2;
  st.yawRate+=(rate-st.yawRate)*Math.min(1,dt*3);st.hdg=wrap(st.hdg+st.yawRate*dt);
  // attitude from accelerations (+ trim nose-down with speed)
  const ca=Math.cos(st.hdg),sa=Math.sin(st.hdg),along=(dvx*sa-dvz*ca),lat=(dvx*ca+dvz*sa)+(gs*st.yawRate*.0);
  let gPitch=0,gRoll=0;{const ag=st.y-terrainHeight(st.x,st.z,area);if(st.onGround||(tg.slopeAtt&&ag<1.4)){const e=3,gx=(terrainHeight(st.x+e,st.z,area)-terrainHeight(st.x-e,st.z,area))/(2*e),gzz=(terrainHeight(st.x,st.z+e,area)-terrainHeight(st.x,st.z-e,area))/(2*e),k=st.onGround?1:clamp(1-ag/1.4,0,1);gPitch=-Math.atan(gx*Math.sin(st.hdg)-gzz*Math.cos(st.hdg))*k;gRoll=-Math.atan(gx*Math.cos(st.hdg)+gzz*Math.sin(st.hdg))*k;}} /* v0.41 yerde gövde zemin eğimine oturur (yamaç) */
- let kt=gs/KT,pitchT=st.onGround?gPitch:Math.atan2(along,G)+kt*.0016+(tg.pitchBias??0),rollT=st.onGround?gRoll:Math.atan2(lat+gs*(st.track-st.trackPrev||0)/dt*.0,G)+(fx.roll??0)*Math.PI/180+(gs<12?clamp((st.vx*ca+st.vz*sa)*.03,-.09,.09):0); /* v0.41 yana havırda gövde uçuş tarafına yatık */
+ let kt=gs/KT;const W0=ctx.wind??{x:0,z:0},iasA=Math.hypot(st.vx-W0.x,st.vz-W0.z)/KT/(ctx.tasFactor??1),trimD=iasA<=20?iasA*.015:.3+6*Math.pow((iasA-20)/70,1.4),accP=Math.atan2(along,G);let pitchT=st.onGround?gPitch:(!st.autorot?(accP>0?Math.min(accP,Math.max(.8*Math.PI/180,(5.5-trimD)*Math.PI/180)):(st.y-g2>30&&!ctx.maneuver?Math.max(accP,-6*Math.PI/180):accP)):accP)+trimD*Math.PI/180+(tg.pitchBias??0) /* v0.42 baş durumu hava süratine göre (70 kt ≈ 4°, 90 kt ≈ 6° burun aşağı); hızlanma ≤5° burun aşağı */,rollT=st.onGround?gRoll:Math.atan2(lat+gs*(st.track-st.trackPrev||0)/dt*.0,G)+(fx.roll??0)*Math.PI/180+(gs<12?clamp((st.vx*ca+st.vz*sa)*.03,-.09,.09):0); /* v0.41 yana havırda gövde uçuş tarafına yatık */
  const turnRoll=st.onGround?0:Math.atan2(gs*wrap(track-(st.trackPrev??track))/Math.max(dt,1e-3),G);st.trackPrev=track;
- const sm=Math.min(1,dt*(fx.heavy?1.4:2.6));if(!st.onGround&&tg.slopeAtt){pitchT+=gPitch;rollT+=gRoll;}st.pitchT=pitchT;st.rollT=clamp(rollT,-.6,.6);st.pitch+=(pitchT-st.pitch)*sm;st.roll+=(clamp(rollT+turnRoll*0,-.6,.6)-st.roll)*sm;
+ const sm=Math.min(1,dt*(fx.heavy?1.2:ctx.maneuver?1.6:2.2)); /* v0.42 gövde duruşu daha yumuşak değişir */if(!st.onGround&&tg.slopeAtt){pitchT+=gPitch;rollT+=gRoll;}st.pitchT=pitchT;st.rollT=clamp(rollT,-.6,.6);st.pitch+=(pitchT-st.pitch)*sm;st.roll+=(clamp(rollT+turnRoll*0,-.6,.6)-st.roll)*sm;
  /* v0.35.7 transverse flow / ETL shudder: 8–22 kt, strongest near 15 kt, then smooth */
  {const ek=gs/KT;ctx.etl=!st.onGround&&!st.autorot&&ek>10&&ek<20&&st.y-g2<45?Math.sin(Math.PI*(ek-10)/10)*.7:0;if(ctx.etl>0){st.pitch+=Math.sin(st.t*31)*ctx.etl*.0025;st.roll+=Math.cos(st.t*27)*ctx.etl*.0035;}}
  if(fx.vib&&!st.onGround){const w=Math.sin(st.t*37)*fx.vib*.006;st.pitch+=w;st.roll+=Math.cos(st.t*41)*fx.vib*.006;}
@@ -96,7 +97,7 @@ function stepAircraft(st,tg,dt,ctx){
  let cfOff=0,crOff=0;
  if(!st.onGround&&driven){const e2=iasNow>8&&iasNow<28?Math.sin(Math.PI*(iasNow-8)/20):0;cfOff+=.05*e2;crOff-=.035*e2;
   if(Math.hypot(st.vx,st.vz)<3&&aglNow<15){crOff-=.03;st.roll-=.026*Math.min(1,dt*4);}
-  if(st.vy<-1.6&&iasNow<15&&aglNow>15){if(!ctx.vrsAt){ctx.vrsAt=st.t;(ctx.vrsEv??=[]).push(st.t);}st.pitch+=Math.sin(st.t*23)*.006;st.roll+=Math.cos(st.t*19)*.008;}else ctx.vrsAt=0;}
+  if(st.vy<-1.6&&iasNow<15&&aglNow>15&&(!ctx.maneuver||ctx.allowVrs)){if(!ctx.vrsAt){ctx.vrsAt=st.t;(ctx.vrsEv??=[]).push(st.t);}st.pitch+=Math.sin(st.t*23)*.006;st.roll+=Math.cos(st.t*19)*.008;}else ctx.vrsAt=0;}
  let pedOff=0;if(Math.hypot(st.vx,st.vz)<5&&Ws>1&&!st.onGround){const rel=wrap(Math.atan2(-W.x,W.z)-st.hdg);pedOff=Math.sin(rel)*Math.min(1,Ws/12)*.25;}
  ctx.aero={ias:iasNow,cfOff,crOff,pedOff};
  // rotor / engine
@@ -107,10 +108,10 @@ function stepAircraft(st,tg,dt,ctx){
  if(st.autorot&&!st.onGround){const dyn=324+60*(.42-st.col)+80*Math.max(0,-st.pitch);rTgt=clamp(.5*rTgt+.5*dyn,285,337);}st.rpm+=clamp(rTgt-st.rpm,-(tg.rpmRate??25)*dt,(tg.rpmRate??25)*dt);st.eng+=clamp(eTgt-st.eng,-1600*dt,1600*dt);
  st.rotorAngle+=st.rpm*Math.PI/30*dt;
  // control positions (display units of the physics controller: collective 1 = cruise trim)
- const climb=st.vy-wv,needP=st.autorot?.42:powerRequired(iasNow,climb,Math.max(0,st.y-g2))+(ctx.vrsAt?.25:0);st.pw=(st.pw??needP)+(needP-(st.pw??needP))*Math.min(1,dt/1.1); /* v0.41 tork kollektifi ~1 s gecikmeyle izler */let col=tg.collective??(st.onGround&&!tg.vy?(st.eng>3000?.55:.4):needP);if(fx.bounce)col+=Math.sin(st.t*19)*.12;if(fx.colHard!==undefined)col=fx.colHard;
- st.colPrev=st.col;st.col+=(col-st.col)*Math.min(1,dt*4);
- const cf=fx.cycHard?.[0]??clamp((st.pitchT??st.pitch)*.9+cfOff,-.24,.24),cr=fx.cycHard?.[1]??clamp((st.rollT??st.roll)*.55+crOff,-.24,.24); /* v0.41 saykılık titreşim / rüzgâr sarsıntısını izlemez: yalnız kumanda niyeti */st.cfPrev=st.cyc[0];st.crPrev=st.cyc[1];st.cyc=[st.cyc[0]+(cf-st.cyc[0])*Math.min(1,dt*2.2),st.cyc[1]+(cr-st.cyc[1])*Math.min(1,dt*2.2)];
- const drive=st.eng>5000&&!st.autorot,ped=fx.pedalFixed??clamp((drive?-(st.col-.85)*.7:.28+Math.max(0,st.col-.45)*.3)+(tg.yawRate??0)*.6+pedOff,-1,1); /* v0.39 motor tahrik etmezken tork yok: sağ pedal; otorotasyonda ilk kollektifle mast sürtünmesi → sağ pedal (kitap) */st.pedPrev=st.ped;st.ped+=(ped-st.ped)*Math.min(1,dt*4);
+ const climb=st.vy-wv,needP=st.autorot?.42:powerRequired(iasNow,climb,Math.max(0,st.y-g2))+(ctx.vrsAt?.25:0);const needPc=fx.powerCap&&!st.autorot&&!(ctx.overpull&&st.t<ctx.overpull)?Math.min(needP,fx.powerCap):needP;st.pw=(st.pw??needPc)+(needPc-(st.pw??needPc))*Math.min(1,dt/1.1); /* v0.41 tork kollektifi ~1 s gecikmeyle izler */let col=tg.collective??(st.onGround&&!tg.vy?(st.eng>3000?.55:.4):needP);if(fx.bounce)col+=Math.sin(st.t*19)*.12;if(fx.colHard!==undefined)col=fx.colHard;
+ st.colPrev=st.col;st.col+=(col-st.col)*Math.min(1,dt*2.6);
+ const cf=fx.cycHard?.[0]??clamp((st.pitchT??st.pitch)*.9+cfOff,-.24,.24),cr=fx.cycHard?.[1]??clamp((st.rollT??st.roll)*.55+crOff,-.24,.24); /* v0.41 saykılık titreşim / rüzgâr sarsıntısını izlemez: yalnız kumanda niyeti */st.cfPrev=st.cyc[0];st.crPrev=st.cyc[1];st.cyc=[st.cyc[0]+(cf-st.cyc[0])*Math.min(1,dt*1.6),st.cyc[1]+(cr-st.cyc[1])*Math.min(1,dt*1.6)];
+ const drive=st.eng>5000&&!st.autorot,ped=fx.pedalFixed??clamp((drive?-(st.col-.85)*.7:.28+Math.max(0,st.col-.45)*.3)+(tg.yawRate??0)*.6+pedOff,-1,1); /* v0.39 motor tahrik etmezken tork yok: sağ pedal; otorotasyonda ilk kollektifle mast sürtünmesi → sağ pedal (kitap) */st.pedPrev=st.ped;st.ped+=(ped-st.ped)*Math.min(1,dt*2.6);
 }
 /* v0.34.1 what each control is doing in this emergency (kumanda görünümü): short notes beside the schematic positions,
    plus the throttle (gaz kolu), which the schematic does not draw */
@@ -151,9 +152,10 @@ if(ctx.vrsEv?.length)ctx.events.push({at:ctx.vrsEv[0],kind:'Anlatım',title:'Gü
 }
 function snap(st,ctx){return {t:st.t,x:st.x,y:st.y,z:st.z,vx:st.vx,vy:st.vy,vz:st.vz,hdg:st.hdg,pitch:st.pitch,roll:st.roll,rpm:st.rpm,eng:st.eng,col:st.col,pw:st.pw,dcol:(st.col-st.colPrev)/.05,cyc:[...st.cyc],dcyc:[(st.cyc[0]-st.cfPrev)/.05,(st.cyc[1]-st.crPrev)/.05],ped:st.ped,dped:(st.ped-st.pedPrev)/.05,rotorAngle:st.rotorAngle,onGround:st.onGround,contact:st.contact,autorot:st.autorot,phase:ctx.phase,reason:ctx.reason,lights:[...ctx.lights],warn:{...ctx.warn},panelOff:ctx.panelOff,smoke:ctx.smoke,smokeKind:ctx.smokeKind??'engine',vib:Math.max(ctx.fx.vib??0,(ctx.etl??0)*.28),etl:ctx.etl??0,lz:ctx.lz,mark:ctx.mark??null,yawRate:st.yawRate,gust:ctx.gust??0,wv:ctx.wv??0,...controlNotes(st,ctx)};}
 // ---------- emergency decisions (karar vererek ilerle) ----------
+function genericMistake(e){return e.urgency==='info'?{label:'Gereksiz yere hemen inişe geç',cons:'needless',text:'Bu ışık bilgi amaçlıdır; acil iniş gerekmez. Karar uygulanır: en yakın uygun sahaya iniş.'}:e.urgency==='ground'?{label:'Önce durumu telsizle bildir',cons:'fire',text:'Susturma ve tahliye gecikir.'}:{label:'Uçuşa devam et; durumu izle',cons:e.urgency==='asap'?'late-fail':'delay',after:50,text:'Usul uygulanmaz; arıza ilerleyebilir.'};}
 export function emergencyDecisionDefs(e){
  const defs={};const first=e.act??(e.steps.find(s=>s.startsWith('!'))??e.steps[0]??'Usulü uygula').replace(/^!/,'');
- const generic=e.urgency==='info'?{label:'Gereksiz yere hemen inişe geç',cons:'needless',text:'Bu ışık bilgi amaçlıdır; acil iniş gerekmez, uçuş planı bozulur.'}:e.urgency==='ground'?{label:'Önce durumu telsizle bildir',cons:'fire',text:'Susturma ve tahliye gecikir.'}:{label:'Uçuşa devam et; durumu izle',cons:e.urgency==='asap'?'late-fail':'delay',after:50,text:'Usul uygulanmaz; arıza ilerleyebilir.'};
+ const generic=genericMistake(e);const _unused=e.urgency==='info'?{label:'Gereksiz yere hemen inişe geç',cons:'needless',text:'Bu ışık bilgi amaçlıdır; acil iniş gerekmez, uçuş planı bozulur.'}:e.urgency==='ground'?{label:'Önce durumu telsizle bildir',cons:'fire',text:'Susturma ve tahliye gecikir.'}:{label:'Uçuşa devam et; durumu izle',cons:e.urgency==='asap'?'late-fail':'delay',after:50,text:'Usul uygulanmaz; arıza ilerleyebilir.'};
  const m=e.mistake??generic;
  defs['em-action']={id:'em-action',title:`${e.title}: ilk eylemin ne?`,source:['tr'],reference:'proc',options:[{id:'proc',label:'Usulü uygula: '+first,text:'Operatör talimnamesi '+e.ref+': '+e.steps.map(s=>s.replace(/^!/,'')).join(' · ')+'.',risk:false},{id:'mistake',label:m.label,text:m.text,risk:true},{id:'delay',label:'Önce çeklisti oku; belirtileri doğrula',text:e.steps.some(s=>s.startsWith('!'))?'Altı çizili adımlar ezberden ve hemen uygulanır; gecikme süresi kadar arıza etkisi sürer.':'Çeklist kullanımı uygundur; usul birkaç saniye geç uygulanır.',risk:e.steps.some(s=>s.startsWith('!'))}]};
  if(['hover','runon','fire','restart','clutch'].includes(e.landing)&&e.urgency!=='info'&&e.urgency!=='ground'){
@@ -175,26 +177,26 @@ function emergencyDirector(e,config,choices,ctx){
  ev(0,'Başlangıç',startH<1?'Yerde · motor çalışıyor':startV<5?'Havır':'Güçlü uçuş',startH<1?'Helikopter yerde, rotor dönüyor.':`${startH} ft AGL · ${startV} KIAS · güçlü uçuş.`);
  const stepsQueue=e.steps.map(s=>s.replace(/^!/,''));
  const announceStep=t=>{if(stepIdx<stepsQueue.length){ev(t,'Usul',`Adım ${stepIdx+1}`,stepsQueue[stepIdx]);stepIdx++;}};
- const goAutorot=(st,why,keep=false)=>{st.autorot=true;ctx.warn.rpm=true;phase='autorot';pT=st.t;if(!keep||!lz)lz=pickProgramLZ(st,area,{urgency:'asap',maxR:Math.max(200,(st.y-terrainHeight(st.x,st.z,area))*4.2),minR:60,runon:false,water:ctx.water,glide:3.4})??lz;ctx.lz=lz;ev(st.t,'Emercensi','Otorotasyon',why+(lz?` Saha: ${lz.label?.toLocaleLowerCase('tr-TR')??'—'}, ${Math.round(Math.hypot(lz.x-st.x,lz.z-st.z))} m.`:''));if(e.landing==='autorotRunon')ask('em-term',+(st.t+.6).toFixed(2));};
+ const goAutorot=(st,why,keep=false)=>{if(ctx.fx.trLoss)ev(st.t+1.5,'Anlatım','Tork kalktı','Gaz kapatılınca ana rotor torku kalktı: burun istikamete geldi, yana kayış azaldı. Minimum alçalma süratinin üzerinde kalınır.');st.autorot=true;ctx.warn.rpm=true;phase='autorot';pT=st.t;if(!keep||!lz)lz=pickProgramLZ(st,area,{urgency:'asap',maxR:Math.max(200,(st.y-terrainHeight(st.x,st.z,area))*4.2),minR:60,runon:false,water:ctx.water,glide:3.4})??lz;ctx.lz=lz;ev(st.t,'Emercensi','Otorotasyon',why+(lz?` Saha: ${lz.label?.toLocaleLowerCase('tr-TR')??'—'}, ${Math.round(Math.hypot(lz.x-st.x,lz.z-st.z))} m.`:''));if(e.landing==='autorotRunon')ask('em-term',+(st.t+.6).toFixed(2));};
  return (st,dt)=>{
   const t=st.t,agl=st.y-terrainHeight(st.x,st.z,area),aglFt=agl/FT,gs=Math.hypot(st.vx,st.vz),kt=gs/KT;
   // ---- before onset: steady flight (or ground / hover) ----
   if(t<onset){ctx.phase=startH<1?'Yerde':startV<5?'Havır':'Güçlü uçuş';return startH<1?{vy:0,taxi:null,rpm:e.landing==='groundStart'?Math.min(324,t*20):324,eng:e.landing==='groundStart'?Math.min(6600,1200+t*900):6600}:startV<5?{vel:[0,0],heightFt:startH,heading:st.hdg}:{speedKt:startV,track:st.track,heightFt:startH};}
   // ---- onset ----
   if(!ctx.onsetDone){ctx.onsetDone=true;for(const l of e.lights)ctx.lights.add(l);if(e.lights.length||e.id==='master-only')ctx.lights.add('mc');if(e.warn==='fire')ctx.warn.fire=true;if(e.effects.smoke)ctx.smoke=1;
-   const fx=e.effects;ctx.fx={...ctx.fx,vib:fx.vib,heavy:fx.ctrl==='heavy'||fx.ctrl==='stiff',bounce:fx.ctrl==='bounce'};if(fx.ctrl==='hardover-cyclic')ctx.fx.cycHard=[.22,.22];if(fx.ctrl==='hardover-collective')ctx.fx.colHard=1.9;if(fx.yaw)ctx.fx.yaw=fx.yaw;if(fx.roll)ctx.fx.roll=fx.roll;if(fx.torqueLimit)ctx.fx.powerCap=(fx.torqueLimit+4)/30;if(fx.spin)ctx.fx.spin=.25;if(fx.lte)ctx.fx.spin=.12;if(fx.yawDrift)ctx.fx.spin=fx.yawDrift*Math.PI/180;
-   if(e.id==='fixed-pedal-low')ctx.fx.pedalFixed=clamp(st.ped+.12,-1,1);if(e.id==='fixed-pedal-high')ctx.fx.pedalFixed=clamp(st.ped-.2,-1,1);if(e.id==='fixed-pedal-hover')ctx.fx.pedalFixed=st.ped;if(fx.lte)ctx.fx.pedalFixed=-1;ctx.smokeKind=e.id==='electrical-fire'||e.id==='smoke'?'cabin':'engine';
-   if(e.landing==='restart'||e.landing==='clutch'){ctx.warn.rpm=true;}
+   const fx=e.effects;ctx.fx={...ctx.fx,vib:fx.vib,heavy:fx.ctrl==='heavy'||fx.ctrl==='stiff',bounce:fx.ctrl==='bounce'};if(fx.ctrl==='hardover-cyclic')ctx.fx.cycHard=[.22,.22];if(fx.ctrl==='hardover-collective')ctx.fx.colHard=1.9;if(fx.yaw)ctx.fx.yaw=fx.yaw;if(fx.trLoss)ctx.fx.trLoss=1;if(fx.roll)ctx.fx.roll=fx.roll;if(fx.torqueLimit)ctx.fx.powerCap=(fx.torqueLimit+3)/32; /* v0.42 gösterilen tork da sınırda: 22 psi sınırla ≈25 psi */if(fx.spin)ctx.fx.spin=.25;if(fx.lte)ctx.fx.spin=.12;if(fx.yawDrift)ctx.fx.spin=fx.yawDrift*Math.PI/180;
+   ctx.pedCol0=st.col;if(e.id==='fixed-pedal-low')ctx.fx.pedalFixed=clamp(st.ped+.12,-1,1);if(e.id==='fixed-pedal-high')ctx.fx.pedalFixed=clamp(st.ped-.2,-1,1);if(e.id==='fixed-pedal-hover')ctx.fx.pedalFixed=st.ped;if(fx.lte)ctx.fx.pedalFixed=-1;ctx.smokeKind=e.id==='electrical-fire'||e.id==='smoke'?'cabin':'engine';
+   if(e.landing==='restart'||e.landing==='clutch'){ctx.warn.rpm=true;}if(fx.engOut){ctx.warn.rpm=true;ctx.engOutT=onset;if(fx.rpm!=='shaft')ctx.engineOut=true;}
    ev(onset,'Emercensi',e.title,'Belirtiler: '+e.symptoms+(e.lights.length?' İkaz paneli: '+e.lights.map(l=>LIGHT_NAMES[l]??l).join(', ')+' · MASTER CAUTION.':'')+(e.gauge?' '+e.gauge+'.':''));
-   ask('em-action',onset+.6);}
+   ask('em-action',onset+.6);setTimeoutLike(ctx,onset+4,()=>ctx.lights.delete('mc')); /* v0.42 MASTER CAUTION pilot tarafından resetlenir; segment yanık kalır */}
   // ---- first action (decision or reference) ----
   if(action===null&&t>=onset+.6){const c=choose('em-action',onset+.6+1e-6)??(config.mode==='guided'?undefined:'proc');if(c===undefined)return null;action=c;actionAt=onset+(c==='delay'?5:c==='proc'?1.4:1.2)+(config.pilot==='developing'?.8:0);}
   if(action&&t>=actionAt&&!ctx.actionDone){ctx.actionDone=true;ctx.actionT=t;
    if(action==='proc'||action==='delay'){announceStep(t);const fx=e.effects;
-    if(fx.ctrl==='hardover-cyclic')delete ctx.fx.cycHard;if(fx.ctrl==='hardover-collective')delete ctx.fx.colHard;if(fx.ctrl==='bounce')ctx.fx.bounce=false;if(fx.lte)ctx.fx.spin=0;if(fx.rpm==='overspeed')ctx.fx.rpmHold=324;
+    if(fx.ctrl==='hardover-cyclic')delete ctx.fx.cycHard;if(fx.ctrl==='hardover-collective')delete ctx.fx.colHard;if(fx.ctrl==='bounce')ctx.fx.bounce=false;if(fx.lte)ctx.fx.spin=0;if(fx.rpm==='overspeed'){ctx.fx.rpmHold=324;ctx.fx.yaw=undefined;}
     if(e.id==='compressor-stall')setTimeoutLike(ctx,t+2.5,()=>{ctx.fx.vib=0;});if(e.id==='electrical-fire'){ctx.panelOff=true;ctx.smoke=.4;}if(e.id==='battery-hot')ctx.notes.push('BAT kapalı');if(e.id==='hydraulic'||e.id==='control-stiffness')ctx.lights.add('hyd');
     if(e.landing==='hoverAutorot'||e.landing==='restart'&&false){}
-   }else{const m=e.mistake??emergencyDecisionDefs(e)['em-action'].options[1];ev(t,'Hata',m.label,m.text);const cons=m.cons??'none';
+   }else{const m=e.mistake??genericMistake(e);ev(t,'Hata',m.label,m.text);const cons=m.cons??'none';
     if(cons==='autorot'){goAutorot(st,'Hatalı eylem sonucunda motor gücü bırakıldı.');}
     else if(cons==='late-fail'){failAt=t+(m.after??40);ctx.landDelay=20;}
     else if(cons==='spin'){ctx.fx.spin=.9;ctx.fx.yaw=undefined;phase='uncontrolled';pT=t;}
@@ -211,7 +213,12 @@ function emergencyDirector(e,config,choices,ctx){
     if(e.effects.ctrl==='hardover-cyclic')setTimeoutLike(ctx,t+hl,()=>{delete ctx.fx.cycHard;fixHo();});if(e.effects.ctrl==='hardover-collective')setTimeoutLike(ctx,t+hl,()=>{delete ctx.fx.colHard;fixHo();});}}
   runTimers(ctx,t);
   if(stepIdx>0&&stepIdx<stepsQueue.length&&t>=actionAt+stepIdx*2.6)announceStep(t);
-  if(failAt&&t>=failAt&&!st.autorot&&!st.onGround){failAt=null;ctx.eng=0;goAutorot(st,'Arıza ilerledi: motor / tahrik gücü kesildi.');ctx.engineOut=true;}
+  if(failAt&&t>=failAt&&!st.autorot&&!st.onGround){failAt=null;const fm=e.failMode;
+   if(fm==='mast'||fm==='rotor'){phase='breakup';pT=t;ctx.warn.rpm=true;ev(t,'Sonuç',fm==='mast'?'Mast koptu · ana rotor ayrıldı':'Pal ayrıldı · kontrol kaybı',fm==='mast'?'Seçilen eylem mast vurmasını şiddetlendirdi: mast koptu, ana rotor ayrıldı. Helikopter kontrolsüz düşüyor.':'Pal hasarı ilerledi: şiddetli flaplama ve titreşim, kontrol kaybı. Helikopter kontrolsüz düşüyor.');}
+   else if(fm==='spin'){ctx.fx.spin=.9;ctx.fx.yaw=undefined;phase='uncontrolled';pT=t;ev(t,'Sonuç','Kuyruk rotor tahriki koptu','Güçlü uçuşa devam edildi: kuyruk rotoru tahriki tamamen kesildi; helikopter dikey ekseni etrafında dönüyor.');}
+   else{ctx.eng=0;goAutorot(st,fm==='fire'?'Yangın yayıldı: motor durdu.':'Arıza ilerledi: motor / tahrik gücü kesildi.');ctx.engineOut=true;}} /* v0.42 seçilen hatalı kararın sonucu arızaya özgü: kendiliğinden usul uygulanmaz */
+  if(phase==='breakup'&&!st.onGround){ctx.phase=e.failMode==='mast'?'Ana rotor ayrıldı · kontrolsüz düşüş':'Kontrol kaybı · kontrolsüz düşüş';ctx.fx.vib=1;return {rpm:Math.max(0,st.rpm-80*dt),eng:st.eng,rpmRate:200,vel:[st.vx*.995,st.vz*.995],vy:-30,vAccel:8,yawRate:.6,collective:.6,contactPart:'mainRotor'};}
+  if(phase==='breakup'&&st.onGround){ctx.phase='Yere çarptı · ana rotor ayrılmış';if(!ctx.endSet){ctx.endSet=true;ctx.end=t+3;ctx.endReason='contact';}return {rpm:0,eng:0,rpmRate:200,vy:0};}
   // ---- landing decision ----
   const needsLanding=!['none','ground','groundStart','groundInfo','hoverLand','hoverAutorot','lte'].includes(e.landing)||landingChoice==='asap';
   if(defs['em-landing']&&action&&!ctx.landAsked&&t>=actionAt+1+(ctx.landDelay??0)){ctx.landAsked=true;ask('em-landing',+(t+.5).toFixed(2),defs['em-landing'].reference==='auto'?refLanding(e,st,area):undefined);if(e.landing==='restart'&&refLanding(e,st,area)==='autorot')ctx.lowRestart=true;}
@@ -224,8 +231,9 @@ function emergencyDirector(e,config,choices,ctx){
   if(defs['em-term']&&decisionAt['em-term']!==undefined&&term===null&&t>=decisionAt['em-term']){const c=choose('em-term',decisionAt['em-term']+1e-6)??(config.mode==='guided'?undefined:(e.landing==='autorotRunon'?(lz&&lz.runon!==false&&area!=='mountain'&&area!=='forest'?'runon':'minrun'):e.landing));if(c===undefined)return null;term=c;if(c==='hover'&&e.landing==='runon'){ctx.hardEnd=ctx.hardEnd??e.hoverEnd??'hard';ev(t,'Hata','Havıra kadar yaklaşma seçildi',e.hoverText??'Bu arızada havır gücü ve kontrolü sınırlıdır; ruleli iniş gerekir.');}}
   // ---- RPM effects ----
   let rpmT=324,engT=6600,rpmRate=25;
-  if(e.effects.rpm==='overspeed'){if(!ctx.fx.rpmHold&&t<actionAt+6){rpmT=348;engT=7100;rpmRate=30;ctx.warn.rpm=true;}else{ctx.warn.rpm=st.rpm>330;}}
+  if(e.effects.rpm==='overspeed'){if(!ctx.fx.rpmHold){rpmT=348;engT=7100;rpmRate=30;ctx.warn.rpm=true;}else{rpmT=324;engT=6600;rpmRate=6;ctx.warn.rpm=st.rpm>329;}} /* v0.42 kollektif artırılıp gaz azaltılınca RPM yavaşça normale iner */
   if(e.effects.rpm==='droop'){const sw=ctx.rpmSwing&&t<ctx.rpmSwing?3.4:1;engT=6600+Math.sin(t*1.7)*90*sw*(Math.abs(st.col-st.colPrev)>.001?3:1);rpmT=324+Math.sin(t*1.7)*5*sw;rpmRate=25*sw;}
+  if(e.effects.engOut&&!st.autorot){rpmT=272;rpmRate=9;if(e.effects.rpm==='shaft'){engT=ctx.shutDown?0:7050;}} /* v0.42 motor / tahrik kesildi: kollektif indirilene kadar rotor devri düşer */
   if(st.autorot||ctx.engineOut){engT=ctx.engineOut||e.landing==='restart'||ctx.eng===0?Math.max(0,st.eng>4000?1200:0):6600;}
   if(e.landing==='clutch'){if(t<onset+1.5){engT=6000;rpmT=300;}else if(ctx.rpmDecay){engT=1200;rpmT=200;rpmRate=8;}else if(action==='proc'){engT=6600;rpmT=324;}}
   if(ctx.restartTry&&t>decisionAt['em-landing']+40&&!ctx.restarted){engT=Math.min(6400,(t-decisionAt['em-landing']-40)*420);}if(ctx.restarted){engT=6600;}
@@ -237,14 +245,18 @@ function emergencyDirector(e,config,choices,ctx){
    if(ctx.fx.cycHard){ctx.phase='Saykılık kendiliğinden sağ ileri gidiyor';ctx.reason='Servo sıkışması';return {...base,speedKt:Math.min(115,kt+10),track:st.track+.5,vy:-4,accel:2.4,bank:30,pitchBias:.08};}
    if(ctx.fx.colHard!==undefined){ctx.phase='Kollektif kendiliğinden tam yukarı';ctx.reason='Servo sıkışması · rotor devri düşüyor';ctx.warn.rpm=st.rpm<312;return {...base,rpm:294,rpmRate:9,eng:6250,speedKt:Math.max(50,kt-4),track:st.track,vy:6,vAccel:2.5};}
    if(ctx.overpull&&t<ctx.overpull){ctx.phase='Tork sınırın üstünde · rotor devri düşüyor';ctx.reason='Oynak giriş yön kanatçıkları kapalı';ctx.warn.rpm=st.rpm<312;return {...base,rpm:296,rpmRate:6,eng:6150,speedKt:Math.max(55,kt-3),track:st.track,vy:-2.8};}}
+  if(e.effects.rpm==='overspeed'&&action&&action!=='mistake'&&t>=actionAt&&t<actionAt+8&&!st.onGround){ctx.phase=t<actionAt+3?'Kollektif artırıldı · rotor yüklendi':'Gaz kolu azaltıldı · elle gaz kontrolü (GOV EMER)';ctx.reason='RPM limit içinde';return {...base,speedKt:Math.max(60,kt-1),track:st.track,vy:t<actionAt+3?1.8:.4,vAccel:1.2};}
   // ---- phase machine ----
-  if(e.landing==='autorotRunon'&&!st.autorot&&e.autorotAt==='action'&&action==='proc'&&t>=actionAt){goAutorot(st,'Usul: otorotasyona girildi, gaz kolu tam kapalı.');}
+  if(e.landing==='autorotRunon'&&!st.autorot&&e.autorotAt==='action'&&(action==='proc'||action==='delay')&&t>=actionAt){goAutorot(st,e.effects.engOut?'Usul: kollektif aşağı, otorotasyona girildi; rotor devri yeşil bölgede tutuluyor.':'Usul: otorotasyona girildi, gaz kolu tam kapalı.');if(e.effects.rpm==='shaft')setTimeoutLike(ctx,t+4,()=>{ctx.shutDown=true;ctx.engineOut=true;ev(t+4,'Usul','Emercensi motor susturma','Gaz kolu kapalı, yakıt anahtarları kapalı: motor overspeed önlendi.');});}
+  if(e.effects.engOut&&!st.autorot&&action==='mistake'&&t>=actionAt+3&&e.landing==='autorotRunon'){ctx.lowRpm=true;goAutorot(st,'Rotor devri çok düştü; otorotasyona geç girildi.');if(e.effects.rpm==='shaft'){ctx.shutDown=true;ctx.engineOut=true;}}
+  if(e.effects.engOut&&!st.autorot&&!st.onGround&&e.landing==='autorotRunon'){ctx.phase=e.effects.rpm==='shaft'?'Tahrik kesildi · motor RPM artıyor, rotor RPM düşüyor':'Motor durdu · rotor RPM düşüyor, baş sola';ctx.reason=action==='mistake'?'Kollektif indirilmedi':'Arıza tanıma';return {...base,speedKt:Math.max(35,kt*.99),track:st.track,vy:-2.4,vAccel:1.5};}
   if((action===null||t<actionAt||(defs['em-landing']&&ctx.landChoice===undefined&&!st.autorot))&&!st.onGround&&!['hoverAutorot','hoverLand','lte'].includes(e.landing)){ctx.phase=action==='mistake'&&ctx.landDelay?'Uçuşa devam · arıza izleniyor':'Arıza belirtileri · ilk eylem';return startV<5&&startH>0?{...base,vel:[0,0],heightFt:startH}:{...base,speedKt:Math.max(startV,kt*.98),track:st.track,heightFt:Math.max(aglFt,40)};}
-  if(st.onGround){return groundPhase(st,t,e,ctx,base,touched??(touched=t),config,ev);}
+  if(st.onGround){if(ctx.fx.spin)ctx.fx.spin*=.9; /* v0.42 yere oturunca kızaklar sürtünür: dönüş durur */return groundPhase(st,t,e,ctx,base,touched??(touched=t),config,ev);}
   if(phase==='uncontrolled'){ctx.phase='Kontrol kaybı · dikey eksen etrafında dönüş';ctx.reason='Kuyruk rotor itkisi yetersiz.';return {...base,vel:[st.vx*.97,st.vz*.97],vy:-4.5,vAccel:2,yawRate:1.4,contactPart:'tailBoom'};}
   if(e.landing==='hoverLand'&&!st.autorot){ctx.phase='Havırdan iniş · sabit pedal';return {...base,vel:[0,0],vy:action==='proc'?-.45:(t>actionAt+6?-.45:0),heightFt:action==='proc'?undefined:undefined};}
+  if(e.landing==='hoverAutorot'&&e.effects.engOut){ctx.fx.yaw=undefined;if(action&&t>=actionAt){st.autorot=true;const hard=action==='mistake';ctx.phase=hard?'Kollektif indirildi · sert oturma':'Havırda otorotasyon · kalan kollektifle oturma';return {...base,rpm:hard?250:285,eng:0,rpmRate:hard?30:14,vel:[0,0],vy:hard?-3.4:(agl>1.4?-1.2:-.5),vAccel:hard?6:3,collective:hard?.2:1.4,yawRate:-.04};}ctx.phase='Motor durdu · havırda alçalma, baş sola';return {...base,eng:0,vel:[0,0],vy:-.7,yawRate:-.12};}
   if(e.landing==='hoverAutorot'){if(action&&t>=actionAt){st.autorot=true;ctx.warn.rpm=st.rpm<310;ctx.phase='Havırda otorotasyon · gaz kapalı';ctx.fx.spin=Math.max(0,(ctx.fx.spin??0)*.985);return {...base,rpm:290,eng:1200,rpmRate:20,vel:[0,0],vy:agl>1.2?-1.1:-.7,collective:1.3};}ctx.phase='Baş sağa dönüyor · pedal etkisiz';ctx.fx.spin=Math.min(1.2,(ctx.fx.spin??.25)+dt*.35);return {...base,vel:[0,0],heightFt:5};}
-  if(e.landing==='lte'){if(action==='mistake'&&t>=actionAt){phase='uncontrolled';ctx.fx.spin=1.2;return null;}if((action==='proc'||action==='delay')&&t>=actionAt){ctx.phase='Kollektif azaltıldı · kontrol kazanıldı';ctx.fx.spin=0;delete ctx.fx.pedalFixed;if(t>actionAt+4){ctx.phase='İleri uçuşa geçiş';if(!ctx.lteDone){ctx.lteDone=true;ctx.end=t+14;ctx.endReason='time';ev(t,'Usul','Kontrol kazanıldı','Başa hâkim olununca ileri sürat kazanılarak normal uçuşa geçildi.');}return {...base,speedKt:50,track:st.hdg,vy:1.5};}return {...base,vel:[0,0],vy:-2.5};}ctx.phase='Baş sağa dönüyor · tam sol pedal yetmiyor';ctx.fx.spin=Math.min(1,(ctx.fx.spin??.1)+dt*.05);return {...base,vel:[0,0],heightFt:100};}
+  if(e.landing==='lte'){if(action==='mistake'&&t>=actionAt){phase='uncontrolled';ctx.fx.spin=1.2;return null;}if((action==='proc'||action==='delay')&&t>=actionAt){ctx.phase='Kollektif azaltıldı · kontrol kazanıldı';ctx.fx.spin=0;delete ctx.fx.pedalFixed;if(t>actionAt+4){ctx.phase='İleri uçuşa geçiş';if(!ctx.lteDone){ctx.lteDone=true;ctx.end=t+14;ctx.endReason='time';ev(t,'Usul','Kontrol kazanıldı','Başa hâkim olununca ileri sürat kazanılarak normal uçuşa geçildi.');}return {...base,speedKt:50,track:st.hdg,vy:1.5};}return {...base,vel:[0,0],vy:aglFt>12?-.8:0};}ctx.phase='Baş sağa dönüyor · tam sol pedal yetmiyor';ctx.fx.spin=Math.min(1,(ctx.fx.spin??.1)+dt*.05);return {...base,vel:[0,0],heightFt:startH||25};}
   /* in-flight restart: the engine lights ~55 s into the attempt; above 300 ft power is restored and a powered landing follows */
   if(e.landing==='restart'&&ctx.restartTry&&!ctx.restarted&&t>decisionAt['em-landing']+55){if(aglFt>300&&!st.onGround){ctx.restarted=true;st.autorot=false;ctx.engineOut=false;ctx.eng=undefined;phase='cruise';lz=null;landingChoice='asap';ctx.warn.rpm=false;ev(t,'Usul','Motor çalıştı','N1 %40’ta starter bırakıldı; gaz kolu elle 6400–6600 RPM’e açıldı. Mümkün olan en kısa zamanda inilir.');}else ctx.restartFail=true;}
   if(phase==='autorot')return autorotPhase(st,t,e,ctx,base,lz,term,config,ev,(n)=>{lz=n;});
@@ -252,8 +264,8 @@ function emergencyDirector(e,config,choices,ctx){
   if(!needsLanding||landingChoice==='continue'){ctx.phase=e.urgency==='info'?'Uçuşa devam · bilgi ikazı':'Uçuşa devam';if(!ctx.infoEnd){ctx.infoEnd=true;ctx.end=Math.max(t+22,onset+26);ctx.endReason='time';}return {...base,speedKt:cruiseKt,track:st.track,heightFt:Math.max(300,startH)};}
   // ---- powered landing: pick a field, fly to it, approach and land ----
   if(!lz||ctx.lzFor!==urg()){if(t<actionAt+1.2&&!ctx.delayLanding)return {...base,speedKt:Math.max(cruiseKt,kt),track:st.track,heightFt:Math.max(aglFt,200)};
-   ctx.lzFor=urg();ctx.lzT=t;const runon=e.landing==='runon'||term==='runon';lz=pickProgramLZ(st,area,{urgency:ctx.delayLanding?'practicable':urg(),runon,trees:e.landing==='trees',water:e.landing==='ditch',maxR:urg()==='practicable'?1900:1500,minR:clamp(agl*2.4,150,700)})??{x:st.x+Math.sin(st.track)*600,z:st.z-Math.cos(st.track)*600,score:0,label:'Seçilemedi'};ctx.lz=lz;ctx.fc=e.landing==='trees'||e.landing==='ditch'?null:chooseFinal(st,lz,area,runon);ctx.gateDone=false;ctx.gateExtra=0;
-   ev(t,'Saha',`İniş sahası: ${lz.label??''}`,`${Math.round(Math.hypot(lz.x-st.x,lz.z-st.z))} m · ${URGENCY_TEXT[urg()]??''}${lz.slopeDeg!=null?` · eğim ${lz.slopeDeg.toFixed(1)}°`:''}.`);}
+   ctx.lzFor=urg();ctx.lzT=t;const runon=e.landing==='runon'||term==='runon';if(area==='airfield'){/* v0.42 meydanda arıza: piste düz yaklaşma (06 ya da 24, gidiş yönüne en yakın) */const H=RUNWAY.heading,fwd=Math.cos(wrap(st.track-H))>=0?H:H+Math.PI,al=runon?-450:-250,ux=Math.sin(fwd),uz=-Math.cos(fwd),px=ux*al*Math.sign(Math.cos(fwd-H)),pz=uz*al*Math.sign(Math.cos(fwd-H));lz={x:px,z:pz,score:1,label:runon?'Pist · ruleli iniş':'Pist'};ctx.lz=lz;ctx.fc=fwd;ctx.gateDone=false;ctx.gateExtra=0;ev(t,'Saha','İniş sahası: pist',`${Math.round(Math.hypot(lz.x-st.x,lz.z-st.z))} m · ${URGENCY_TEXT[urg()]??''}.`);}else{lz=pickProgramLZ(st,area,{urgency:ctx.delayLanding?'practicable':urg(),runon,trees:e.landing==='trees',water:e.landing==='ditch',maxR:Math.max(urg()==='practicable'?1900:1500,(runon?clamp(agl/Math.tan(7*Math.PI/180)+100,300,1500):clamp(agl/Math.tan(11*Math.PI/180),150,900))+900),minR:runon?clamp(agl/Math.tan(7*Math.PI/180)+100,300,1500):clamp(agl/Math.tan(11*Math.PI/180),150,900),cone:.8})??{x:st.x+Math.sin(st.track)*600,z:st.z-Math.cos(st.track)*600,score:0,label:'Seçilemedi'};ctx.lz=lz;ctx.fc=e.landing==='trees'||e.landing==='ditch'?null:chooseFinal(st,lz,area,runon);ctx.gateDone=false;ctx.gateExtra=0;
+   ev(t,'Saha',`İniş sahası: ${lz.label??''}`,`${Math.round(Math.hypot(lz.x-st.x,lz.z-st.z))} m · ${URGENCY_TEXT[urg()]??''}${lz.slopeDeg!=null?` · eğim ${lz.slopeDeg.toFixed(1)}°`:''}.`);}}
   const dx=lz.x-st.x,dz=lz.z-st.z,D=Math.hypot(dx,dz),b=Math.atan2(dx,-dz),runonT=(term??e.landing)==='runon',gL=terrainHeight(lz.x,lz.z,area),hz=st.y-gL,gHere=st.y-agl,ang=Math.max((runonT?5.5:9)*Math.PI/180,ctx.appAng??0),targetH=e.landing==='trees'?Math.max(8,obstacleTopNear(lz.x,lz.z,area,9)-terrainHeight(lz.x,lz.z,area)+2)/FT:e.landing==='ditch'?3:3;
   const minKt=e.effects.minKt??0,maxKt=e.effects.maxKt??80;
   if(e.landing==='autorotRunon'&&!st.autorot&&D<=Math.max(150,agl*3.6)){goAutorot(st,'İnişe müsait araziye gelindi: otorotasyona girildi.',true);return autorotPhase(st,t,e,ctx,base,lz,term,config,ev,(n)=>{lz=n;});}
@@ -315,7 +327,7 @@ function refLanding(e,st,area){if(e.landing==='fire'){const lz=pickProgramLZ(st,
    boulders taller than that line (less a 2 m margin) block it */
 function flarePathClear(st,x1,z1,area){const L=Math.hypot(x1-st.x,z1-st.z),h0=st.y;for(let d=8;d<L-6;d+=8){const f=d/L,x=st.x+(x1-st.x)*f,z=st.z+(z1-st.z)*f,g=terrainHeight(x,z,area),h=h0+(terrainHeight(x1,z1,area)-h0)*f;if(obstacleTopNear(x,z,area,5)>g+1.5&&obstacleTopNear(x,z,area,5)+2>h)return false;}return true;}
 function chooseFinal(st,lz,area,runon){const gL=terrainHeight(lz.x,lz.z,area),a0=Math.atan2(lz.x-st.x,-(lz.z-st.z)),lim=(runon?8:15)*Math.PI/180;let best=null;
- for(const off of [0,.45,-.45,.9,-.9,1.4,-1.4,2,-2,2.6,-2.6,Math.PI]){const c=a0+off;let cost=Math.abs(off)*.35;const an=clearAngle(lz,c,area,gL);if(an>lim)cost+=(an-lim)*20;
+ for(const off of [0,.2,-.2,.45,-.45,.9,-.9,1.4,-1.4,2,-2,2.6,-2.6,Math.PI]){const c=a0+off;let cost=Math.abs(off)*.35+(Math.abs(off)>.5?2.5:0); /* v0.42 düz yaklaşma: saha üzerinden geçip geri dönülmez */const an=clearAngle(lz,c,area,gL);if(an>lim)cost+=(an-lim)*20;
   if(runon){let m=1;for(let d=20;d<=80;d+=20){const x=lz.x+Math.sin(c)*d,z=lz.z-Math.cos(c)*d;m=Math.min(m,obstacleTopNear(x,z,area,5)>terrainHeight(x,z,area)+1.5?0:assessSpot(x,z,area).score);}if(m<.45)cost+=2;}
   if(!best||cost<best.cost)best={c,cost};}
  return best.c;}
@@ -330,7 +342,7 @@ function autorotPhase(st,t,e,ctx,base,lz,term,config,ev,setLz){
  const engT=ctx.engineOut||ctx.eng===0||e.landing==='restart'?(st.eng>4000?1500:0):6600*0+1200;
  if(!lz){lz={x:st.x+Math.sin(st.track)*aglFt*FT*4,z:st.z-Math.cos(st.track)*aglFt*FT*4,label:'Süzülüş istikameti'};setLz(lz);ctx.lz=lz;}
  const dx=lz.x-st.x,dz=lz.z-st.z,D=Math.hypot(dx,dz),b=D>15?Math.atan2(dx,-dz):st.track,runon=(term??(e.landing==='autorotRunon'?'runon':'minrun'))==='runon';
- const late=ctx.restartTry&&(ctx.lowRestart||ctx.restartFail)?.35:1;
+ const late=ctx.restartTry&&(ctx.lowRestart||ctx.restartFail)?.35:ctx.lowRpm?.3:1;
  /* v0.35 rising ground (dağlık): the flare gate is judged on the lower of the height over the ground below and the
     height over the field, and over the terrain the next 3 s will cross, so a hillside does not come up under a late flare */
  let gAhead=terrainHeight(st.x,st.z,area);for(let d=20;d<=gs*3;d+=20)gAhead=Math.max(gAhead,terrainHeight(st.x+st.vx/Math.max(gs,1)*d,st.z+st.vz/Math.max(gs,1)*d,area));const hGate=Math.min(aglFt,(st.y-Math.max(gAhead,terrainHeight(lz.x,lz.z,area)))/FT);
@@ -356,14 +368,14 @@ function autorotPhase(st,t,e,ctx,base,lz,term,config,ev,setLz){
    ctx.flareTrack=Math.abs(wrap(Math.atan2(lz.x-st.x,-(lz.z-st.z))-tr))<.8?Math.atan2(lz.x-st.x,-(lz.z-st.z)):tr;
    ev(t,'Otorotasyon','Fleyır',`${Math.round(aglFt)} ft · ${(gs/KT).toFixed(0)} kt.`+(moved?` İniş noktası düzeltildi: ${lz.label?.toLocaleLowerCase('tr-TR')??''}.`:''));}
   const tk=runon?22:3;return {...base,rpm:334,eng:engT,rpmRate:15,speedKt:tk,track:ctx.flareTrack,vy:-(runon?3:2)*late-(ctx.restartTry?3:0),vAccel:4,accel:5.5,pitchBias:-.1};}
- ctx.phase='Otorotasyon · son kollektif';if(!ctx.cushioned){ctx.cushioned=t;ev(t,'Otorotasyon','Son kollektif',`${Math.round(aglFt)} ft’te seri kollektif.`);}
+ ctx.phase='Otorotasyon · son kollektif';if(!ctx.cushioned){ctx.cushioned=t;ev(t,'Otorotasyon','Son kollektif',`${Math.round(aglFt)} ft’te seri kollektif.`+(ctx.fx.trLoss||e.effects.cg?' Kollektifle baş sola döner (mast sürtünmesi); gaz kolu ve saykılıkla istikamet korunur.':''));}
  return {...base,rpm:255,eng:engT,rpmRate:30,speedKt:runon?18:2,track:ctx.flareTrack??b,vy:ctx.restartTry&&(ctx.lowRestart||ctx.restartFail)?-3.5:-1.1,vAccel:4,accel:3,collective:1.7};}
 function ditchPhase(st,t,ctx,base,ev){
  if(!ctx.ditchT){ctx.ditchT=t;ev(t,'Usul','3 ft havır · su üstü','Kokpit kapıları atıldı, kabin kapıları açık; mürettebat ve yolcular helikopteri terk ediyor.');}
  const dt=t-ctx.ditchT;if(dt<6){ctx.phase='Su üstünde havır · tahliye';return {...base,vel:[0,0],heightFt:3};}
- if(dt<12){ctx.phase='Personelden uzaklaşma · havır taksi';const h=st.hdg;return {...base,vel:[Math.sin(h+Math.PI/2)*4,-Math.cos(h+Math.PI/2)*4],heightFt:3};}
+ if(dt<12){ctx.phase='Personelden uzaklaşma · ileri havır taksi';ctx.ditchH??=st.hdg;const h=ctx.ditchH,k=Math.min(1,(dt-6)/2);return {...base,vel:[Math.sin(h)*3.5*k,-Math.cos(h)*3.5*k],heightFt:3,heading:h};} /* v0.42 ileri havır taksi, baş sabit */
  if(!ctx.ditchOff){ctx.ditchOff=true;ev(t,'Usul','Gaz kapalı · otorotasyon','Paller suya girmeden kollektifin tamamı; ufki tut, yatış başlayınca yatış yönüne saykılık.');}
- st.autorot=true;ctx.phase='Suya iniş';return {...base,rpm:270,eng:0,rpmRate:20,vel:[0,0],vy:-1.2,collective:1.8};}
+ st.autorot=true;ctx.phase='Suya iniş';return {...base,rpm:270,eng:0,rpmRate:20,vel:[0,0],vy:-1.2,collective:1.8,heading:ctx.ditchH};}
 function groundPhase(st,t,e,ctx,base,touched,config,ev){
  if(e.landing==='groundStart'){if(!ctx.gs0){ctx.gs0=true;ctx.warn.fire=true;ev(4,'Emercensi','EGT limit aşımı','Çalıştırmada EGT hızla yükseliyor; egzozdan alev.');}const ok=ctx.actionDone&&t>=(ctx.actionT??t)+(ctx.fireDelay??0);ctx.phase=ok?'Starter basılı · gaz ve yakıt kapalı':'Çalıştırma devam ediyor';if(ok&&!ctx.endSet){ctx.endSet=true;ctx.end=t+16;ctx.endReason='time';ctx.smoke=.5;}if(ok&&t>(ctx.actionT??t)+(ctx.fireDelay??0)+4){ctx.warn.fire=false;ctx.smoke=Math.max(0,.5-(t-(ctx.actionT??t))*.03);}
   return {...base,vy:0,rpm:ok?Math.max(0,st.rpm-1):Math.min(140,st.rpm+2),eng:ok?900:2600,rpmRate:9};}
