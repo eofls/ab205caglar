@@ -1,5 +1,6 @@
 import * as T from './vendor/three.module.js';
 import {LITE} from './device-profile.js';
+import {enhanceSurface} from './environment.js';
 import {terrainHeight,landCoverAt,terrainColor,FEATURES,parcelKind,FOREST_ROADS,forestClearcuts,buildingHeightOf,runwayCoordinates,RUNWAY,trackOnU,trackOnV,FIELD_TRACK} from './terrain-data.js';
 import {AIRFIELD_FEATURES} from './assets/terrain/guvercinlik-osm.js';
 export function groundTexture(){
@@ -41,7 +42,7 @@ export function roadSamples(points,spacing=12){
 export function addTerrainDetail(scene,features=FEATURES,area="terrain"){
  const height=(x,z)=>terrainHeight(x,z,area);
  const group=new T.Group();group.name=area+' • DEM + OSM';scene.add(group);
- const roadMat=new T.MeshStandardMaterial({color:'#c2b393',roughness:1}),pavedMat=new T.MeshStandardMaterial({color:'#5f5f5a',roughness:.95,polygonOffset:true,polygonOffsetFactor:-1}),taxiMat=new T.MeshStandardMaterial({color:'#5b5b56',roughness:.95}),lineMat=new T.MeshBasicMaterial({color:'#e2b72c'}),buckets=new Map();
+ const roadMat=enhanceSurface(new T.MeshStandardMaterial({color:'#b5a585',roughness:1}),{detail:1.1}),pavedMat=enhanceSurface(new T.MeshStandardMaterial({color:'#56565a',roughness:.95,polygonOffset:true,polygonOffsetFactor:-1}),{asphalt:true,detail:1}),taxiMat=enhanceSurface(new T.MeshStandardMaterial({color:'#58585a',roughness:.95}),{asphalt:true,detail:1}), /* v0.43 yol ve taksi yolu: asfalt / toprak dokusu */lineMat=new T.MeshBasicMaterial({color:'#e2b72c'}),buckets=new Map();
  for(const f of features){
   if(f.tags.highway){const points=roadSamples(f.points),pos=[],ix=[],hw=f.tags.highway.replace('_link',''),width=Number(f.tags.width)||({track:3.5,taxiway:15,motorway:22,trunk:16,primary:12,secondary:10,tertiary:8,residential:6,unclassified:6,service:4,living_street:5,pedestrian:4}[hw]??5);for(let i=0;i<points.length;i++){const p=points[i],a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)],len=Math.hypot(b[0]-a[0],b[1]-a[1])||1,nx=-(b[1]-a[1])/len*width/2,nz=(b[0]-a[0])/len*width/2;for(const s of [-1,1]){const x=p[0]+s*nx,z=p[1]+s*nz;pos.push(x,height(x,z)+.12,z);}if(i){const k=i*2;ix.push(k-2,k-1,k,k-1,k+1,k);}}const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setIndex(ix);g.computeVertexNormals();const taxi=f.tags.highway==='taxiway';const paved=area==='airfield'?f.tags.highway!=='track':['motorway','trunk','primary','secondary','tertiary'].includes(hw);const m=new T.Mesh(g,taxi?taxiMat:paved?pavedMat:roadMat);m.material.side=T.DoubleSide;m.receiveShadow=true;group.add(m);
    if(taxi){const lp=[],li=[];for(let i=0;i<points.length;i++){const p=points[i],a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)],len=Math.hypot(b[0]-a[0],b[1]-a[1])||1,nx=-(b[1]-a[1])/len*.2,nz=(b[0]-a[0])/len*.2;for(const s2 of [-1,1]){const x=p[0]+s2*nx,z=p[1]+s2*nz;lp.push(x,height(x,z)+.16,z);}if(i){const k=i*2;li.push(k-2,k-1,k,k-1,k+1,k);}}const lg=new T.BufferGeometry();lg.setAttribute('position',new T.Float32BufferAttribute(lp,3));lg.setIndex(li);const lm=new T.Mesh(lg,lineMat);lm.material.side=T.DoubleSide;group.add(lm);}}
@@ -79,12 +80,11 @@ function addPart(buckets,material,geo,gr){let b=buckets.get(material);if(!b)buck
 /* v0.37 Güvercinlik zemini: gerçek uydu görüntüsü (Sentinel-2 cloudless 2023, EOX — CC BY-NC-SA 4.0; Copernicus Sentinel
    verisi). Görüntü ±4 km'yi kaplar; zemin düzlemi ±3 km olduğundan ortası kırpılır. Yüklenene kadar eski çizim gösterilir. */
 /* v0.43 uydu görüntüsü keskinleştirme (unsharp mask, bir kez yüklemede): 4–6 m piksellerin tarla ve yol sınırları belirginleşir */
-function sharpenCanvas(ctx,N,amount=.9,r=2){try{const im=ctx.getImageData(0,0,N,N),d=im.data,L=N*N,tmp=new Float32Array(L*3),blur=new Float32Array(L*3),w=2*r+1;
- for(let y=0;y<N;y++){let s0=0,s1=0,s2=0;for(let k=-r;k<=r;k++){const x=Math.min(N-1,Math.max(0,k)),i=(y*N+x)*4;s0+=d[i];s1+=d[i+1];s2+=d[i+2];}
-  for(let x=0;x<N;x++){const o=(y*N+x)*3;tmp[o]=s0/w;tmp[o+1]=s1/w;tmp[o+2]=s2/w;const a=(y*N+Math.min(N-1,x+r+1))*4,b=(y*N+Math.max(0,x-r))*4;s0+=d[a]-d[b];s1+=d[a+1]-d[b+1];s2+=d[a+2]-d[b+2];}}
- for(let x=0;x<N;x++){let s0=0,s1=0,s2=0;for(let k=-r;k<=r;k++){const y=Math.min(N-1,Math.max(0,k)),o=(y*N+x)*3;s0+=tmp[o];s1+=tmp[o+1];s2+=tmp[o+2];}
-  for(let y=0;y<N;y++){const o=(y*N+x)*3;blur[o]=s0/w;blur[o+1]=s1/w;blur[o+2]=s2/w;const a=(Math.min(N-1,y+r+1)*N+x)*3,b=(Math.max(0,y-r)*N+x)*3;s0+=tmp[a]-tmp[b];s1+=tmp[a+1]-tmp[b+1];s2+=tmp[a+2]-tmp[b+2];}}
- for(let i=0;i<L;i++){const o=i*3,q=i*4;for(let c=0;c<3;c++){const v=d[q+c]+amount*(d[q+c]-blur[o+c]);d[q+c]=v<0?0:v>255?255:v;}}
+function sharpenCanvas(ctx,N,amount=.9,r=2){try{const im=ctx.getImageData(0,0,N,N),d=im.data,L=N*N,tmp=new Uint8Array(L),blur=new Uint8Array(L),w=2*r+1; /* kanal kanal, 8 bit ara bellek: büyük dokuda bellek ≈2×N² bayt */
+ for(let c=0;c<3;c++){
+  for(let y=0;y<N;y++){let s0=0;const row=y*N;for(let k=-r;k<=r;k++)s0+=d[(row+Math.min(N-1,Math.max(0,k)))*4+c];for(let x=0;x<N;x++){tmp[row+x]=s0/w;s0+=d[(row+Math.min(N-1,x+r+1))*4+c]-d[(row+Math.max(0,x-r))*4+c];}}
+  for(let x=0;x<N;x++){let s0=0;for(let k=-r;k<=r;k++)s0+=tmp[Math.min(N-1,Math.max(0,k))*N+x];for(let y=0;y<N;y++){blur[y*N+x]=s0/w;s0+=tmp[Math.min(N-1,y+r+1)*N+x]-tmp[Math.max(0,y-r)*N+x];}}
+  for(let i=0;i<L;i++){const q=i*4+c,v=d[q]+amount*(d[q]-blur[i]);d[q]=v<0?0:v>255?255:v;}}
  ctx.putImageData(im,0,0);}catch(e){}}
 export function airfieldGroundTexture(){const t=airfieldGroundTextureDrawn();if(!t||typeof Image==='undefined')return t;const img=new Image();img.decoding='async';
  img.onload=()=>{const c=t.image,ctx=c.getContext('2d');if(!ctx)return;const s=img.width*(6000/8000),o=(img.width-s)/2;ctx.filter='saturate(0.76) hue-rotate(6deg) contrast(1.12) brightness(0.96)';ctx.drawImage(img,o,o,s,s,0,0,c.width,c.height);ctx.filter='none';sharpenCanvas(ctx,c.width,1.1,3); /* v0.38.3 satellite colours toned to the eye: less orange, a little more contrast */t.needsUpdate=true;};img.src='assets/terrain/guvercinlik-s2.jpg';return t;}

@@ -164,7 +164,7 @@ export function createHorizon(area){
  for(let r=0;r<=rings;r++){const d=inner+(outer-inner)*Math.pow(r/rings,1.6);for(let i=0;i<=seg;i++){const a=i/seg*Math.PI*2,x=Math.cos(a)*d,z=Math.sin(a)*d,sq=Math.min(1,edge/Math.max(Math.abs(Math.cos(a)),Math.abs(Math.sin(a)))/d),ex=x*sq,ez=z*sq,y=real?terrainHeight(r===0?ex:x,r===0?ez:z,area)-(r===0?1.5:.3*Math.min(1,r/3)):hfun(x,z)+(r===0?terrainHeight(ex,ez,area)-2:0);pos.push(r===0?ex:x,y-(r>0&&Math.max(Math.abs(x),Math.abs(z))<half-5?18:0),r===0?ez:z); /* v0.39 ufuk halkası zemin düzleminin köşeleri altında kalır (z-fighting titremesi yok) */uv.push(((r===0?ex:x)+wr)/(2*wr),1-((r===0?ez:z)+wr)/(2*wr));
   const snow=area==='mountain'&&y>620?Math.min(1,(y-620)/140):0;const c=area==='water'&&y<=0?base:[base[0]*(.85+.2*Math.sin(i)),base[1],base[2]];col.push(...c.map((v,j)=>v*(1-snow)+[.92,.94,.96][j]*snow));}}
  for(let r=0;r<rings;r++)for(let i=0;i<seg;i++){const a=r*(seg+1)+i,b=a+seg+1;idx.push(a,b,a+1,a+1,b,b+1);}
- const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();if(real){g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));const tex=area==='airfield'?new T.TextureLoader().load('assets/terrain/'+RG.wide):filteredTexture('assets/terrain/'+RG.wide,'saturate(0.72) hue-rotate(7deg) contrast(1.08) brightness(0.93)',LITE?1024:2048);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=4;const m=new T.Mesh(g,enhanceSurface(new T.MeshStandardMaterial({map:tex,roughness:1}),{detail:.4}));m.name='Ufuk arazisi (gerçek)';return m;}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();if(real){g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));const tex=area==='airfield'?filteredTexture('assets/terrain/'+RG.wide,'saturate(0.76) hue-rotate(6deg) contrast(1.12) brightness(0.96)',1024):filteredTexture('assets/terrain/'+RG.wide,'saturate(0.74) hue-rotate(11deg) contrast(1.12) brightness(0.96)',LITE?1024:2048);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=4;const m=new T.Mesh(g,enhanceSurface(new T.MeshStandardMaterial({map:tex,roughness:1}),{detail:.4}));m.name='Ufuk arazisi (gerçek)';return m;}
  const m=new T.Mesh(g,enhanceSurface(new T.MeshStandardMaterial({vertexColors:true,roughness:1}),{rock:area==='mountain'?1:0,snowLine:area==='mountain'?640:1e9,detail:.7}));m.name='Ufuk arazisi';return m;
 }
 function hash(x,z){const s=Math.sin(x*127.1+z*311.7)*43758.5453;return s-Math.floor(s);}
@@ -369,13 +369,17 @@ export function createGrass(){if(typeof document==='undefined')return null;const
  const m=new T.MeshLambertMaterial({map:grassTexture(),alphaTest:.45,side:T.DoubleSide,color:'#ffffff'});m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\n normal=normalize((viewMatrix*vec4(0.,1.,0.,0.)).xyz);');}; /* ot yaprakları yukarı bakan normalle aydınlanır: arka yüz kararmaz */
  const mesh=new T.InstancedMesh(g,m,N);mesh.name='Ot kümeleri';mesh.count=0;mesh.frustumCulled=false;mesh.receiveShadow=true;mesh.userData={at:null,area:null,N};return mesh;}
 const GRASS_TINT={grass:[.86,.84,.6],stubble:[.98,.88,.6],field:[.9,.86,.58],rough:[.9,.8,.58],wetland:[.66,.76,.46],forest:[.64,.7,.44]};
-export function updateGrass(mesh,cam,area,agl){if(!mesh)return;const U=mesh.userData;if(agl>45||area==='water'){mesh.visible=false;return;}mesh.visible=true;
- const gx=cam.x,gz=cam.z;if(U.at&&U.area===area&&Math.hypot(gx-U.at[0],gz-U.at[1])<28)return;U.at=[gx,gz];U.area=area;
- const o=new T.Object3D(),col=new T.Color(),R=75;let n=0,seed=(Math.floor(gx/7)*73856093^Math.floor(gz/7)*19349663)>>>0;const r=()=>(seed=(seed*1664525+1013904223)>>>0)/4294967296;
- for(let tries=0;tries<U.N*1.6&&n<U.N;tries++){const ang=r()*Math.PI*2,rad=Math.sqrt(r())*R,x=gx+Math.cos(ang)*rad,z=gz+Math.sin(ang)*rad;
-  /* aynı yer her seferinde aynı küme: dünya ızgarasına kilitli konum */const ci=Math.round(x/1.8),cj=Math.round(z/1.8),hh=(a,b)=>{const q=Math.sin(a*127.1+b*311.7)*43758.5453;return q-Math.floor(q);},cx=ci*1.8+(hh(ci,cj)-.5)*1.8,cz=cj*1.8+(hh(cj+17,ci-5)-.5)*1.8;if(hh(ci+3,cj+9)<.35)continue;
-  const fr=Math.hypot(cx-gx,cz-gz)/R;if(fr>1||hh(ci-11,cj+23)<fr*fr)continue; /* kenara doğru seyrelir: çember sınırı görünmez */
-  const k=surfaceProfile(cx,cz,area).kind,t=GRASS_TINT[k];if(!t)continue;const h=terrainHeight(cx,cz,area),s=(.5+((Math.abs(cx*31+cz*17)%10)/10)*.7)*(1-.45*fr);
-  o.position.set(cx,h-.02,cz);o.rotation.set(0,(cx*.37+cz*.71)%6.28,0);o.scale.set(s*1.3,s*(k==='stubble'?.45:k==='rough'?.8:.65),s*1.3);o.updateMatrix();mesh.setMatrixAt(n,o.matrix);
-  const v=.85+((Math.abs(cx*13+cz*7)%10)/10)*.3;col.setRGB(t[0]*v,t[1]*v,t[2]*v);mesh.setColorAt(n,col);n++;}
- mesh.count=n;mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
+/* v0.43 kare hızı: yerleşim kare başına ≈3 ms’lik dilimlerle hesaplanır, hücre türü önbellekte tutulur (takılma olmaz) */
+const _hh=(a,b)=>{const q=Math.sin(a*127.1+b*311.7)*43758.5453;return q-Math.floor(q);};
+export function updateGrass(mesh,cam,area,agl){if(!mesh)return;const U=mesh.userData;if(agl>45||area==='water'){mesh.visible=false;U.job=null;return;}
+ if(U.area!==area){U.cache=new Map();U.area=area;U.at=null;mesh.count=0;}
+ if(!U.job&&(!U.at||Math.hypot(cam.x-U.at[0],cam.z-U.at[1])>=28)){U.job={gx:cam.x,gz:cam.z,ci0:Math.round((cam.x-75)/1.8),ci1:Math.round((cam.x+75)/1.8),cj0:Math.round((cam.z-75)/1.8),cj1:Math.round((cam.z+75)/1.8),ci:null,cj:null,list:[]};U.job.ci=U.job.ci0;U.job.cj=U.job.cj0;}
+ const J=U.job;if(J){const t0=performance.now(),R=75;
+  while(J.ci<=J.ci1&&performance.now()-t0<3){const ci=J.ci,cj=J.cj;J.cj++;if(J.cj>J.cj1){J.cj=J.cj0;J.ci++;}
+   if(_hh(ci+3,cj+9)<.35)continue;const cx=ci*1.8+(_hh(ci,cj)-.5)*1.8,cz=cj*1.8+(_hh(cj+17,ci-5)-.5)*1.8,fr=Math.hypot(cx-J.gx,cz-J.gz)/R;if(fr>1||_hh(ci-11,cj+23)<fr*fr)continue;
+   const key=ci*100003+cj;let c=U.cache.get(key);if(!c){const k=surfaceProfile(cx,cz,area).kind;c={k,h:GRASS_TINT[k]?terrainHeight(cx,cz,area):0};U.cache.set(key,c);if(U.cache.size>60000)U.cache.clear();}
+   if(GRASS_TINT[c.k])J.list.push([cx,cz,c.k,c.h,fr]);}
+  if(J.ci>J.ci1){const o=new T.Object3D(),col=new T.Color();let n=0;for(const [cx,cz,k,h,fr] of J.list){if(n>=U.N)break;const t=GRASS_TINT[k],s=(.5+((Math.abs(cx*31+cz*17)%10)/10)*.7)*(1-.45*fr);
+    o.position.set(cx,h-.02,cz);o.rotation.set(0,(cx*.37+cz*.71)%6.28,0);o.scale.set(s*1.3,s*(k==='stubble'?.45:k==='rough'?.8:.65),s*1.3);o.updateMatrix();mesh.setMatrixAt(n,o.matrix);const v=.85+((Math.abs(cx*13+cz*7)%10)/10)*.3;col.setRGB(t[0]*v,t[1]*v,t[2]*v);mesh.setColorAt(n,col);n++;}
+   mesh.count=n;mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;U.at=[J.gx,J.gz];U.job=null;}}
+ mesh.visible=mesh.count>0;}

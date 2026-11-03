@@ -75,9 +75,9 @@ function patternNear(site,fin){let b=site.patterns[0];for(const p of site.patter
 /* v0.43 arazi MT paterni noktaları: rüzgâraltı hattı son yaklaşmanın tersi istikamette R/A noktasından geçer */
 function sitePoint(ctx,k){const p=ctx.pat,sp=ctx.site,F=p.final*R;if(k==='ra')return {x:p.ra[0],z:p.ra[1]};if(k==='sy')return {x:p.sy[0],z:p.sy[1]};if(k==='site')return {x:sp.x,z:sp.z};return {x:p.ra[0]-Math.sin(F+Math.PI)*2500,z:p.ra[1]+Math.cos(F+Math.PI)*2500};}
 function dwGuide(ctx,st){const a=sitePoint(ctx,'dw'),b=sitePoint(ctx,'ra'),brg=Math.atan2(b.x-a.x,-(b.z-a.z)),xt=(st.x-b.x)*Math.cos(brg)+(st.z-b.z)*Math.sin(brg);return brg-clamp(xt/400,-1.5,1.5);}
-/* esas bacak kısa paternlerde dönüşler arasında ≥4 s düz uçuş kalacak en küçük yatış (15–30°), 70 kt */
+/* esas bacak kısa paternlerde dönüşler arasında ≥6 s düz uçuş kalacak en küçük yatış (15–30°), 70 kt */
 function patBank(ctx){const p=ctx.pat;if(p._bank)return p._bank;const a=sitePoint(ctx,'dw'),r0=sitePoint(ctx,'ra'),sy=sitePoint(ctx,'sy'),sp=sitePoint(ctx,'site'),b1=Math.atan2(r0.x-a.x,-(r0.z-a.z)),b2=Math.atan2(sy.x-r0.x,-(sy.z-r0.z)),b3=Math.atan2(sp.x-sy.x,-(sp.z-sy.z)),L=Math.hypot(sy.x-r0.x,sy.z-r0.z),v=70*KT,k=Math.tan(Math.abs(wrap(b2-b1))/2)+Math.tan(Math.abs(wrap(b3-b2))/2);
- let bk=30;for(let b=15;b<=30;b++){const r=v*v/(G*Math.tan(b*R));if(r*k+2*v*1.2+4*v<=L){bk=b;break;}}Object.defineProperty(p,'_bank',{value:bk,enumerable:false,configurable:true});return bk;}
+ let bk=30;for(let b=15;b<=30;b++){const r=v*v/(G*Math.tan(b*R));if(r*k+2*v*1.2+6.5*v<=L){bk=b;break;}} /* v0.43 esas bacakta en az ≈6 s düz uçuş: iki dönüş tek bir uzun dönüş gibi görünmez */Object.defineProperty(p,'_bank',{value:bk,enumerable:false,configurable:true});return bk;}
 function patternFor(site,windFromDeg,rev=false){let best=site.patterns[0],k=x=>Math.abs(wrap(x.final*R-windFromDeg*R));for(const p of site.patterns)if(rev?k(p)>k(best):k(p)<k(best))best=p;return best;}
 /* start of a site manoeuvre (default wind pattern): 'recon' 1.4 km out on the S/Y side at R/A altitude heading to the site; 'sy' at the S/Y point on final */
 function siteStart(id,where,v=70,fin){const s=SITE(id),p=fin!==undefined?patternNear(s,fin):patternFor(s,0);let x,z,ft,hdg;
