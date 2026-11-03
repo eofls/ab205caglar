@@ -15,6 +15,11 @@ Bu depo hem Claude hem ChatGPT/Codex tarafından düzenlenir. Tek doğru kaynak 
 - Ortak hız / rüzgâr / atmosfer tanımları: `flight-reference.js`.
 - `sw.js` içindeki `CACHE` adı ve `flight-reference.js` içindeki `APP_VERSION` her sürümde birlikte artırılır; yeni dosya eklenirse `sw.js` SHELL listesine de eklenir.
 
+## Kararlar, yardım, görsellik (v0.43)
+- Emercensi soruları `emergency-catalog.js` sonundaki `Q` tablosunda (belirti, doğru ilk eylem, iki makul hata ve sonuçları). Seçenek sırası `mixOptions` / `mix` ile karar başına sabit ama karışık; doğru seçeneği ilk sıraya koyma. Her seçeneğin uçuştaki sonucu farklı olmalı (`claude/tests/v043.test.mjs`).
+- Arayüzdeki “?” açıklamaları `ui-help.js` içindeki `HELP` listesinde (seçici → paragraflar); yeni bölüm eklenirse oraya da açıklama yaz.
+- Zemin malzemesi `environment.js` `enhanceSurface` (ayrıntı dokusu, kabartı, bulut gölgesi; ortak uniform `SURFACE_U`). Telefonda (`LITE`) kabartı kapalı.
+
 ## Testler
 - `node tests/ci.mjs` — ChatGPT/Codex test seti (sözdizimi, regresyon, otorotasyon tezgâhı, programlar). Sonuçları `ci-results/` altına yazar; `tests/*-results.json` dosyalarını commit etme.
 - `npm run test:claude` — Claude test seti (`claude/tests`, 200 test: manevralar, emercensiler, sahalar, kokpit, sahne).
