@@ -44,7 +44,7 @@ export function validateConfig(raw){
   if(!['emergency','maneuver'].includes(c.program))c.program='emergency';
   if(!EMERGENCIES.some(e=>e.id===c.emergencyId))c.emergencyId='engine-total';
   if(!MANEUVERS.some(m=>m.id===c.maneuverId))c.maneuverId=MANEUVERS[0]?.id??'hover';
-  if(c.program==='emergency'){if(c.powerLossMode==='partial'&&c.emergencyId==='engine-total')c.emergencyId='engine-partial';const e=emergencyById(c.emergencyId);if(e.kind==='total'||e.kind==='partial')c.powerLossMode=e.kind;}
+  if(c.program==='emergency'){const e=emergencyById(c.emergencyId);if(e.kind==='partial')c.powerLossMode='partial';else if(e.kind==='total'&&c.powerLossMode!=='partial')c.powerLossMode='total';} /* v0.42 'Kısmi güç kaybı' program uçuşu; enerji modelinde kısmi güç 'Tam güç kaybı' + kısmi güç ayarıyla kalır */
   if(!['guided','watch','manual'].includes(c.mode))throw Error('Geçersiz mod');
   if(typeof c.manualRunId!=='string'||c.manualRunId.length>64)throw Error('Geçersiz elle uçuş kaydı');
   for(const [k,a,b] of [['temperatureC',-20,45],['pressureAltitudeFt',0,12000],['windKt',0,40],['windFromDeg',0,359],['headingDeg',0,359],['visibilityKm',0.2,30],['startX',-4200,4200],['startZ',-4200,4200]])number(c[k],a,b,k);
