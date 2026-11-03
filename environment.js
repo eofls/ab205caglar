@@ -98,13 +98,13 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
      diffuseColor.rgb*=1.-.42*tz*lane*smoothstep(.25,.75,streak);diffuseColor.rgb*=1.-.12*lane*smoothstep(.4,.8,vnoise(vec2(ra*.01,rc*.8)));
      diffuseColor.rgb*=1.+.10*(step(.7,vnoise(vec2(ra,rc)*.06))-.3);}`:''}`:`
     /* uydu pikselinin (4–10 m) üstünde örtüye göre ince ayrıntı: bitki örtüsünde ot / çalı lekeleri, çıplak zeminde toprak ve taş */
-    float green=clamp((base.g-max(base.r,base.b))*7.+.25,0.,1.),bright=smoothstep(.42,.72,lum);
+    float green=clamp((base.g-max(base.r,base.b))*7.+.25,0.,1.),bright=smoothstep(.38,.68,lum);
     float macro=(n1-.5)*.30+(n2-.5)*.15;
     float grass=(n4-.5)*.24+(n5-.5)*.20-smoothstep(.62,.8,vnoise(w*2.6))*.16;
     float soil=(n3-.5)*.18+(n5-.5)*.12-step(.955,h21(floor(w*2.2)))*.22;
     diffuseColor.rgb*=1.+(macro+mix(soil,grass,green)*nearF*.6)*uDetail;
     {float d1=texture2D(uDet,w/9.).r,d2=texture2D(uDet,mat2(.8,-.6,.6,.8)*w/41.+.37).r,dd=(d1-.5)*1.15*(1.-smoothstep(150.,900.,cd))+(d2-.5)*.7*(1.-smoothstep(400.,2600.,cd));diffuseColor.rgb*=1.+dd*uDetail;} /* döşenen ayrıntı dokusu: iki ölçek, tekrar görünmez */
-    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.8,.79,.75),bright*.7); /* parlak çıplak zemin plastik beyaz görünmez */
+    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.8,.76,.68),bright*.8); /* parlak çıplak zemin plastik beyaz görünmez */
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.92,1.02,.9),green*smoothstep(.3,.7,n2)*.35);`}
     float slope=1.-clamp(normalize(vWorldN).y,0.,1.);
     float rk=smoothstep(.24,.5,slope+(n2-.5)*.12)*uRock;

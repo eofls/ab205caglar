@@ -20,6 +20,7 @@ export function makeAreaScene(area,center={x:0,z:0}){
  root.userData.time={value:0};if(typeof document!=='undefined'){root.add(createHorizon(area));root.add(createPowerLines(area));if(area==='water'){const water=createWater();root.add(water);root.userData.water=water;}if(area==='airfield'){const extras=createAirfieldExtras();root.add(extras);root.userData.airfield=extras;}}
  const objects=areaObjects(area,center);
  {const trees=objects.filter(o=>o.kind==='tree');if(trees.length)root.add(createForest(trees,{time:root.userData.time}));}
+ {const nearR=LITE?1100:2000;try{const far=createFarTrees(area,center,nearR);if(far)root.add(far);}catch(e){console.warn(e);}}
  // v0.33 boulders (same obstacles as collision / landing-zone assessment)
  {const R=LITE?800:1500,rocks=bouldersInBox(center.x-R,center.x+R,center.z-R,center.z+R,area);if(rocks.length){const m=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),new T.MeshStandardMaterial({color:'#8d877b',roughness:1,flatShading:true}),rocks.length),o=new T.Object3D();rocks.forEach((r,i)=>{o.position.set(r.x,terrainHeight(r.x,r.z,area)+r.height*.35,r.z);o.rotation.set(r.x*.13,r.z*.17,r.x*.07);o.scale.set(r.radius,r.height*.75,r.radius*.85);o.updateMatrix();m.setMatrixAt(i,o.matrix);});m.receiveShadow=true;m.castShadow=rocks.length<3000;root.add(m);}}
  if(area==='airfield')for(const o of objects){const g=new T.PlaneGeometry(o.width,o.length,1,o.kind==='runway'?100:1);g.rotateX(-Math.PI/2);g.rotateY(-RUNWAY.heading);g.translate(o.x,0,o.z);const p=g.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,terrainHeight(p.getX(i),p.getZ(i),area)+.08+(o.kind==='stripe'?.02:0));g.computeVertexNormals();root.add(new T.Mesh(g,o.kind==='runway'?enhanceSurface(new T.MeshStandardMaterial({color:'#4b4c48',roughness:.95,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),{asphalt:true,runway:true}):new T.MeshStandardMaterial({color:'#eee9d8',roughness:.95,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3})));}
@@ -39,3 +40,15 @@ export function makeAreaScene(area,center={x:0,z:0}){
  return root;
 }
 export function disposeArea(root){if(!root)return;root.traverse(o=>{o.geometry?.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material])if(m){m.map?.dispose();m.dispose();}});root.removeFromParent();}
+/* v0.43 uzak ağaçlar: yakın pencerenin (örnek ağaç modelleri) dışında, gerçek ağaç ızgarasından (10 m hücre) tek çağrılı nokta bulutu.
+   Uzak tepelerde korular ve dere boyu ağaçları üç boyutlu görünür; telefon için seyrekleştirilir. */
+import {realArea} from './real-area.js';
+export function createFarTrees(area,center,nearR){const ra=realArea(area);if(!ra||typeof document==='undefined')return null;
+ const R=ra.R,step=LITE?20:10,pos=[],col=[],c=new T.Color();let n=0;const hh=(a,b)=>{const q=Math.sin(a*127.1+b*311.7)*43758.5453;return q-Math.floor(q);};
+ for(let z=-R+5;z<R;z+=step)for(let x=-R+5;x<R;x+=step){if(Math.abs(x-center.x)<nearR-60&&Math.abs(z-center.z)<nearR-60)continue;const t=ra.treeCell(x,z);if(!t||t.d<.12)continue;if(hh(x,z)>t.d*(LITE?1.4:1.1))continue;
+  const jx=x+(hh(z,x)-.5)*step,jz=z+(hh(x+7,z-3)-.5)*step,h=terrainHeight(jx,jz,area);pos.push(jx,h+3.2,jz);const v=.8+.4*hh(jx,jz);
+  if(t.kind===1)c.setRGB(.10*v,.16*v,.07*v);else if(t.kind===2)c.setRGB(.06*v,.11*v,.07*v);else if(t.kind===3)c.setRGB(.13*v,.18*v,.08*v);else c.setRGB(.11*v,.14*v,.07*v);col.push(c.r,c.g,c.b);n++;}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));
+ const cv=document.createElement('canvas');cv.width=cv.height=64;const x=cv.getContext('2d'),gr=x.createRadialGradient(32,30,4,32,32,30);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.7,'rgba(255,255,255,.9)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.beginPath();x.arc(32,32,30,0,6.283);x.fill();
+ const tex=new T.CanvasTexture(cv);const m=new T.PointsMaterial({size:LITE?9:7.5,sizeAttenuation:true,vertexColors:true,map:tex,alphaTest:.35,transparent:false,fog:true});
+ const p=new T.Points(g,m);p.name='Uzak ağaçlar';p.frustumCulled=false;p.userData.count=n;return p;}
