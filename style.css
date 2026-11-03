@@ -328,3 +328,9 @@ body.hide-transport .fullscreen-transport,body.hide-transport .scene-panel:is(:f
 .pp-manual{font:600 13px/1.2 inherit;padding:8px 14px;border-radius:8px;border:1px solid #2f5b46;background:#1d3a2d;color:#f2f5ee;cursor:pointer}.pp-manual:hover{background:#26493a}
 /* v0.41 tam ekranda paneller ve yazılar bir tık büyük (geniş ekran ve tablet yatay) */
 @media(min-width:900px) and (min-height:600px){.scene-panel:is(:fullscreen,.pseudo-fs) .fullscreen-ui{zoom:1.12}.scene-panel:is(:fullscreen,.pseudo-fs) .control-display{zoom:1.15}.scene-panel:is(:fullscreen,.pseudo-fs) .scene-toolbar{zoom:1.08}.scene-panel:is(:fullscreen,.pseudo-fs) .caution-panel{zoom:1.1}}
+
+/* v0.43 kokpit göstergeler düğmesi */
+.ck-gbtn{display:none;position:absolute;right:12px;bottom:58px;z-index:6;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(16,28,24,.78);color:#f3f1e8;font:600 13px/1 system-ui,sans-serif;letter-spacing:.02em;cursor:pointer;backdrop-filter:blur(4px)}
+.cockpit-mode .ck-gbtn{display:block}
+.ck-gbtn:hover{background:rgba(30,52,44,.92)}
+.pd-cmp{margin-top:6px}.pd-cmp-btn{align-self:flex-start}.pd-cmp-q{margin:12px 0 4px;font-size:13.5px}.pd-cmp-t td:nth-child(n+2){white-space:nowrap}.pd-mine{background:rgba(255,210,63,.14)}.pd-tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:10.5px;font-weight:700;vertical-align:1px}.pd-tag.ok{background:rgba(34,139,84,.14);color:var(--green)}.pd-tag.me{background:rgba(214,160,20,.18);color:#8a6400}
