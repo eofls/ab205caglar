@@ -40,7 +40,7 @@ export function updateSky(sky,weather,lighting,cover){
  u.below.value.set(dusk?'#6f5f58':'#7f8c84');
  u.sunColor.value.set(dusk?'#ffb47a':'#fff3da');
  u.haze.value=dusk?1.6:over?.2:.6;u.cloud.value=over?1:cover==='scattered'?.35:0;
- u.sunDir.value.set(dusk?.85:.42,dusk?.12:.72,dusk?.5:.38).normalize();
+ u.sunDir.value.set(dusk?.85:.58,dusk?.12:.56,dusk?.5:.42).normalize(); /* v0.43 gündüz güneşi ≈38°: arazi kabartısı ve gölgeler daha belirgin */
  return u.sunDir.value;
 }
 
@@ -77,7 +77,7 @@ function detailTexture(){if(typeof document==='undefined')return null;const N=LI
  for(let i=0;i<(LITE?900:3000);i++){const px=r()*N,py=r()*N,rad=.6+r()*2.2;x.fillStyle=`rgba(${r()<.5?225:45},${r()<.5?220:45},${r()<.5?205:40},${.35+r()*.35})`;x.beginPath();x.arc(px,py,rad,0,6.283);x.fill();}
  const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=8;t.colorSpace=T.NoColorSpace;return t;}
 SURFACE_U.uDet.value=detailTexture();
-export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=false}={}){
+export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=false,runway=false}={}){
  material.userData.surface={rock,snowLine,detail,asphalt};
  material.onBeforeCompile=sh=>{
   sh.uniforms.uRock={value:rock};sh.uniforms.uSnow={value:snowLine};sh.uniforms.uDetail={value:detail};sh.uniforms.uTime=SURFACE_U.uTime;sh.uniforms.uCloud=SURFACE_U.uCloud;sh.uniforms.uWind=SURFACE_U.uWind;sh.uniforms.uDet=SURFACE_U.uDet;sh.uniforms.uAO=SURFACE_U.uAO;sh.uniforms.uAOR=SURFACE_U.uAOR;
@@ -89,7 +89,11 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
     vec3 base=diffuseColor.rgb;float lum=dot(base,vec3(.299,.587,.114));
     ${asphalt?`float det=(n2-.5)*.10+(n3-.5)*.10+(n4-.5)*.08+(n5-.5)*.06*nearF;diffuseColor.rgb*=1.+det*uDetail;
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.82,smoothstep(.55,.8,vnoise(w*vec2(.05,.9))));
-    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.62,smoothstep(.72,.9,vnoise(w*vec2(.9,.012)))*.55);`:`
+    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.62,smoothstep(.72,.9,vnoise(w*vec2(.9,.012)))*.55);${runway?`
+    {/* v0.43 pist: teker izi (lastik birikintisi) temas bölgelerinde ve orta hatta, yamalı asfalt */vec2 rd=vec2(${Math.sin(RUNWAY.heading).toFixed(5)},${(-Math.cos(RUNWAY.heading)).toFixed(5)}),rp=vec2(-rd.y,rd.x);float ra=dot(w,rd),rc=dot(w,rp);
+     float dth=1008.-abs(ra),tz=smoothstep(100.,200.,dth)*(1.-smoothstep(600.,800.,dth));float lane=exp(-pow(rc/5.5,2.));float streak=vnoise(vec2(ra*.04,rc*3.1));
+     diffuseColor.rgb*=1.-.42*tz*lane*smoothstep(.25,.75,streak);diffuseColor.rgb*=1.-.12*lane*smoothstep(.4,.8,vnoise(vec2(ra*.01,rc*.8)));
+     diffuseColor.rgb*=1.+.10*(step(.7,vnoise(vec2(ra,rc)*.06))-.3);}`:''}`:`
     /* uydu pikselinin (4–10 m) üstünde örtüye göre ince ayrıntı: bitki örtüsünde ot / çalı lekeleri, çıplak zeminde toprak ve taş */
     float green=clamp((base.g-max(base.r,base.b))*7.+.25,0.,1.),bright=smoothstep(.42,.72,lum);
     float macro=(n1-.5)*.30+(n2-.5)*.15;
@@ -113,7 +117,7 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
      vec2 dH=vec2(dFdx(H),dFdy(H));vec3 sx=dFdx(-vViewPosition),sy=dFdy(-vViewPosition),R1=cross(sy,normal),R2=cross(normal,sx);float fd=dot(sx,R1)*faceDirection;
      normal=normalize(abs(fd)*normal-sign(fd)*(dH.x*R1+dH.y*R2));}}`);
  };
- material.customProgramCacheKey=()=>'surface2-'+[rock,snowLine,detail,asphalt].join('-');
+ material.customProgramCacheKey=()=>'surface2-'+[rock,snowLine,detail,asphalt,runway].join('-');
  material.needsUpdate=true;return material;
 }
 
