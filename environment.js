@@ -19,6 +19,7 @@ export function createSky(){
   fragmentShader:`uniform vec3 top,horizon,below,sunColor,sunDir;uniform float haze,cloud,night;varying vec3 vDir;${NOISE}
   void main(){vec3 d=normalize(vDir);float h=d.y;vec3 c=mix(horizon,top,pow(clamp(h,0.,1.),.5));
    c=mix(c,horizon*1.05+vec3(.02),exp(-max(h,0.)*16.)*.45*(1.-night)); /* v0.43 ufukta parlak pus bandı */
+   {vec2 dz=normalize(d.xz+1e-5),sz=normalize(sunDir.xz+1e-5);float az=dot(dz,sz);c+=sunColor*.07*pow(max(az,0.),3.)*exp(-max(h,0.)*5.)*(1.-night);c*=1.-.05*max(-az,0.)*smoothstep(0.,.5,h)*(1.-night);} /* güneş tarafında sıcak ufuk, karşı tarafta daha koyu mavi */
    if(h<0.)c=mix(horizon,below,clamp(-h*4.,0.,1.));
    float sd=max(dot(d,normalize(sunDir)),0.);c+=sunColor*(pow(sd,900.)*6.*(1.-cloud*.85)+pow(sd,24.)*.22+pow(sd,4.)*.10*haze);
    // high cirrus streaks, faint
@@ -63,7 +64,10 @@ export function updateClouds(group,weather,cover){
 
 // ---------- Surface detail for terrain/runway materials (world-space noise, slope rock, snow line) ----------
 /* v0.43 gerçekçilik: zemin malzemesi için ortak (paylaşılan) uniform'lar — bulut gölgesi, rüzgâr, zaman, ayrıntı dokusu */
-export const SURFACE_U={uTime:{value:0},uCloud:{value:0},uWind:{value:new T.Vector2(0,0)},uDet:{value:null}};
+export const SURFACE_U={uTime:{value:0},uCloud:{value:0},uWind:{value:new T.Vector2(0,0)},uDet:{value:null},uAO:{value:null},uAOR:{value:0}};
+/* v0.43 DEM’den önceden hesaplanmış ortam kapatma (vadiler ve dere yatakları koyu): claude/tools/bake_ao.py */
+const AO_FILES={mountain:['tepeler-ao.png',6500],terrain:['golbasi-ao.png',4500],airfield:['guvercinlik-ao.png',4000]},AO_TEX={};
+export function setSurfaceArea(area){const f=AO_FILES[area];if(!f||typeof document==='undefined'){SURFACE_U.uAOR.value=0;return;}let t=AO_TEX[area];if(!t){t=AO_TEX[area]=new T.TextureLoader().load('assets/terrain/'+f[0]);t.flipY=false;t.colorSpace=T.NoColorSpace;t.wrapS=t.wrapT=T.ClampToEdgeWrapping;}SURFACE_U.uAO.value=t;SURFACE_U.uAOR.value=f[1];}
 /* bozkır zemini ayrıntı dokusu (döşenir): toprak lekeleri, kuru ot sapları, çakıl. Ortalama parlaklık ≈0,5: uydu rengini bozmaz, yalnız doku katar */
 function detailTexture(){if(typeof document==='undefined')return null;const N=LITE?512:1024,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');let seed=17;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
  x.fillStyle='rgb(128,128,128)';x.fillRect(0,0,N,N);
@@ -76,9 +80,9 @@ SURFACE_U.uDet.value=detailTexture();
 export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=false}={}){
  material.userData.surface={rock,snowLine,detail,asphalt};
  material.onBeforeCompile=sh=>{
-  sh.uniforms.uRock={value:rock};sh.uniforms.uSnow={value:snowLine};sh.uniforms.uDetail={value:detail};sh.uniforms.uTime=SURFACE_U.uTime;sh.uniforms.uCloud=SURFACE_U.uCloud;sh.uniforms.uWind=SURFACE_U.uWind;sh.uniforms.uDet=SURFACE_U.uDet;
+  sh.uniforms.uRock={value:rock};sh.uniforms.uSnow={value:snowLine};sh.uniforms.uDetail={value:detail};sh.uniforms.uTime=SURFACE_U.uTime;sh.uniforms.uCloud=SURFACE_U.uCloud;sh.uniforms.uWind=SURFACE_U.uWind;sh.uniforms.uDet=SURFACE_U.uDet;sh.uniforms.uAO=SURFACE_U.uAO;sh.uniforms.uAOR=SURFACE_U.uAOR;
   sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWorldPos;varying vec3 vWorldN;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvWorldPos=(modelMatrix*vec4(transformed,1.)).xyz;vWorldN=normalize(mat3(modelMatrix)*objectNormal);');
-  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uRock,uSnow,uDetail,uTime,uCloud;uniform vec2 uWind;uniform sampler2D uDet;varying vec3 vWorldPos;varying vec3 vWorldN;'+NOISE)
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uRock,uSnow,uDetail,uTime,uCloud,uAOR;uniform vec2 uWind;uniform sampler2D uDet,uAO;varying vec3 vWorldPos;varying vec3 vWorldN;'+NOISE)
    .replace('#include <color_fragment>',`#include <color_fragment>
    {vec2 w=vWorldPos.xz;float cd=length(cameraPosition-vWorldPos),nearF=1.-smoothstep(90.,700.,cd);
     float n1=fbm(w*.012),n2=vnoise(w*.19),n3=vnoise(w*1.7),n4=vnoise(w*7.3),n5=vnoise(w*23.);
@@ -99,6 +103,7 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
     float rk=smoothstep(.24,.5,slope+(n2-.5)*.12)*uRock;
     vec3 rockC=mix(vec3(.35,.33,.29),vec3(.47,.44,.38),n3)*(0.8+n1*.4);diffuseColor.rgb=mix(diffuseColor.rgb,rockC,rk);
     float sn=smoothstep(uSnow-18.,uSnow+12.,vWorldPos.y+(n1-.5)*60.)*(1.-smoothstep(.45,.7,slope));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.93,.95,.97),sn);
+    if(uAOR>0.){vec2 aq=(w+uAOR)/(2.*uAOR);if(aq.x>0.&&aq.y>0.&&aq.x<1.&&aq.y<1.)diffuseColor.rgb*=mix(1.,texture2D(uAO,aq).r,.85);} /* vadiler, dere yatakları ve tepe etekleri gölgede */
     /* bulut gölgeleri rüzgârla kayar */
     ${LITE?'float cs=smoothstep(.48,.72,vnoise(w*.0015-uWind*uTime*.0015+vec2(13.,5.)));':'float cs=smoothstep(.48,.72,fbm(w*.0015-uWind*uTime*.0015+vec2(13.,5.)));'}diffuseColor.rgb*=1.-cs*uCloud;}`)
    .replace('#include <normal_fragment_maps>',LITE?'#include <normal_fragment_maps>':`#include <normal_fragment_maps>
@@ -113,8 +118,13 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
 }
 
 // ---------- Water: analytic wave normals, sky-reflection fresnel, sun glint, shore foam, rotor downwash ripples ----------
+/* v0.43 su malzemeleri kaydı: deniz / göl yüzeyi ve gerçek sahalardaki göletler aynı gökyüzü ve güneşle güncellenir */
+export const WATER_MATS=new Set();
 export function createWater(){
  const geo=new T.PlaneGeometry(60000,60000,1,1);geo.rotateX(-Math.PI/2);
+ const m=new T.Mesh(geo,waterMaterial(true));m.name='Su yüzeyi';m.position.y=.06;m.receiveShadow=false;return m;
+}
+export function waterMaterial(sea=false){
  const mat=new T.ShaderMaterial({fog:true,transparent:false,
   uniforms:T.UniformsUtils.merge([T.UniformsLib.fog,{time:{value:0},sunDir:{value:new T.Vector3(.4,.7,.3)},skyTop:{value:new T.Color('#3f7cc4')},skyHorizon:{value:new T.Color('#c9dbe3')},deep:{value:new T.Color('#0f3a4c')},shallow:{value:new T.Color('#2f7f86')},sunColor:{value:new T.Color('#fff3da')},heli:{value:new T.Vector4(0,0,999,0)},wind:{value:new T.Vector2(0,0)}}]),
   vertexShader:`#include <common>
@@ -138,7 +148,12 @@ export function createWater(){
    vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 v=normalize(cameraPosition-vW);
    float fres=.02+.98*pow(1.-max(dot(n,v),0.),5.);vec3 r=reflect(-v,n);
    vec3 sky=mix(skyHorizon,skyTop,pow(clamp(r.y,0.,1.),.5));
-   float isl=island(p);vec3 body=mix(deep,shallow,clamp(1.+isl/30.,0.,1.)*.85);
+   #if SEA==1
+   float isl=island(p);
+   #else
+   float isl=-30.;
+   #endif
+   vec3 body=mix(deep,shallow,clamp(1.+isl/30.,0.,1.)*.85);
    vec3 c=mix(body,sky,fres);
    float glint=pow(max(dot(r,normalize(sunDir)),0.),260.)*5.+pow(max(dot(r,normalize(sunDir)),0.),40.)*.18;c+=sunColor*glint;
    float shore=smoothstep(-5.,-.3,isl)*(1.-smoothstep(-.3,.6,isl));float foam=shore*smoothstep(.35,.7,vnoise(p*.35+time*.3)+.35*sin(isl*2.+time*1.5));
@@ -149,7 +164,8 @@ export function createWater(){
    #include <colorspace_fragment>
    #include <fog_fragment>
   }`});
- const m=new T.Mesh(geo,mat);m.name='Su yüzeyi';m.position.y=.06;m.receiveShadow=false;return m;
+ if(!sea)mat.uniforms.deep.value.set('#1d3f3c'),mat.uniforms.shallow.value.set('#2e5a52'); /* gölet: daha koyu, yeşilimsi */
+ mat.defines={SEA:sea?1:0};WATER_MATS.add(mat);return mat;
 }
 
 // ---------- Distant terrain ring (beyond the 6 km physics tile, visual horizon only) ----------
