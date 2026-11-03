@@ -2,16 +2,16 @@
   {
     "program": "maneuver",
     "id": "turns",
-    "duration": 104.75,
+    "duration": 105.65,
     "endReason": "time",
-    "samples": 2096,
+    "samples": 2114,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "turn-bank",
-        "at": 7.7
+        "at": 8.6
       }
     ],
     "contact": null
@@ -19,9 +19,9 @@
   {
     "program": "maneuver",
     "id": "climb-descent",
-    "duration": 127.15,
+    "duration": 144.75,
     "endReason": "time",
-    "samples": 2544,
+    "samples": 2896,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -36,9 +36,9 @@
   {
     "program": "maneuver",
     "id": "climb-descent-turns",
-    "duration": 102.10000000000001,
+    "duration": 108.10000000000001,
     "endReason": "time",
-    "samples": 2043,
+    "samples": 2163,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -53,54 +53,62 @@
   {
     "program": "maneuver",
     "id": "hover",
-    "duration": 93.65,
+    "duration": 141,
     "endReason": "contact",
-    "samples": 1874,
+    "samples": 2821,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "hv-height",
-        "at": 10.8
+        "at": 7.05
+      },
+      {
+        "id": "hv-fwd",
+        "at": 13.35
+      },
+      {
+        "id": "hv-side",
+        "at": 46.55
       },
       {
         "id": "hv-turn",
-        "at": 56.9
+        "at": 112.25
       }
     ],
     "contact": {
-      "time": 88.60000000000001,
+      "time": 135.95000000000002,
       "part": "skidLeft",
       "point": [
-        375.6982835100637,
-        0.6588573859526506,
-        -337.65693974970833
+        54.83907970838945,
+        0.18526686593200617,
+        -201.51012104395375
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.0013600396628656297
+        "kind": "paved",
+        "label": "Taksi yolu",
+        "friction": 0.35,
+        "roughness": 0,
+        "slope": 0.0013600396628656438
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.2999234090617254,
-      "descentMps": 0.2999234090617254,
-      "groundSpeedMps": 1.1124880182321966e-12,
+      "normalSpeedMps": 0.2999234090620322,
+      "descentMps": 0.2999234090620322,
+      "groundSpeedMps": 7.650690003218595e-10,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.061976815295203,
+      "collective": 1.0675197032947124,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "takeoff-hover",
-    "duration": 106.60000000000001,
+    "duration": 69,
     "endReason": "time",
-    "samples": 2133,
+    "samples": 1381,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -108,6 +116,14 @@
       {
         "id": "to-tech",
         "at": 9.3
+      },
+      {
+        "id": "to-etl",
+        "at": 25.45
+      },
+      {
+        "id": "to-power",
+        "at": 34.85
       }
     ],
     "contact": null
@@ -115,9 +131,9 @@
   {
     "program": "maneuver",
     "id": "takeoff-ground",
-    "duration": 99.60000000000001,
+    "duration": 54.45,
     "endReason": "time",
-    "samples": 1993,
+    "samples": 1090,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -132,9 +148,9 @@
   {
     "program": "maneuver",
     "id": "max-perf",
-    "duration": 85.10000000000001,
+    "duration": 50,
     "endReason": "time",
-    "samples": 1703,
+    "samples": 1001,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -149,136 +165,80 @@
   {
     "program": "maneuver",
     "id": "pattern",
-    "duration": 626.2,
-    "endReason": "contact",
-    "samples": 12525,
+    "duration": 627.45,
+    "endReason": "time",
+    "samples": 12550,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "pt-checks",
-        "at": 145.9
+        "at": 126.1
+      },
+      {
+        "id": "pt-final",
+        "at": 223.1
       },
       {
         "id": "pt-checks-24",
-        "at": 468.1
+        "at": 482.8
+      },
+      {
+        "id": "pt-final-24",
+        "at": 568.15
       }
     ],
-    "contact": {
-      "time": 309.85,
-      "part": "skidLeft",
-      "point": [
-        242.07452834418353,
-        0.4677846848973233,
-        -291.477090736039
-      ],
-      "obstacle": false,
-      "surface": {
-        "kind": "paved",
-        "label": "Helikopter paneli",
-        "friction": 0.35,
-        "roughness": 0,
-        "slope": 0.001360039662865644
-      },
-      "supportHeightM": 0,
-      "normalSpeedMps": 0.3003916736559025,
-      "descentMps": 0.29984709217362,
-      "groundSpeedMps": 0.01807979305243506,
-      "rotorRpm": 324,
-      "engineRpm": 6600,
-      "collective": 1.0652304971788538,
-      "water": false
-    }
+    "contact": null
   },
   {
     "program": "maneuver",
     "id": "pattern-06",
-    "duration": 314.90000000000003,
-    "endReason": "contact",
-    "samples": 6299,
+    "duration": 284.7,
+    "endReason": "time",
+    "samples": 5695,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "pt-checks",
-        "at": 145.9
+        "at": 126.1
+      },
+      {
+        "id": "pt-final",
+        "at": 223.1
       }
     ],
-    "contact": {
-      "time": 309.85,
-      "part": "skidLeft",
-      "point": [
-        242.07452834418353,
-        0.4677846848973233,
-        -291.477090736039
-      ],
-      "obstacle": false,
-      "surface": {
-        "kind": "paved",
-        "label": "Helikopter paneli",
-        "friction": 0.35,
-        "roughness": 0,
-        "slope": 0.001360039662865644
-      },
-      "supportHeightM": 0,
-      "normalSpeedMps": 0.3003916736559025,
-      "descentMps": 0.29984709217362,
-      "groundSpeedMps": 0.01807979305243506,
-      "rotorRpm": 324,
-      "engineRpm": 6600,
-      "collective": 1.0652304971788538,
-      "water": false
-    }
+    "contact": null
   },
   {
     "program": "maneuver",
     "id": "pattern-24",
-    "duration": 263.8,
-    "endReason": "contact",
-    "samples": 5277,
+    "duration": 293.40000000000003,
+    "endReason": "time",
+    "samples": 5869,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "pt-checks-24",
-        "at": 104.45
+        "at": 146.55
+      },
+      {
+        "id": "pt-final-24",
+        "at": 231.9
       }
     ],
-    "contact": {
-      "time": 258.75,
-      "part": "skidLeft",
-      "point": [
-        125.98627380351576,
-        0.2924483663826124,
-        -235.40288858165863
-      ],
-      "obstacle": false,
-      "surface": {
-        "kind": "paved",
-        "label": "Helikopter paneli",
-        "friction": 0.35,
-        "roughness": 0,
-        "slope": 0.001360039662865631
-      },
-      "supportHeightM": 0,
-      "normalSpeedMps": 0.30035140719601433,
-      "descentMps": 0.29984606162646577,
-      "groundSpeedMps": 0.017415715079309568,
-      "rotorRpm": 324,
-      "engineRpm": 6600,
-      "collective": 1.0667960269706733,
-      "water": false
-    }
+    "contact": null
   },
   {
     "program": "maneuver",
     "id": "approach-hover",
-    "duration": 61.800000000000004,
+    "duration": 68.60000000000001,
     "endReason": "time",
-    "samples": 1237,
+    "samples": 1373,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -293,9 +253,9 @@
   {
     "program": "maneuver",
     "id": "approach-ground",
-    "duration": 64.15,
+    "duration": 69.2,
     "endReason": "contact",
-    "samples": 1284,
+    "samples": 1385,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -306,37 +266,37 @@
       }
     ],
     "contact": {
-      "time": 59.050000000000004,
+      "time": 64.05,
       "part": "skidLeft",
       "point": [
-        0,
-        -20.04005539448878,
-        -1303.6265436620727
+        241.9973307153392,
+        0.4676865462513345,
+        -291.4713386714734
       ],
       "obstacle": false,
       "surface": {
-        "kind": "stubble",
-        "label": "Anız",
-        "friction": 0.6,
-        "roughness": 0.4,
-        "slope": 0.007650322985587738
+        "kind": "paved",
+        "label": "Helikopter paneli",
+        "friction": 0.35,
+        "roughness": 0,
+        "slope": 0.001360039662865644
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.4771860388885919,
-      "descentMps": 0.36371940227887967,
-      "groundSpeedMps": 0.3088927194287351,
+      "normalSpeedMps": 0.5488315614762191,
+      "descentMps": 0.3570701752570435,
+      "groundSpeedMps": 0.41679368135125217,
       "rotorRpm": 324,
-      "engineRpm": 6600,
-      "collective": 1.0590358263700868,
+      "engineRpm": 6599.884237732829,
+      "collective": 1.057749924139328,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "approach-steep",
-    "duration": 97.10000000000001,
+    "duration": 64.10000000000001,
     "endReason": "contact",
-    "samples": 1943,
+    "samples": 1283,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -347,12 +307,12 @@
       }
     ],
     "contact": {
-      "time": 92.05000000000001,
+      "time": 59,
       "part": "skidLeft",
       "point": [
-        24.037195358293587,
-        -18.159361358393376,
-        -835.6239113662763
+        201.5638373910899,
+        -9.381774108192394,
+        -570.0750172794307
       ],
       "obstacle": false,
       "surface": {
@@ -360,24 +320,24 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.025961723157599027
+        "slope": 0.013942445317208365
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.35000227044783744,
-      "descentMps": 0.35000227044783744,
-      "groundSpeedMps": 1.515835157617697e-17,
+      "normalSpeedMps": 0.3527409759135807,
+      "descentMps": 0.3509197564306144,
+      "groundSpeedMps": 0.035798332854249174,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.0598600539737453,
+      "collective": 1.065869334683507,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "approach-shallow",
-    "duration": 58.7,
+    "duration": 59.95,
     "endReason": "contact",
-    "samples": 1175,
+    "samples": 1200,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -388,12 +348,12 @@
       }
     ],
     "contact": {
-      "time": 46.150000000000006,
+      "time": 47.900000000000006,
       "part": "skidLeft",
       "point": [
-        -489.2240724323706,
-        -0.7364419752135218,
-        232.0939540658933
+        -464.86120571595245,
+        -0.70019804522606,
+        221.27081576099516
       ],
       "obstacle": false,
       "surface": {
@@ -401,15 +361,15 @@
         "label": "Asfalt pist",
         "friction": 0.35,
         "roughness": 0,
-        "slope": 0.001360039662865606
+        "slope": 0.0013600396628656562
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 15.254528644378201,
-      "descentMps": 0.4533741055553025,
-      "groundSpeedMps": 15.247789875341509,
+      "normalSpeedMps": 14.207342225870086,
+      "descentMps": 0.4501331235819369,
+      "groundSpeedMps": 14.20020962148255,
       "rotorRpm": 324,
-      "engineRpm": 6600,
-      "collective": 0.7633578849791578,
+      "engineRpm": 6597.852229529813,
+      "collective": 0.7886184221654261,
       "water": false
     }
   },
@@ -450,16 +410,16 @@
       "groundSpeedMps": 0,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.0679048155591588,
+      "collective": 1.068851599802146,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "recon",
-    "duration": 402,
+    "duration": 449.90000000000003,
     "endReason": "time",
-    "samples": 8041,
+    "samples": 8999,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -470,12 +430,12 @@
       }
     ],
     "contact": {
-      "time": 316.45000000000005,
+      "time": 345.90000000000003,
       "part": "skidLeft",
       "point": [
-        784.8578086481564,
-        -26.13860039420777,
-        -2475.835912387893
+        785.348732010444,
+        -25.93298164115758,
+        -2475.873690801634
       ],
       "obstacle": false,
       "surface": {
@@ -483,24 +443,24 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.017584775654612844
+        "slope": 0.04478935805237133
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.35000182625171833,
-      "descentMps": 0.35000182620870446,
-      "groundSpeedMps": 0.000005487248249569016,
+      "normalSpeedMps": 0.29862161922457137,
+      "descentMps": 0.298553018836692,
+      "groundSpeedMps": 0.006400500902485028,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.0603390145970928,
+      "collective": 1.0599071663613662,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "recon-high",
-    "duration": 162.75,
+    "duration": 140.65,
     "endReason": "time",
-    "samples": 3256,
+    "samples": 2814,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -515,25 +475,25 @@
   {
     "program": "maneuver",
     "id": "recon-low",
-    "duration": 97.2,
+    "duration": 96.15,
     "endReason": "contact",
-    "samples": 1945,
+    "samples": 1924,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
-        "id": "rl-dec",
+        "id": "rl-end",
         "at": 4
       }
     ],
     "contact": {
-      "time": 92.15,
+      "time": 91.10000000000001,
       "part": "skidLeft",
       "point": [
-        784.9032716907462,
-        -26.137669870279186,
-        -2475.7859995782587
+        785.2081207218487,
+        -25.936112922200163,
+        -2476.051764086281
       ],
       "obstacle": false,
       "surface": {
@@ -541,31 +501,31 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.017533771955015362
+        "slope": 0.04338251428802525
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.3500024413497515,
-      "descentMps": 0.35000244124863167,
-      "groundSpeedMps": 0.000008413344624621382,
+      "normalSpeedMps": 0.2985716543155782,
+      "descentMps": 0.29850225359026206,
+      "groundSpeedMps": 0.006437185897268981,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.060320420025261,
+      "collective": 1.0648088528101132,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "recon-ground",
-    "duration": 89.5,
+    "duration": 108.35000000000001,
     "endReason": "time",
-    "samples": 1791,
+    "samples": 2168,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "rg-dir",
-        "at": 12.3
+        "at": 67.7
       }
     ],
     "contact": null
@@ -573,25 +533,25 @@
   {
     "program": "maneuver",
     "id": "pinnacle",
-    "duration": 402,
+    "duration": 449.90000000000003,
     "endReason": "time",
-    "samples": 8041,
+    "samples": 8999,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "pn-dir",
-        "at": 94.5
+        "at": 136.05
       }
     ],
     "contact": {
-      "time": 316.45000000000005,
+      "time": 345.90000000000003,
       "part": "skidLeft",
       "point": [
-        784.8578086481564,
-        -26.13860039420777,
-        -2475.835912387893
+        785.348732010444,
+        -25.93298164115758,
+        -2475.873690801634
       ],
       "obstacle": false,
       "surface": {
@@ -599,40 +559,52 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.017584775654612844
+        "slope": 0.04478935805237133
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.35000182625171833,
-      "descentMps": 0.35000182620870446,
-      "groundSpeedMps": 0.000005487248249569016,
+      "normalSpeedMps": 0.29862161922457137,
+      "descentMps": 0.298553018836692,
+      "groundSpeedMps": 0.006400500902485028,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.0603390145970928,
+      "collective": 1.0599071663613662,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "confined",
-    "duration": 361.6,
+    "duration": 340.55,
     "endReason": "time",
-    "samples": 7233,
+    "samples": 6812,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
+        "id": "rc-alt",
+        "at": 35.7
+      },
+      {
+        "id": "cf-ra",
+        "at": 123.7
+      },
+      {
         "id": "cf-go",
-        "at": 87.5
+        "at": 178.7
+      },
+      {
+        "id": "cf-tk",
+        "at": 297.95
       }
     ],
     "contact": {
-      "time": 275.85,
+      "time": 255.60000000000002,
       "part": "skidLeft",
       "point": [
-        1799.9587491482564,
-        -90.28577207859996,
-        -2927.7176386818114
+        1797.8975644086506,
+        -90.44461938081182,
+        -2925.811759598298
       ],
       "obstacle": false,
       "surface": {
@@ -640,72 +612,72 @@
         "label": "Sürülmüş tarla · yumuşak",
         "friction": 0.78,
         "roughness": 0.75,
-        "slope": 0.022679971584176024
+        "slope": 0.0066351167584614715
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.3500022704478374,
-      "descentMps": 0.3500022704478374,
-      "groundSpeedMps": 8.577092268888623e-10,
+      "normalSpeedMps": 0.2985117458381213,
+      "descentMps": 0.2985068104759506,
+      "groundSpeedMps": 0.001716538026965741,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.0651287961815301,
+      "collective": 1.0735690296087725,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "slope",
-    "duration": 72.5,
-    "endReason": "contact",
-    "samples": 1451,
+    "duration": 50.050000000000004,
+    "endReason": "time",
+    "samples": 1002,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "sl-skid",
-        "at": 51.65
+        "at": 33.05
       }
     ],
     "contact": {
-      "time": 57.2,
+      "time": 38.7,
       "part": "skidLeft",
       "point": [
-        -40.32631182360793,
-        -5.6894357349364,
-        69.84722096035445
+        -78.13017493109305,
+        -5.840195774507614,
+        50.46746137692157
       ],
       "obstacle": false,
       "surface": {
-        "kind": "stubble",
-        "label": "Anız",
-        "friction": 0.6,
-        "roughness": 0.4,
-        "slope": 0.08984125269879552
+        "kind": "grass",
+        "label": "Çayır",
+        "friction": 0.55,
+        "roughness": 0.3,
+        "slope": 0.08599766194554134
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.2499289213962001,
-      "descentMps": 0.24992044827017804,
-      "groundSpeedMps": 0.002057981219848416,
+      "normalSpeedMps": 0.17995270632184995,
+      "descentMps": 0.17995270541506445,
+      "groundSpeedMps": 0.00001806535403747881,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.087201973165801,
+      "collective": 1.0914980744078486,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "decel-accel",
-    "duration": 36.95,
+    "duration": 52.5,
     "endReason": "time",
-    "samples": 740,
+    "samples": 1051,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "da-tech",
-        "at": 8.95
+        "at": 10.1
       }
     ],
     "contact": null
@@ -747,16 +719,16 @@
       "groundSpeedMps": 0,
       "rotorRpm": 293.45000000000107,
       "engineRpm": 4300,
-      "collective": 1.2454368935339728,
+      "collective": 1.2317544691999232,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "taxi-autorot",
-    "duration": 32.45,
+    "duration": 33.95,
     "endReason": "contact",
-    "samples": 650,
+    "samples": 680,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -788,23 +760,23 @@
       "groundSpeedMps": 1.5799057913507843,
       "rotorRpm": 293.45000000000107,
       "engineRpm": 4300,
-      "collective": 1.2461637761908648,
+      "collective": 1.233211646412084,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "forced-power",
-    "duration": 58.6,
+    "duration": 45.75,
     "endReason": "time",
-    "samples": 1173,
+    "samples": 916,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "fp-field",
-        "at": 16
+        "at": 4
       }
     ],
     "contact": null
@@ -812,16 +784,16 @@
   {
     "program": "maneuver",
     "id": "forced-goaround",
-    "duration": 74.55,
+    "duration": 60.550000000000004,
     "endReason": "time",
-    "samples": 1492,
+    "samples": 1212,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "fg-when",
-        "at": 14.95
+        "at": 4
       }
     ],
     "contact": null
@@ -829,25 +801,66 @@
   {
     "program": "maneuver",
     "id": "forced-ground",
-    "duration": 50.650000000000006,
+    "duration": 52.150000000000006,
     "endReason": "contact",
-    "samples": 1014,
+    "samples": 1044,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "fgr-bank",
-        "at": 9.25
+        "at": 4
       }
     ],
     "contact": {
-      "time": 43.050000000000004,
+      "time": 43.75,
       "part": "skidLeft",
       "point": [
-        -374.081472061643,
-        -0.5639891569402399,
-        178.9628072813737
+        -284.65763333630264,
+        -0.4293432328909107,
+        136.48120252134024
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "paved",
+        "label": "Asfalt pist",
+        "friction": 0.35,
+        "roughness": 0,
+        "slope": 0.0013600396628655942
+      },
+      "supportHeightM": 0,
+      "normalSpeedMps": 2.265241788634031,
+      "descentMps": 0.8801282078885584,
+      "groundSpeedMps": 2.0872696755936397,
+      "rotorRpm": 291.50000000000074,
+      "engineRpm": 4300,
+      "collective": 1.2998969058333616,
+      "water": false
+    }
+  },
+  {
+    "program": "maneuver",
+    "id": "std-autorot",
+    "duration": 49,
+    "endReason": "contact",
+    "samples": 981,
+    "finite": true,
+    "errors": [],
+    "monotonic": true,
+    "decisions": [
+      {
+        "id": "sa-flare",
+        "at": 4
+      }
+    ],
+    "contact": {
+      "time": 40.150000000000006,
+      "part": "skidLeft",
+      "point": [
+        -282.50241136161696,
+        -0.4259987681354533,
+        135.28762578802855
       ],
       "obstacle": false,
       "surface": {
@@ -858,62 +871,21 @@
         "slope": 0.0013600396628656562
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 1.3017657054059266,
-      "descentMps": 0.8801089591291135,
-      "groundSpeedMps": 0.9591674368073899,
-      "rotorRpm": 286.55692143299,
+      "normalSpeedMps": 2.8735207428619955,
+      "descentMps": 0.8801381713323041,
+      "groundSpeedMps": 2.73541189933472,
+      "rotorRpm": 291.50000000000074,
       "engineRpm": 4300,
-      "collective": 1.2999995580920378,
-      "water": false
-    }
-  },
-  {
-    "program": "maneuver",
-    "id": "std-autorot",
-    "duration": 50,
-    "endReason": "contact",
-    "samples": 1001,
-    "finite": true,
-    "errors": [],
-    "monotonic": true,
-    "decisions": [
-      {
-        "id": "sa-flare",
-        "at": 9.5
-      }
-    ],
-    "contact": {
-      "time": 42.400000000000006,
-      "part": "skidLeft",
-      "point": [
-        -363.8108327076903,
-        -0.5485920971310243,
-        174.19896188692985
-      ],
-      "obstacle": false,
-      "surface": {
-        "kind": "paved",
-        "label": "Asfalt pist",
-        "friction": 0.35,
-        "roughness": 0,
-        "slope": 0.0013600396628657063
-      },
-      "supportHeightM": 0,
-      "normalSpeedMps": 1.3174310310527797,
-      "descentMps": 0.9013293957707014,
-      "groundSpeedMps": 0.9608485010137718,
-      "rotorRpm": 286.75778904432156,
-      "engineRpm": 4300,
-      "collective": 1.2999995580920378,
+      "collective": 1.2998969058333616,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "low-autorot",
-    "duration": 28.200000000000003,
+    "duration": 31.700000000000003,
     "endReason": "contact",
-    "samples": 565,
+    "samples": 635,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -924,12 +896,12 @@
       }
     ],
     "contact": {
-      "time": 20.6,
+      "time": 20.700000000000003,
       "part": "skidLeft",
       "point": [
-        -695.416104828148,
-        -1.04734784917357,
-        330.80165188997285
+        -570.5792567560678,
+        -0.8599055962618216,
+        272.39412700237443
       ],
       "obstacle": false,
       "surface": {
@@ -937,40 +909,40 @@
         "label": "Asfalt pist",
         "friction": 0.35,
         "roughness": 0,
-        "slope": 0.0013600396628656562
+        "slope": 0.0013600396628656824
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 1.3048391590438366,
-      "descentMps": 0.9013599149475574,
-      "groundSpeedMps": 0.9434805428306187,
-      "rotorRpm": 287.9559774028617,
+      "normalSpeedMps": 5.775341228109097,
+      "descentMps": 0.8801473482275437,
+      "groundSpeedMps": 5.707881125821097,
+      "rotorRpm": 291.50000000000074,
       "engineRpm": 4300,
-      "collective": 1.2999995580920378,
+      "collective": 1.2998969058333616,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "turn-autorot",
-    "duration": 69.85000000000001,
+    "duration": 60.900000000000006,
     "endReason": "contact",
-    "samples": 1398,
+    "samples": 1219,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "ta-rate",
-        "at": 12.15
+        "at": 7
       }
     ],
     "contact": {
-      "time": 62.300000000000004,
+      "time": 52.550000000000004,
       "part": "skidLeft",
       "point": [
-        -766.2176089641936,
-        -1.154833736492843,
-        365.93955374819745
+        -355.93466795774356,
+        -0.5366120149718957,
+        170.25075484763764
       ],
       "obstacle": false,
       "surface": {
@@ -978,24 +950,24 @@
         "label": "Asfalt pist",
         "friction": 0.35,
         "roughness": 0,
-        "slope": 0.0013600396628658043
+        "slope": 0.0013600396628656321
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 1.3169068383531466,
-      "descentMps": 0.9013243888197476,
-      "groundSpeedMps": 0.9601343484221305,
-      "rotorRpm": 286.5650386383934,
+      "normalSpeedMps": 2.2222969947159927,
+      "descentMps": 0.8801444423857004,
+      "groundSpeedMps": 2.0405758239431577,
+      "rotorRpm": 291.50000000000074,
       "engineRpm": 4300,
-      "collective": 1.2999995580920378,
+      "collective": 1.2998969058333616,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "sim-tr-right",
-    "duration": 81.25,
+    "duration": 83.45,
     "endReason": "contact",
-    "samples": 1626,
+    "samples": 1670,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1006,12 +978,12 @@
       }
     ],
     "contact": {
-      "time": 50.2,
+      "time": 52.35,
       "part": "skidLeft",
       "point": [
-        -552.1154548255965,
-        -0.8319546494150545,
-        263.3666091641697
+        -524.0070945565254,
+        -0.7896015910695299,
+        249.96195066759586
       ],
       "obstacle": false,
       "surface": {
@@ -1019,24 +991,24 @@
         "label": "Asfalt pist",
         "friction": 0.35,
         "roughness": 0,
-        "slope": 0.0013600396628657063
+        "slope": 0.0013600396628656824
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 12.100868278577554,
-      "descentMps": 0.4574870822308298,
-      "groundSpeedMps": 12.09221727662369,
+      "normalSpeedMps": 12.238600421803268,
+      "descentMps": 0.45013636435668314,
+      "groundSpeedMps": 12.230319600813662,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 0.846779907782386,
+      "collective": 0.8301973117698253,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "sim-tr-left",
-    "duration": 81.30000000000001,
+    "duration": 83.5,
     "endReason": "contact",
-    "samples": 1627,
+    "samples": 1671,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1047,12 +1019,12 @@
       }
     ],
     "contact": {
-      "time": 50.2,
+      "time": 52.35,
       "part": "skidLeft",
       "point": [
-        -552.1154548255965,
-        -0.8319546494150545,
-        263.3666091641697
+        -524.0070945565254,
+        -0.7896015910695299,
+        249.96195066759586
       ],
       "obstacle": false,
       "surface": {
@@ -1060,24 +1032,24 @@
         "label": "Asfalt pist",
         "friction": 0.35,
         "roughness": 0,
-        "slope": 0.0013600396628657063
+        "slope": 0.0013600396628656824
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 12.100868278577554,
-      "descentMps": 0.4574870822308298,
-      "groundSpeedMps": 12.09221727662369,
+      "normalSpeedMps": 12.238600421803268,
+      "descentMps": 0.45013636435668314,
+      "groundSpeedMps": 12.230319600813662,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 0.846779907782386,
+      "collective": 0.8301973117698253,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "sim-hyd",
-    "duration": 70.9,
+    "duration": 87.25,
     "endReason": "contact",
-    "samples": 1419,
+    "samples": 1746,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1088,12 +1060,12 @@
       }
     ],
     "contact": {
-      "time": 56,
+      "time": 73.05,
       "part": "skidLeft",
       "point": [
-        -454.77746923341914,
-        -0.6922253340371398,
-        228.79967883072612
+        -462.1074917460214,
+        -0.6959841551335217,
+        219.84712669027576
       ],
       "obstacle": false,
       "surface": {
@@ -1101,15 +1073,15 @@
         "label": "Asfalt pist",
         "friction": 0.35,
         "roughness": 0,
-        "slope": 0.0013600396628656798
+        "slope": 0.001360039662865606
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 15.918666056374114,
-      "descentMps": 0.45190463998332314,
-      "groundSpeedMps": 15.912250350303026,
+      "normalSpeedMps": 14.525102721231047,
+      "descentMps": 0.45012053200849284,
+      "groundSpeedMps": 14.51812662050369,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 0.778977783418421,
+      "collective": 0.7733946855055678,
       "water": false
     }
   },
@@ -1150,16 +1122,16 @@
       "groundSpeedMps": 0,
       "rotorRpm": 318.0688281661518,
       "engineRpm": 6479.179833014202,
-      "collective": 1.0627861252550188,
+      "collective": 1.06392957796549,
       "water": false
     }
   },
   {
     "program": "maneuver",
     "id": "movement",
-    "duration": 121.80000000000001,
+    "duration": 121.55000000000001,
     "endReason": "time",
-    "samples": 2437,
+    "samples": 2432,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1174,9 +1146,9 @@
   {
     "program": "maneuver",
     "id": "masking",
-    "duration": 111,
+    "duration": 111.2,
     "endReason": "time",
-    "samples": 2221,
+    "samples": 2225,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1203,54 +1175,30 @@
         "at": 28
       }
     ],
-    "contact": {
-      "time": 83.80000000000001,
-      "part": "mainRotor",
-      "point": [
-        1982.7155340420588,
-        137.31841964215263,
-        2919.766977840311
-      ],
-      "obstacle": "tree",
-      "surface": {
-        "kind": "forest",
-        "label": "Orman tabanı / ağaç engelleri",
-        "friction": 0.65,
-        "roughness": 0.65,
-        "slope": 0.05118221550731936
-      },
-      "supportHeightM": 20.257601440459382,
-      "normalSpeedMps": 24.862909465722144,
-      "descentMps": -4.504872900922661,
-      "groundSpeedMps": 24.451388247852684,
-      "rotorRpm": 324,
-      "engineRpm": 6573.401841432868,
-      "collective": 1.181504106008806,
-      "water": false
-    }
+    "contact": null
   },
   {
     "program": "maneuver",
     "id": "formation",
-    "duration": 171.95000000000002,
+    "duration": 199.75,
     "endReason": "contact",
-    "samples": 3440,
+    "samples": 3996,
     "finite": true,
     "errors": [],
     "monotonic": true,
     "decisions": [
       {
         "id": "fm-sep",
-        "at": 42.6
+        "at": 18
       }
     ],
     "contact": {
-      "time": 165.9,
+      "time": 193.60000000000002,
       "part": "skidLeft",
       "point": [
-        -755.3854746361498,
-        -130.39877895243134,
-        -1486.3487199460217
+        -3172.554973868357,
+        -59.186800692904015,
+        174.6052278934465
       ],
       "obstacle": false,
       "surface": {
@@ -1258,24 +1206,159 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.016093169165116702
+        "slope": 0.13301094807522948
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.3808482398192696,
-      "descentMps": 0.3596867537950286,
-      "groundSpeedMps": 0.1251831494963691,
+      "normalSpeedMps": 0.6546165098509955,
+      "descentMps": 0.36127669631707743,
+      "groundSpeedMps": 0.5458955244987055,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.0562245582057992,
+      "collective": 1.0414619201001742,
+      "water": false
+    }
+  },
+  {
+    "program": "emergency",
+    "id": "engine-partial",
+    "duration": 63.85,
+    "endReason": "contact",
+    "samples": 1278,
+    "finite": true,
+    "errors": [],
+    "monotonic": true,
+    "decisions": [
+      {
+        "id": "em-action",
+        "at": 4.6
+      },
+      {
+        "id": "em-landing",
+        "at": 6.9
+      },
+      {
+        "id": "em-term",
+        "at": 6.9
+      }
+    ],
+    "contact": {
+      "time": 56.800000000000004,
+      "part": "skidLeft",
+      "point": [
+        -2214.321912346539,
+        -0.32698912171505845,
+        -2354.7950853016214
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "grass",
+        "label": "Çayır",
+        "friction": 0.55,
+        "roughness": 0.3,
+        "slope": 0.03260109341932595
+      },
+      "supportHeightM": 0,
+      "normalSpeedMps": 12.59908626949114,
+      "descentMps": 0.7411391452128777,
+      "groundSpeedMps": 12.57726868574864,
+      "rotorRpm": 324,
+      "engineRpm": 6576.215024636712,
+      "collective": 0.7402320791565411,
+      "water": false
+    }
+  },
+  {
+    "program": "emergency",
+    "id": "engine-hover",
+    "duration": 15.55,
+    "endReason": "contact",
+    "samples": 312,
+    "finite": true,
+    "errors": [],
+    "monotonic": true,
+    "decisions": [
+      {
+        "id": "em-action",
+        "at": 4.6
+      }
+    ],
+    "contact": {
+      "time": 8.5,
+      "part": "skidLeft",
+      "point": [
+        0,
+        0.004148852818525472,
+        -7.0884463258094295
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "paved",
+        "label": "Asfalt pist",
+        "friction": 0.35,
+        "roughness": 0,
+        "slope": 0.0013600396628656419
+      },
+      "supportHeightM": 0,
+      "normalSpeedMps": 0.535187731116124,
+      "descentMps": 0.5351814438758697,
+      "groundSpeedMps": 0.0025941603967427084,
+      "rotorRpm": 285,
+      "engineRpm": 0,
+      "collective": 1.3999482708927338,
+      "water": false
+    }
+  },
+  {
+    "program": "emergency",
+    "id": "engine-low",
+    "duration": 22.35,
+    "endReason": "contact",
+    "samples": 448,
+    "finite": true,
+    "errors": [],
+    "monotonic": true,
+    "decisions": [
+      {
+        "id": "em-action",
+        "at": 4.6
+      },
+      {
+        "id": "em-term",
+        "at": 6
+      }
+    ],
+    "contact": {
+      "time": 15.3,
+      "part": "skidLeft",
+      "point": [
+        -1464.9014221462053,
+        -3.8498642945777446,
+        -1157.0506724497848
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "grass",
+        "label": "Çayır",
+        "friction": 0.55,
+        "roughness": 0.3,
+        "slope": 0.04090203933476109
+      },
+      "supportHeightM": 0,
+      "normalSpeedMps": 7.804788896452182,
+      "descentMps": 1.1544746009386582,
+      "groundSpeedMps": 7.718932446522045,
+      "rotorRpm": 285,
+      "engineRpm": 0,
+      "collective": 1.6983999480063798,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "engine-restart",
-    "duration": 159.5,
+    "duration": 158.75,
     "endReason": "contact",
-    "samples": 3191,
+    "samples": 3176,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1291,12 +1374,12 @@
       }
     ],
     "contact": {
-      "time": 152.45000000000002,
+      "time": 151.70000000000002,
       "part": "skidLeft",
       "point": [
-        -1996.1277068325635,
-        4.641781455671832,
-        -2167.7629632821495
+        0,
+        -20.962743764970824,
+        -3611.929145757757
       ],
       "obstacle": false,
       "surface": {
@@ -1304,24 +1387,24 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.056839359760779896
+        "slope": 0.015747248341133963
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.06476359172055561,
-      "descentMps": 0.06399395545872086,
-      "groundSpeedMps": 0.009954721356927574,
+      "normalSpeedMps": 0.06647818848914286,
+      "descentMps": 0.0664781315704064,
+      "groundSpeedMps": 0.0000869925614121469,
       "rotorRpm": 324,
-      "engineRpm": 6598.396064499002,
-      "collective": 1.0888172767699873,
+      "engineRpm": 6597.806268384417,
+      "collective": 1.080057384323133,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "droop-comp",
-    "duration": 71.35000000000001,
+    "duration": 73.55,
     "endReason": "contact",
-    "samples": 1428,
+    "samples": 1472,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1336,16 +1419,16 @@
       },
       {
         "id": "em-term",
-        "at": 53.15
+        "at": 22.6
       }
     ],
     "contact": {
-      "time": 64.3,
+      "time": 66.5,
       "part": "skidLeft",
       "point": [
-        209.16983234405228,
-        -8.894633356286507,
-        -913.1658426269503
+        -1400.3951045767435,
+        -9.100290145505442,
+        -3856.0305784235775
       ],
       "obstacle": false,
       "surface": {
@@ -1353,24 +1436,24 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.012492718403786199
+        "slope": 0.02502322627656138
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 13.1724805159106,
-      "descentMps": 0.6512067001711784,
-      "groundSpeedMps": 13.15637384599938,
-      "rotorRpm": 327.33711511427583,
-      "engineRpm": 6765.406055594298,
-      "collective": 0.8162030058586154,
+      "normalSpeedMps": 11.150014815089028,
+      "descentMps": 0.4594587080685317,
+      "groundSpeedMps": 11.14054433464922,
+      "rotorRpm": 323.3402519562716,
+      "engineRpm": 6558.41594520969,
+      "collective": 0.8160445328625449,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "compressor-stall",
-    "duration": 55.300000000000004,
+    "duration": 51.75,
     "endReason": "contact",
-    "samples": 1107,
+    "samples": 1036,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1389,37 +1472,37 @@
       }
     ],
     "contact": {
-      "time": 48.25,
+      "time": 44.7,
       "part": "skidLeft",
       "point": [
-        160.06382800181888,
-        -9.375724486544451,
-        -818.8842081154833
+        -80.59523798336295,
+        1.5615998144126138,
+        7.6904348289454285
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.018117135147799657
+        "kind": "stubble",
+        "label": "Anız",
+        "friction": 0.6,
+        "roughness": 0.4,
+        "slope": 0.02105793959808061
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.06284955157592417,
-      "descentMps": 0.06200875272281408,
-      "groundSpeedMps": 0.010246009909015748,
+      "normalSpeedMps": 0.06432098516332632,
+      "descentMps": 0.06353919996268982,
+      "groundSpeedMps": 0.009997959815990566,
       "rotorRpm": 324,
-      "engineRpm": 6597.600493695239,
-      "collective": 1.0857569992364646,
+      "engineRpm": 6597.745029562563,
+      "collective": 1.0814770237062514,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "igv-closed",
-    "duration": 45.85,
+    "duration": 67.75,
     "endReason": "contact",
-    "samples": 918,
+    "samples": 1356,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1434,32 +1517,32 @@
       },
       {
         "id": "em-term",
-        "at": 17.25
+        "at": 10.7
       }
     ],
     "contact": {
-      "time": 38.800000000000004,
+      "time": 60.7,
       "part": "skidLeft",
       "point": [
-        178.08277058676933,
-        -9.281613759728835,
-        -884.1985511935738
+        -254.98982789300004,
+        -14.34043819426207,
+        1905.7041945003589
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.01403167242883051
+        "kind": "rough",
+        "label": "Çıplak / aşınmış zemin",
+        "friction": 0.65,
+        "roughness": 0.65,
+        "slope": 0.019262375514022066
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 13.147280590627075,
-      "descentMps": 0.7580496627313755,
-      "groundSpeedMps": 13.125408475072776,
+      "normalSpeedMps": 13.455182291177708,
+      "descentMps": 1.18199351522681,
+      "groundSpeedMps": 13.40316461955101,
       "rotorRpm": 324,
-      "engineRpm": 6583.764115218156,
-      "collective": 0.7483574490092625,
+      "engineRpm": 6578.9380370092995,
+      "collective": 0.7792760449017022,
       "water": false
     }
   },
@@ -1483,9 +1566,9 @@
   {
     "program": "emergency",
     "id": "engine-overspeed",
-    "duration": 55.300000000000004,
+    "duration": 72.3,
     "endReason": "contact",
-    "samples": 1107,
+    "samples": 1447,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1500,41 +1583,41 @@
       },
       {
         "id": "em-term",
-        "at": 6.9
+        "at": 13.4
       }
     ],
     "contact": {
-      "time": 48.25,
+      "time": 65.25,
       "part": "skidLeft",
       "point": [
-        160.06382800181888,
-        -9.375724486544451,
-        -818.8842081154833
+        -500,
+        -6.286735725230163,
+        -2845.9634961105176
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.018117135147799657
+        "kind": "stubble",
+        "label": "Anız",
+        "friction": 0.6,
+        "roughness": 0.4,
+        "slope": 0.044673869278888924
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.06284955157592417,
-      "descentMps": 0.06200875272281408,
-      "groundSpeedMps": 0.010246009909015748,
+      "normalSpeedMps": 0.0656880652507472,
+      "descentMps": 0.06472553908530636,
+      "groundSpeedMps": 0.011203861231865633,
       "rotorRpm": 324,
-      "engineRpm": 6597.600493695239,
-      "collective": 1.0857569992364646,
+      "engineRpm": 6597.921668986682,
+      "collective": 1.090516522293336,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "tr-loss-flight",
-    "duration": 44,
+    "duration": 42.5,
     "endReason": "contact",
-    "samples": 881,
+    "samples": 851,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1549,28 +1632,28 @@
       }
     ],
     "contact": {
-      "time": 36.95,
+      "time": 35.45,
       "part": "skidLeft",
       "point": [
-        181.82539217430178,
-        -9.073045099580517,
-        -902.9605368901158
+        -1018.6330476192659,
+        -6.024186292896737,
+        -2493.4641497659754
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.024898302854788033
+        "kind": "rough",
+        "label": "Çıplak / aşınmış zemin",
+        "friction": 0.65,
+        "roughness": 0.65,
+        "slope": 0.011052428827263901
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 7.754801564145728,
-      "descentMps": 1.1354591282706787,
-      "groundSpeedMps": 7.67122414398796,
+      "normalSpeedMps": 9.710179588413292,
+      "descentMps": 1.1082650985021922,
+      "groundSpeedMps": 9.646726704467168,
       "rotorRpm": 285,
       "engineRpm": 1200,
-      "collective": 1.6999925171116168,
+      "collective": 1.6999571811830978,
       "water": false
     }
   },
@@ -1610,17 +1693,17 @@
       "descentMps": 0.7027074451609049,
       "groundSpeedMps": 0.004785511116158885,
       "rotorRpm": 285,
-      "engineRpm": 2839.1242835578632,
-      "collective": 1.299995198162422,
+      "engineRpm": 2839.2133858148627,
+      "collective": 1.2997519633993255,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "fixed-pedal-low",
-    "duration": 69.15,
+    "duration": 76.25,
     "endReason": "contact",
-    "samples": 1384,
+    "samples": 1526,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1635,16 +1718,16 @@
       },
       {
         "id": "em-term",
-        "at": 49.85
+        "at": 22.6
       }
     ],
     "contact": {
-      "time": 62.1,
+      "time": 69.2,
       "part": "skidLeft",
       "point": [
-        183.31297131848316,
-        -9.465555201236198,
-        -821.0863572244926
+        734.4257038320584,
+        -19.05702603668679,
+        -1492.262378122359
       ],
       "obstacle": false,
       "surface": {
@@ -1652,24 +1735,24 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.002214507750138817
+        "slope": 0.020886993141536487
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 13.0738514980465,
-      "descentMps": 0.6663593083042715,
-      "groundSpeedMps": 13.056858667581912,
+      "normalSpeedMps": 12.561701113592768,
+      "descentMps": 0.7844767066615137,
+      "groundSpeedMps": 12.537181946671398,
       "rotorRpm": 324,
-      "engineRpm": 6587.64031104455,
-      "collective": 0.8108486214291459,
+      "engineRpm": 6582.511431380358,
+      "collective": 0.786948620969924,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "fixed-pedal-high",
-    "duration": 65.65,
+    "duration": 75.65,
     "endReason": "contact",
-    "samples": 1314,
+    "samples": 1514,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1684,16 +1767,16 @@
       },
       {
         "id": "em-term",
-        "at": 50.4
+        "at": 38.4
       }
     ],
     "contact": {
-      "time": 58.6,
+      "time": 68.60000000000001,
       "part": "skidLeft",
       "point": [
-        169.23855958316236,
-        -9.545228641196816,
-        -812.2695736147377
+        -2445.0950675088825,
+        3.2026694865086904,
+        -567.7465236574594
       ],
       "obstacle": false,
       "surface": {
@@ -1701,15 +1784,15 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.015892909253020764
+        "slope": 0.02913128020160443
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 17.074534591639914,
-      "descentMps": 0.69486254117088,
-      "groundSpeedMps": 17.060389725032234,
-      "rotorRpm": 324,
-      "engineRpm": 6586.677733036742,
-      "collective": 0.7142427547464368,
+      "normalSpeedMps": 16.525242143977255,
+      "descentMps": 0.5322954741442638,
+      "groundSpeedMps": 16.51666701987079,
+      "rotorRpm": 294.54545454545456,
+      "engineRpm": 5993.3772538992835,
+      "collective": 0.706465222309935,
       "water": false
     }
   },
@@ -1750,16 +1833,16 @@
       "groundSpeedMps": 0.00239077822163808,
       "rotorRpm": 324,
       "engineRpm": 6600,
-      "collective": 1.0545761802332172,
+      "collective": 1.0561942069660746,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "tr-components",
-    "duration": 39.650000000000006,
+    "duration": 35.7,
     "endReason": "contact",
-    "samples": 794,
+    "samples": 715,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1774,28 +1857,28 @@
       }
     ],
     "contact": {
-      "time": 32.6,
+      "time": 28.6,
       "part": "skidLeft",
       "point": [
-        0,
-        -16.480441254309383,
-        -698.2819362816351
+        -934.6775645912616,
+        -8.152504480864222,
+        -2599.0401525981433
       ],
       "obstacle": false,
       "surface": {
-        "kind": "stubble",
-        "label": "Anız",
-        "friction": 0.6,
-        "roughness": 0.4,
-        "slope": 0.055022833997089085
+        "kind": "field",
+        "label": "Sürülmüş tarla · yumuşak",
+        "friction": 0.78,
+        "roughness": 0.75,
+        "slope": 0.04653894674236319
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 7.454463204204321,
-      "descentMps": 1.1039871085101827,
-      "groundSpeedMps": 7.372261127163055,
+      "normalSpeedMps": 7.802411669075504,
+      "descentMps": 1.1111481346011274,
+      "groundSpeedMps": 7.722886615553671,
       "rotorRpm": 285,
       "engineRpm": 1200,
-      "collective": 1.699999990736633,
+      "collective": 1.6999252592153384,
       "water": false
     }
   },
@@ -1818,10 +1901,10 @@
   },
   {
     "program": "emergency",
-    "id": "fire-ground",
-    "duration": 23.400000000000002,
-    "endReason": "time",
-    "samples": 469,
+    "id": "driveshaft",
+    "duration": 36.25,
+    "endReason": "contact",
+    "samples": 726,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1829,16 +1912,44 @@
       {
         "id": "em-action",
         "at": 4.6
+      },
+      {
+        "id": "em-term",
+        "at": 6
       }
     ],
-    "contact": null
+    "contact": {
+      "time": 29.200000000000003,
+      "part": "skidLeft",
+      "point": [
+        -812.035483595056,
+        -17.135145547981416,
+        -1496.8165435327521
+      ],
+      "obstacle": false,
+      "surface": {
+        "kind": "stubble",
+        "label": "Anız",
+        "friction": 0.6,
+        "roughness": 0.4,
+        "slope": 0.02225723043577348
+      },
+      "supportHeightM": 0,
+      "normalSpeedMps": 9.913196594914838,
+      "descentMps": 1.1472518318638298,
+      "groundSpeedMps": 9.84658722419683,
+      "rotorRpm": 285,
+      "engineRpm": 0,
+      "collective": 1.6987889206458169,
+      "water": false
+    }
   },
   {
     "program": "emergency",
     "id": "fire-flight",
-    "duration": 55.300000000000004,
+    "duration": 57.150000000000006,
     "endReason": "contact",
-    "samples": 1107,
+    "samples": 1144,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1854,12 +1965,12 @@
       }
     ],
     "contact": {
-      "time": 48.25,
+      "time": 50.1,
       "part": "skidLeft",
       "point": [
-        160.06382800181888,
-        -9.375724486544451,
-        -818.8842081154833
+        -1329.126254966738,
+        -14.594348634421818,
+        -1866.2281176576382
       ],
       "obstacle": false,
       "surface": {
@@ -1867,24 +1978,24 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.018117135147799657
+        "slope": 0.01342236186684836
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.06284955157592417,
-      "descentMps": 0.06200875272281408,
-      "groundSpeedMps": 0.010246009909015748,
+      "normalSpeedMps": 0.06458388776040916,
+      "descentMps": 0.06373901390881442,
+      "groundSpeedMps": 0.01041233231226746,
       "rotorRpm": 324,
-      "engineRpm": 6597.600493695239,
-      "collective": 1.0857569992364646,
+      "engineRpm": 6598.096008958472,
+      "collective": 1.085787266537315,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "electrical-fire",
-    "duration": 55.300000000000004,
+    "duration": 60.95,
     "endReason": "contact",
-    "samples": 1107,
+    "samples": 1220,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1903,12 +2014,12 @@
       }
     ],
     "contact": {
-      "time": 48.25,
+      "time": 53.900000000000006,
       "part": "skidLeft",
       "point": [
-        160.06382800181888,
-        -9.375724486544451,
-        -818.8842081154833
+        -1779.0354586895705,
+        -5.047656727657488,
+        607.193240337726
       ],
       "obstacle": false,
       "surface": {
@@ -1916,24 +2027,24 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.018117135147799657
+        "slope": 0.01540470761135179
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.06284955157592417,
-      "descentMps": 0.06200875272281408,
-      "groundSpeedMps": 0.010246009909015748,
+      "normalSpeedMps": 0.06385047535512388,
+      "descentMps": 0.06313901125655925,
+      "groundSpeedMps": 0.009505180725234293,
       "rotorRpm": 324,
-      "engineRpm": 6597.600493695239,
-      "collective": 1.0857569992364646,
+      "engineRpm": 6598.415514246032,
+      "collective": 1.0844767100662371,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "hydraulic",
-    "duration": 94.05000000000001,
+    "duration": 99.10000000000001,
     "endReason": "contact",
-    "samples": 1882,
+    "samples": 1983,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1948,41 +2059,41 @@
       },
       {
         "id": "em-term",
-        "at": 72.3
+        "at": 33.3
       }
     ],
     "contact": {
-      "time": 87,
+      "time": 92.05000000000001,
       "part": "skidLeft",
       "point": [
-        175.13393540505007,
-        -9.559239865829062,
-        -811.8357829317699
+        152.09665101106245,
+        0.22905781839439343,
+        -72.33199030150932
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.014183662294900184
+        "kind": "paved",
+        "label": "Asfalt pist",
+        "friction": 0.35,
+        "roughness": 0,
+        "slope": 0.0013600396628656315
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 13.573515292393308,
-      "descentMps": 0.6884599093296009,
-      "groundSpeedMps": 13.556044421072134,
+      "normalSpeedMps": 12.157398661795773,
+      "descentMps": 0.714450972781723,
+      "groundSpeedMps": 12.136387519740989,
       "rotorRpm": 324,
-      "engineRpm": 6582.206879307689,
-      "collective": 0.7682084501353393,
+      "engineRpm": 6583.37022213931,
+      "collective": 0.7902292312329205,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "control-stiffness",
-    "duration": 94.05000000000001,
+    "duration": 99.10000000000001,
     "endReason": "contact",
-    "samples": 1882,
+    "samples": 1983,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -1997,41 +2108,41 @@
       },
       {
         "id": "em-term",
-        "at": 72.3
+        "at": 33.3
       }
     ],
     "contact": {
-      "time": 87,
+      "time": 92.05000000000001,
       "part": "skidLeft",
       "point": [
-        175.13393540505007,
-        -9.559239865829062,
-        -811.8357829317699
+        152.09665101106245,
+        0.22905781839439343,
+        -72.33199030150932
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.014183662294900184
+        "kind": "paved",
+        "label": "Asfalt pist",
+        "friction": 0.35,
+        "roughness": 0,
+        "slope": 0.0013600396628656315
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 13.573515292393308,
-      "descentMps": 0.6884599093296009,
-      "groundSpeedMps": 13.556044421072134,
+      "normalSpeedMps": 12.157398661795773,
+      "descentMps": 0.714450972781723,
+      "groundSpeedMps": 12.136387519740989,
       "rotorRpm": 324,
-      "engineRpm": 6582.206879307689,
-      "collective": 0.7682084501353393,
+      "engineRpm": 6583.37022213931,
+      "collective": 0.7902292312329205,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "servo-cyclic",
-    "duration": 69.95,
+    "duration": 72.95,
     "endReason": "contact",
-    "samples": 1400,
+    "samples": 1460,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -2046,41 +2157,41 @@
       },
       {
         "id": "em-term",
-        "at": 50.95
+        "at": 20.5
       }
     ],
     "contact": {
-      "time": 62.900000000000006,
+      "time": 65.9,
       "part": "skidLeft",
       "point": [
-        215.85864870188098,
-        -9.11943508365065,
-        -876.4977228976081
+        -429.2549066661671,
+        -0.6470483881327579,
+        205.14664554592574
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.016556545888726404
+        "kind": "paved",
+        "label": "Asfalt pist",
+        "friction": 0.35,
+        "roughness": 0,
+        "slope": 0.0013600396628656562
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 13.303219425325635,
-      "descentMps": 0.8306541750472433,
-      "groundSpeedMps": 13.277261039831894,
+      "normalSpeedMps": 13.229167927624014,
+      "descentMps": 0.7494921970162164,
+      "groundSpeedMps": 13.20791980229618,
       "rotorRpm": 324,
-      "engineRpm": 6580.626315189319,
-      "collective": 0.7772790560335598,
+      "engineRpm": 6581.533974516428,
+      "collective": 0.7557723305922242,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "servo-collective",
-    "duration": 69.85000000000001,
+    "duration": 73.4,
     "endReason": "contact",
-    "samples": 1398,
+    "samples": 1469,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -2095,41 +2206,41 @@
       },
       {
         "id": "em-term",
-        "at": 50.2
+        "at": 19.05
       }
     ],
     "contact": {
-      "time": 62.800000000000004,
+      "time": 66.35000000000001,
       "part": "skidLeft",
       "point": [
-        181.86403204191893,
-        -9.4562368861138,
-        -830.405330387276
+        -429.26424487886334,
+        -0.6468856075086293,
+        204.84894293161867
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.001111232310030409
+        "kind": "paved",
+        "label": "Asfalt pist",
+        "friction": 0.35,
+        "roughness": 0,
+        "slope": 0.001360039662865606
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 12.766408201299045,
-      "descentMps": 0.5780836578888496,
-      "groundSpeedMps": 12.753313202720198,
+      "normalSpeedMps": 13.22010963089876,
+      "descentMps": 0.73145779398997,
+      "groundSpeedMps": 13.199858641235274,
       "rotorRpm": 324,
-      "engineRpm": 6592.358017466357,
-      "collective": 0.8194964172470725,
+      "engineRpm": 6580.752498180252,
+      "collective": 0.7564960670378248,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "rotor-system",
-    "duration": 55.300000000000004,
+    "duration": 54.35,
     "endReason": "contact",
-    "samples": 1107,
+    "samples": 1088,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -2148,12 +2259,12 @@
       }
     ],
     "contact": {
-      "time": 48.25,
+      "time": 47.300000000000004,
       "part": "skidLeft",
       "point": [
-        160.06382800181888,
-        -9.375724486544451,
-        -818.8842081154833
+        -554.4824363444503,
+        -15.459118465271018,
+        1007.6919436620547
       ],
       "obstacle": false,
       "surface": {
@@ -2161,24 +2272,24 @@
         "label": "Çayır",
         "friction": 0.55,
         "roughness": 0.3,
-        "slope": 0.018117135147799657
+        "slope": 0.010846066608947947
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.06284955157592417,
-      "descentMps": 0.06200875272281408,
-      "groundSpeedMps": 0.010246009909015748,
+      "normalSpeedMps": 0.06381667923705264,
+      "descentMps": 0.06301483399065731,
+      "groundSpeedMps": 0.010084604403483846,
       "rotorRpm": 324,
-      "engineRpm": 6597.600493695239,
-      "collective": 1.0857569992364646,
+      "engineRpm": 6598.048273268384,
+      "collective": 1.0819689663630274,
       "water": false
     }
   },
   {
     "program": "emergency",
     "id": "mast-bumping",
-    "duration": 55.300000000000004,
+    "duration": 56.800000000000004,
     "endReason": "contact",
-    "samples": 1107,
+    "samples": 1137,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -2197,28 +2308,28 @@
       }
     ],
     "contact": {
-      "time": 48.25,
+      "time": 49.75,
       "part": "skidLeft",
       "point": [
-        160.06382800181888,
-        -9.375724486544451,
-        -818.8842081154833
+        -2500,
+        7.352819715823149,
+        -1874.3434749581588
       ],
       "obstacle": false,
       "surface": {
-        "kind": "grass",
-        "label": "Çayır",
-        "friction": 0.55,
-        "roughness": 0.3,
-        "slope": 0.018117135147799657
+        "kind": "field",
+        "label": "Sürülmüş tarla · yumuşak",
+        "friction": 0.78,
+        "roughness": 0.75,
+        "slope": 0.05390620142433751
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 0.06284955157592417,
-      "descentMps": 0.06200875272281408,
-      "groundSpeedMps": 0.010246009909015748,
+      "normalSpeedMps": 0.06254048474020299,
+      "descentMps": 0.0618509796133114,
+      "groundSpeedMps": 0.009261131270708762,
       "rotorRpm": 324,
-      "engineRpm": 6597.600493695239,
-      "collective": 1.0857569992364646,
+      "engineRpm": 6598.287384044166,
+      "collective": 1.0749390762278301,
       "water": false
     }
   },
@@ -2242,9 +2353,9 @@
   {
     "program": "emergency",
     "id": "trees",
-    "duration": 50.85,
+    "duration": 83.65,
     "endReason": "contact",
-    "samples": 1018,
+    "samples": 1674,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -2255,12 +2366,12 @@
       }
     ],
     "contact": {
-      "time": 43.800000000000004,
+      "time": 76.60000000000001,
       "part": "mainRotor",
       "point": [
-        0,
-        -6.159133351991742,
-        -492.63373242139124
+        512.8802716108294,
+        -13.09163071992452,
+        -1142.329941559745
       ],
       "obstacle": "tree",
       "surface": {
@@ -2268,12 +2379,12 @@
         "label": "Genç ağaçlandırma · 2–5 m",
         "friction": 0.65,
         "roughness": 0.65,
-        "slope": 0.027451436202810306
+        "slope": 0.045378344458225264
       },
-      "supportHeightM": 0,
-      "normalSpeedMps": 0.9999977448514987,
-      "descentMps": 0.9999977448514987,
-      "groundSpeedMps": 0.002320529475267062,
+      "supportHeightM": 4.3282211986631545,
+      "normalSpeedMps": 0.9989390432612439,
+      "descentMps": 0.9989390432612439,
+      "groundSpeedMps": 0.08044310665649458,
       "rotorRpm": 324,
       "engineRpm": 0,
       "collective": 1.8
@@ -2282,9 +2393,9 @@
   {
     "program": "emergency",
     "id": "ditch-power",
-    "duration": 77.05000000000001,
+    "duration": 57,
     "endReason": "contact",
-    "samples": 1542,
+    "samples": 1141,
     "finite": true,
     "errors": [],
     "monotonic": true,
@@ -2295,12 +2406,12 @@
       }
     ],
     "contact": {
-      "time": 68,
+      "time": 47.95,
       "part": "skidLeft",
       "point": [
-        -8.802505266406751,
         0,
-        -316.6824493055139
+        0,
+        -564.5033895076823
       ],
       "obstacle": false,
       "surface": {
@@ -2311,12 +2422,12 @@
         "slope": 0
       },
       "supportHeightM": 0,
-      "normalSpeedMps": 2.0786825559707314,
-      "descentMps": 1.0308571399984616,
-      "groundSpeedMps": 1.8050636347262674,
+      "normalSpeedMps": 1.722656635723817,
+      "descentMps": 1.030856928305291,
+      "groundSpeedMps": 1.3801738578774343,
       "rotorRpm": 298,
-      "engineRpm": 4517.052342504986,
-      "collective": 1.7977351895274079,
+      "engineRpm": 4518.555164804844,
+      "collective": 1.7799012008458877,
       "water": true
     }
   }

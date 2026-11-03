@@ -78,12 +78,20 @@ function addPart(buckets,material,geo,gr){let b=buckets.get(material);if(!b)buck
    dry-green fields further out (instead of the bare tan "desert") ---- */
 /* v0.37 Güvercinlik zemini: gerçek uydu görüntüsü (Sentinel-2 cloudless 2023, EOX — CC BY-NC-SA 4.0; Copernicus Sentinel
    verisi). Görüntü ±4 km'yi kaplar; zemin düzlemi ±3 km olduğundan ortası kırpılır. Yüklenene kadar eski çizim gösterilir. */
+/* v0.43 uydu görüntüsü keskinleştirme (unsharp mask, bir kez yüklemede): 4–6 m piksellerin tarla ve yol sınırları belirginleşir */
+function sharpenCanvas(ctx,N,amount=.9,r=2){try{const im=ctx.getImageData(0,0,N,N),d=im.data,L=N*N,tmp=new Float32Array(L*3),blur=new Float32Array(L*3),w=2*r+1;
+ for(let y=0;y<N;y++){let s0=0,s1=0,s2=0;for(let k=-r;k<=r;k++){const x=Math.min(N-1,Math.max(0,k)),i=(y*N+x)*4;s0+=d[i];s1+=d[i+1];s2+=d[i+2];}
+  for(let x=0;x<N;x++){const o=(y*N+x)*3;tmp[o]=s0/w;tmp[o+1]=s1/w;tmp[o+2]=s2/w;const a=(y*N+Math.min(N-1,x+r+1))*4,b=(y*N+Math.max(0,x-r))*4;s0+=d[a]-d[b];s1+=d[a+1]-d[b+1];s2+=d[a+2]-d[b+2];}}
+ for(let x=0;x<N;x++){let s0=0,s1=0,s2=0;for(let k=-r;k<=r;k++){const y=Math.min(N-1,Math.max(0,k)),o=(y*N+x)*3;s0+=tmp[o];s1+=tmp[o+1];s2+=tmp[o+2];}
+  for(let y=0;y<N;y++){const o=(y*N+x)*3;blur[o]=s0/w;blur[o+1]=s1/w;blur[o+2]=s2/w;const a=(Math.min(N-1,y+r+1)*N+x)*3,b=(Math.max(0,y-r)*N+x)*3;s0+=tmp[a]-tmp[b];s1+=tmp[a+1]-tmp[b+1];s2+=tmp[a+2]-tmp[b+2];}}
+ for(let i=0;i<L;i++){const o=i*3,q=i*4;for(let c=0;c<3;c++){const v=d[q+c]+amount*(d[q+c]-blur[o+c]);d[q+c]=v<0?0:v>255?255:v;}}
+ ctx.putImageData(im,0,0);}catch(e){}}
 export function airfieldGroundTexture(){const t=airfieldGroundTextureDrawn();if(!t||typeof Image==='undefined')return t;const img=new Image();img.decoding='async';
- img.onload=()=>{const c=t.image,ctx=c.getContext('2d');if(!ctx)return;const s=img.width*(6000/8000),o=(img.width-s)/2;ctx.filter='saturate(0.8) contrast(1.06) brightness(0.98)';ctx.drawImage(img,o,o,s,s,0,0,c.width,c.height);ctx.filter='none'; /* v0.38.3 satellite colours toned to the eye: less orange, a little more contrast */t.needsUpdate=true;};img.src='assets/terrain/guvercinlik-s2.jpg';return t;}
+ img.onload=()=>{const c=t.image,ctx=c.getContext('2d');if(!ctx)return;const s=img.width*(6000/8000),o=(img.width-s)/2;ctx.filter='saturate(0.76) hue-rotate(6deg) contrast(1.12) brightness(0.96)';ctx.drawImage(img,o,o,s,s,0,0,c.width,c.height);ctx.filter='none';sharpenCanvas(ctx,c.width,1.1,3); /* v0.38.3 satellite colours toned to the eye: less orange, a little more contrast */t.needsUpdate=true;};img.src='assets/terrain/guvercinlik-s2.jpg';return t;}
 /* v0.39 gerçek arazi / tepeler zemini: Sentinel-2 cloudless 2023 (EOX, CC BY-NC-SA 4.0), ±4.5 km, zemin düzlemiyle aynı kapsam */
 export function realGroundTexture(area){if(typeof document==='undefined')return null;const N=LITE?2048:4096,c=document.createElement('canvas');c.width=c.height=N;const ctx=c.getContext('2d');if(!ctx)return null;ctx.fillStyle='#8c7b5c';ctx.fillRect(0,0,N,N);
  const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;const img=new Image();img.decoding='async';
- img.onload=()=>{ctx.filter='saturate(0.72) hue-rotate(7deg) contrast(1.08) brightness(0.93)';ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,N,N);ctx.filter='none';
+ img.onload=()=>{ctx.filter='saturate(0.74) hue-rotate(11deg) contrast(1.12) brightness(0.96)'; /* v0.43 bozkır renkleri: biraz daha kontrast ve doygunluk */ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,N,N);ctx.filter='none';sharpenCanvas(ctx,N,1.0,LITE?2:3);
   /* fine field texture on top of the 4–10 m satellite pixels: soft furrows and mottling (not new features) */
   let seed=91;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};for(let i=0;i<(LITE?12000:60000);i++){const x=rand()*N,y=rand()*N;ctx.fillStyle=rand()>.5?'rgba(255,255,255,.035)':'rgba(30,25,10,.05)';ctx.fillRect(x,y,1+rand()*3,1+rand()*2);}
   t.needsUpdate=true;};img.src='assets/terrain/'+(area==='mountain'?'tepeler':'golbasi')+'-s2.jpg';return t;}

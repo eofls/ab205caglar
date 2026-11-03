@@ -115,7 +115,7 @@
             {
               "id": "skidLeft",
               "label": "Sol skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "detach": false,
               "directContact": true
@@ -123,7 +123,7 @@
             {
               "id": "skidRight",
               "label": "Sağ skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
@@ -235,14 +235,14 @@
             {
               "id": "skidLeft",
               "label": "Sol skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
             {
               "id": "skidRight",
               "label": "Sağ skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "detach": false,
               "directContact": true
@@ -355,14 +355,14 @@
             {
               "id": "skidLeft",
               "label": "Sol skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
             {
               "id": "skidRight",
               "label": "Sağ skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
@@ -475,14 +475,14 @@
             {
               "id": "skidLeft",
               "label": "Sol skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
             {
               "id": "skidRight",
               "label": "Sağ skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
@@ -595,14 +595,14 @@
             {
               "id": "skidLeft",
               "label": "Sol skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
             {
               "id": "skidRight",
               "label": "Sağ skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
@@ -623,7 +623,7 @@
             {
               "id": "tailBoom",
               "label": "Kuyruk bumu",
-              "severity": 0.46644444444444444,
+              "severity": 0.42269444444444443,
               "state": "Belirgin deformasyon",
               "detach": false,
               "directContact": true
@@ -715,21 +715,21 @@
             {
               "id": "skidLeft",
               "label": "Sol skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
             {
               "id": "skidRight",
               "label": "Sağ skid",
-              "severity": 0.19755555555555557,
+              "severity": 0.16255555555555556,
               "state": "Hafif deformasyon",
               "directContact": false
             },
             {
               "id": "cabin",
               "label": "Gövde/taban",
-              "severity": 0.46644444444444444,
+              "severity": 0.42269444444444443,
               "state": "Belirgin deformasyon",
               "detach": false,
               "directContact": true
@@ -871,7 +871,7 @@
         ],
         "minIas": 5.3018795279040765,
         "firstFlare": 47.638052816449324,
-        "seconds": 8.954
+        "seconds": 6.597
       }
     },
     {
@@ -916,7 +916,7 @@
         ],
         "minIas": 3.422702211629179,
         "firstFlare": 95.76489375289206,
-        "seconds": 1.048
+        "seconds": 0.734
       }
     },
     {
@@ -961,7 +961,7 @@
         ],
         "minIas": 3.623817374620605,
         "firstFlare": 108.6446172269066,
-        "seconds": 5.098
+        "seconds": 3.656
       }
     },
     {
@@ -1006,7 +1006,7 @@
         ],
         "minIas": 4.89091342044044,
         "firstFlare": 12.864934341559122,
-        "seconds": 9.287
+        "seconds": 6.61
       }
     },
     {
@@ -1014,7 +1014,7 @@
       "pass": true,
       "detail": {
         "name": "hover",
-        "duration": 6.815210711843168,
+        "duration": 6.815210711843164,
         "endReason": "contact",
         "finite": true,
         "endOK": true,
@@ -1022,12 +1022,12 @@
         "restore": true,
         "massKg": 2800,
         "contact": {
-          "time": 6.015210711843168,
+          "time": 6.015210711843165,
           "part": "skidLeft",
           "point": [
             -1.3364682401898282,
-            -0.08594272113078315,
-            13.446703667764375
+            -0.0859427211307831,
+            13.446703667764368
           ],
           "obstacle": false,
           "surface": {
@@ -1037,21 +1037,21 @@
             "roughness": 0.3,
             "slope": 0.03459100716267357
           },
-          "supportHeightM": 0.034152671889714756,
-          "normalSpeedMps": 0.6490043764797906,
-          "descentMps": 0.6539246301806287,
+          "supportHeightM": 0.034152671889714714,
+          "normalSpeedMps": 0.649004376479792,
+          "descentMps": 0.6539246301806264,
           "groundSpeedMps": 2.5720664405596576,
-          "rotorRpm": 249.94284764878006,
-          "engineRpm": 3371.4245785167886,
-          "collective": 1.7408235861925652
+          "rotorRpm": 249.94284764878017,
+          "engineRpm": 3371.424578516792,
+          "collective": 1.740823586192565
         },
         "rpmRange": [
-          249.94284764878006,
+          249.94284764878017,
           324
         ],
         "minIas": 0,
         "firstFlare": null,
-        "seconds": 0.265
+        "seconds": 0.194
       }
     },
     {
@@ -1096,7 +1096,7 @@
         ],
         "minIas": 16.17350319856769,
         "firstFlare": 103.32590546325335,
-        "seconds": 2.63
+        "seconds": 2.524
       }
     },
     {
@@ -1141,7 +1141,7 @@
         ],
         "minIas": 4.574933239673506,
         "firstFlare": 111.58317168073283,
-        "seconds": 3.461
+        "seconds": 3.193
       }
     },
     {
@@ -1149,7 +1149,7 @@
       "pass": true,
       "detail": {
         "name": "area-mountain",
-        "duration": 33.286594202033605,
+        "duration": 31.612826270842902,
         "endReason": "contact",
         "finite": true,
         "endOK": true,
@@ -1157,12 +1157,12 @@
         "restore": true,
         "massKg": 2800,
         "contact": {
-          "time": 32.48659420203361,
+          "time": 30.8128262708429,
           "part": "skidRight",
           "point": [
-            179.42645247633075,
-            -65.78172078856868,
-            -787.9857949614768
+            154.1618272772975,
+            -65.31965622596972,
+            -776.0870906714839
           ],
           "obstacle": false,
           "surface": {
@@ -1170,23 +1170,23 @@
             "label": "Sürülmüş tarla · yumuşak",
             "friction": 0.78,
             "roughness": 0.75,
-            "slope": 0.06355213207416656
+            "slope": 0.05195402958197867
           },
-          "supportHeightM": 0.1485996957449771,
-          "normalSpeedMps": 3.3802303207551176,
-          "descentMps": 3.4193536045179185,
-          "groundSpeedMps": 1.938064838495827,
-          "rotorRpm": 225.92059697487014,
-          "engineRpm": 0.4962439709895393,
-          "collective": 2.193758588488553
+          "supportHeightM": 0.14611607808028282,
+          "normalSpeedMps": 0.6921561366667106,
+          "descentMps": 0.9603729034621055,
+          "groundSpeedMps": 4.645049212343539,
+          "rotorRpm": 254.2279037285513,
+          "engineRpm": 0.8669568172478757,
+          "collective": 2.18157902472589
         },
         "rpmRange": [
-          225.92059697487014,
-          340.71213531166524
+          254.2279037285513,
+          341.08632281891454
         ],
-        "minIas": 3.6586960846448333,
-        "firstFlare": 105.8843830488423,
-        "seconds": 5.855
+        "minIas": 8.92512405730928,
+        "firstFlare": 104.79927400453954,
+        "seconds": 3.651
       }
     },
     {
@@ -1231,7 +1231,7 @@
         ],
         "minIas": 5.261640179109327,
         "firstFlare": 103.746613079587,
-        "seconds": 2.187
+        "seconds": 1.702
       }
     },
     {
@@ -1260,7 +1260,7 @@
         ],
         "minIas": 0,
         "firstFlare": null,
-        "seconds": 0.009
+        "seconds": 0.012
       }
     },
     {
@@ -1305,7 +1305,7 @@
         ],
         "minIas": 1,
         "firstFlare": null,
-        "seconds": 0.181
+        "seconds": 0.135
       }
     },
     {
@@ -1350,7 +1350,7 @@
         ],
         "minIas": 0.5144779700906307,
         "firstFlare": null,
-        "seconds": 1.077
+        "seconds": 0.319
       }
     },
     {
@@ -1395,7 +1395,7 @@
         ],
         "minIas": 3.4888420705646963,
         "firstFlare": 79.4483027818686,
-        "seconds": 1.808
+        "seconds": 1.26
       }
     },
     {
@@ -1428,19 +1428,19 @@
           },
           "supportHeightM": 0.05577114890396828,
           "normalSpeedMps": 1.0487629646448227,
-          "descentMps": 1.1945153984715737,
+          "descentMps": 1.1945153984715786,
           "groundSpeedMps": 2.2486140065985354,
-          "rotorRpm": 234.05650170193593,
+          "rotorRpm": 234.0565017019359,
           "engineRpm": 0.17585441885689215,
           "collective": 2.190405028875076
         },
         "rpmRange": [
-          234.05650170193593,
+          234.0565017019359,
           340.087191107034
         ],
         "minIas": 4.552053268966696,
         "firstFlare": 100.4378862130877,
-        "seconds": 6.256
+        "seconds": 5.338
       }
     },
     {
@@ -1448,7 +1448,7 @@
       "pass": true,
       "detail": {
         "name": "partial",
-        "duration": 32.41120365177502,
+        "duration": 56.7,
         "endReason": "contact",
         "finite": true,
         "endOK": true,
@@ -1456,36 +1456,37 @@
         "restore": true,
         "massKg": 2800,
         "contact": {
-          "time": 31.61120365177502,
-          "part": "skidRight",
+          "time": 49.650000000000006,
+          "part": "skidLeft",
           "point": [
-            -17.69942695496772,
-            -18.830962602658623,
-            -800.7867335781466
+            0,
+            -19.838539723714295,
+            -1163.4420844969402
           ],
           "obstacle": false,
           "surface": {
-            "kind": "grass",
-            "label": "Çayır",
-            "friction": 0.55,
-            "roughness": 0.3,
-            "slope": 0.010209963295756234
+            "kind": "stubble",
+            "label": "Anız",
+            "friction": 0.6,
+            "roughness": 0.4,
+            "slope": 0.006742045780688302
           },
-          "supportHeightM": 0.027012846727011208,
-          "normalSpeedMps": 0.20323695253736673,
-          "descentMps": 0.20185002306304226,
-          "groundSpeedMps": 1.1466165006044229,
-          "rotorRpm": 252.20958275397376,
-          "engineRpm": 5289.054251227146,
-          "collective": 1.7521585882138202
+          "supportHeightM": 0,
+          "normalSpeedMps": 13.166395815039104,
+          "descentMps": 0.658786245849379,
+          "groundSpeedMps": 13.149904160888736,
+          "rotorRpm": 324,
+          "engineRpm": 6583.958092525055,
+          "collective": 0.7428853328878512,
+          "water": false
         },
         "rpmRange": [
-          252.20958275397376,
-          339.972199568151
+          323.7450987632601,
+          324
         ],
-        "minIas": 2.2643561418065286,
-        "firstFlare": 98.84806909021839,
-        "seconds": 6.135
+        "minIas": 4.692960184012316,
+        "firstFlare": null,
+        "seconds": 0.159
       }
     },
     {
@@ -1493,7 +1494,7 @@
       "pass": true,
       "detail": {
         "name": "hot-high-wind",
-        "duration": 19.972055165956757,
+        "duration": 19.972055165956743,
         "endReason": "contact",
         "finite": true,
         "endOK": true,
@@ -1501,7 +1502,7 @@
         "restore": true,
         "massKg": 2800,
         "contact": {
-          "time": 19.172055165956756,
+          "time": 19.172055165956742,
           "part": "skidLeft",
           "point": [
             2.9576856303336134,
@@ -1516,21 +1517,21 @@
             "roughness": 0.4,
             "slope": 0.025092213023649543
           },
-          "supportHeightM": 0.4134002554890843,
+          "supportHeightM": 0.41340025548908876,
           "normalSpeedMps": 1.3518002565267473,
-          "descentMps": 1.8474780622579798,
-          "groundSpeedMps": 2.0427647324851397,
-          "rotorRpm": 239.80472354811354,
-          "engineRpm": 41.992183820444204,
-          "collective": 2.0162748483649815
+          "descentMps": 1.847478062257956,
+          "groundSpeedMps": 2.0427647324851046,
+          "rotorRpm": 239.80472354811414,
+          "engineRpm": 41.992183820444396,
+          "collective": 2.016274848364977
         },
         "rpmRange": [
-          239.80472354811354,
+          239.80472354811414,
           339.609880749076
         ],
-        "minIas": 6.302756904689805,
+        "minIas": 6.302756904689925,
         "firstFlare": 110.91722845318425,
-        "seconds": 3.329
+        "seconds": 2.625
       }
     },
     {
@@ -1575,7 +1576,7 @@
         ],
         "minIas": 12.96610200079382,
         "firstFlare": 112.99034113067594,
-        "seconds": 5.278
+        "seconds": 4.354
       }
     },
     {
@@ -1620,7 +1621,7 @@
         ],
         "minIas": 5.215273373504167,
         "firstFlare": 95.33320574744349,
-        "seconds": 4.802
+        "seconds": 3.84
       }
     },
     {
@@ -5756,7 +5757,7 @@
       ],
       "minIas": 5.3018795279040765,
       "firstFlare": 47.638052816449324,
-      "seconds": 8.954
+      "seconds": 6.597
     },
     {
       "name": "avoid-low",
@@ -5797,7 +5798,7 @@
       ],
       "minIas": 3.422702211629179,
       "firstFlare": 95.76489375289206,
-      "seconds": 1.048
+      "seconds": 0.734
     },
     {
       "name": "safe",
@@ -5838,7 +5839,7 @@
       ],
       "minIas": 3.623817374620605,
       "firstFlare": 108.6446172269066,
-      "seconds": 5.098
+      "seconds": 3.656
     },
     {
       "name": "avoid-fast",
@@ -5879,11 +5880,11 @@
       ],
       "minIas": 4.89091342044044,
       "firstFlare": 12.864934341559122,
-      "seconds": 9.287
+      "seconds": 6.61
     },
     {
       "name": "hover",
-      "duration": 6.815210711843168,
+      "duration": 6.815210711843164,
       "endReason": "contact",
       "finite": true,
       "endOK": true,
@@ -5891,12 +5892,12 @@
       "restore": true,
       "massKg": 2800,
       "contact": {
-        "time": 6.015210711843168,
+        "time": 6.015210711843165,
         "part": "skidLeft",
         "point": [
           -1.3364682401898282,
-          -0.08594272113078315,
-          13.446703667764375
+          -0.0859427211307831,
+          13.446703667764368
         ],
         "obstacle": false,
         "surface": {
@@ -5906,21 +5907,21 @@
           "roughness": 0.3,
           "slope": 0.03459100716267357
         },
-        "supportHeightM": 0.034152671889714756,
-        "normalSpeedMps": 0.6490043764797906,
-        "descentMps": 0.6539246301806287,
+        "supportHeightM": 0.034152671889714714,
+        "normalSpeedMps": 0.649004376479792,
+        "descentMps": 0.6539246301806264,
         "groundSpeedMps": 2.5720664405596576,
-        "rotorRpm": 249.94284764878006,
-        "engineRpm": 3371.4245785167886,
-        "collective": 1.7408235861925652
+        "rotorRpm": 249.94284764878017,
+        "engineRpm": 3371.424578516792,
+        "collective": 1.740823586192565
       },
       "rpmRange": [
-        249.94284764878006,
+        249.94284764878017,
         324
       ],
       "minIas": 0,
       "firstFlare": null,
-      "seconds": 0.265
+      "seconds": 0.194
     },
     {
       "name": "area-airfield",
@@ -5961,7 +5962,7 @@
       ],
       "minIas": 16.17350319856769,
       "firstFlare": 103.32590546325335,
-      "seconds": 2.63
+      "seconds": 2.524
     },
     {
       "name": "area-forest",
@@ -6002,11 +6003,11 @@
       ],
       "minIas": 4.574933239673506,
       "firstFlare": 111.58317168073283,
-      "seconds": 3.461
+      "seconds": 3.193
     },
     {
       "name": "area-mountain",
-      "duration": 33.286594202033605,
+      "duration": 31.612826270842902,
       "endReason": "contact",
       "finite": true,
       "endOK": true,
@@ -6014,12 +6015,12 @@
       "restore": true,
       "massKg": 2800,
       "contact": {
-        "time": 32.48659420203361,
+        "time": 30.8128262708429,
         "part": "skidRight",
         "point": [
-          179.42645247633075,
-          -65.78172078856868,
-          -787.9857949614768
+          154.1618272772975,
+          -65.31965622596972,
+          -776.0870906714839
         ],
         "obstacle": false,
         "surface": {
@@ -6027,23 +6028,23 @@
           "label": "Sürülmüş tarla · yumuşak",
           "friction": 0.78,
           "roughness": 0.75,
-          "slope": 0.06355213207416656
+          "slope": 0.05195402958197867
         },
-        "supportHeightM": 0.1485996957449771,
-        "normalSpeedMps": 3.3802303207551176,
-        "descentMps": 3.4193536045179185,
-        "groundSpeedMps": 1.938064838495827,
-        "rotorRpm": 225.92059697487014,
-        "engineRpm": 0.4962439709895393,
-        "collective": 2.193758588488553
+        "supportHeightM": 0.14611607808028282,
+        "normalSpeedMps": 0.6921561366667106,
+        "descentMps": 0.9603729034621055,
+        "groundSpeedMps": 4.645049212343539,
+        "rotorRpm": 254.2279037285513,
+        "engineRpm": 0.8669568172478757,
+        "collective": 2.18157902472589
       },
       "rpmRange": [
-        225.92059697487014,
-        340.71213531166524
+        254.2279037285513,
+        341.08632281891454
       ],
-      "minIas": 3.6586960846448333,
-      "firstFlare": 105.8843830488423,
-      "seconds": 5.855
+      "minIas": 8.92512405730928,
+      "firstFlare": 104.79927400453954,
+      "seconds": 3.651
     },
     {
       "name": "area-water",
@@ -6084,7 +6085,7 @@
       ],
       "minIas": 5.261640179109327,
       "firstFlare": 103.746613079587,
-      "seconds": 2.187
+      "seconds": 1.702
     },
     {
       "name": "point-0-0",
@@ -6109,7 +6110,7 @@
       ],
       "minIas": 0,
       "firstFlare": null,
-      "seconds": 0.009
+      "seconds": 0.012
     },
     {
       "name": "point-1-1",
@@ -6150,7 +6151,7 @@
       ],
       "minIas": 1,
       "firstFlare": null,
-      "seconds": 0.181
+      "seconds": 0.135
     },
     {
       "name": "point-15-5",
@@ -6191,7 +6192,7 @@
       ],
       "minIas": 0.5144779700906307,
       "firstFlare": null,
-      "seconds": 1.077
+      "seconds": 0.319
     },
     {
       "name": "point-75-30",
@@ -6232,7 +6233,7 @@
       ],
       "minIas": 3.4888420705646963,
       "firstFlare": 79.4483027818686,
-      "seconds": 1.808
+      "seconds": 1.26
     },
     {
       "name": "point-600-80",
@@ -6261,23 +6262,23 @@
         },
         "supportHeightM": 0.05577114890396828,
         "normalSpeedMps": 1.0487629646448227,
-        "descentMps": 1.1945153984715737,
+        "descentMps": 1.1945153984715786,
         "groundSpeedMps": 2.2486140065985354,
-        "rotorRpm": 234.05650170193593,
+        "rotorRpm": 234.0565017019359,
         "engineRpm": 0.17585441885689215,
         "collective": 2.190405028875076
       },
       "rpmRange": [
-        234.05650170193593,
+        234.0565017019359,
         340.087191107034
       ],
       "minIas": 4.552053268966696,
       "firstFlare": 100.4378862130877,
-      "seconds": 6.256
+      "seconds": 5.338
     },
     {
       "name": "partial",
-      "duration": 32.41120365177502,
+      "duration": 56.7,
       "endReason": "contact",
       "finite": true,
       "endOK": true,
@@ -6285,40 +6286,41 @@
       "restore": true,
       "massKg": 2800,
       "contact": {
-        "time": 31.61120365177502,
-        "part": "skidRight",
+        "time": 49.650000000000006,
+        "part": "skidLeft",
         "point": [
-          -17.69942695496772,
-          -18.830962602658623,
-          -800.7867335781466
+          0,
+          -19.838539723714295,
+          -1163.4420844969402
         ],
         "obstacle": false,
         "surface": {
-          "kind": "grass",
-          "label": "Çayır",
-          "friction": 0.55,
-          "roughness": 0.3,
-          "slope": 0.010209963295756234
+          "kind": "stubble",
+          "label": "Anız",
+          "friction": 0.6,
+          "roughness": 0.4,
+          "slope": 0.006742045780688302
         },
-        "supportHeightM": 0.027012846727011208,
-        "normalSpeedMps": 0.20323695253736673,
-        "descentMps": 0.20185002306304226,
-        "groundSpeedMps": 1.1466165006044229,
-        "rotorRpm": 252.20958275397376,
-        "engineRpm": 5289.054251227146,
-        "collective": 1.7521585882138202
+        "supportHeightM": 0,
+        "normalSpeedMps": 13.166395815039104,
+        "descentMps": 0.658786245849379,
+        "groundSpeedMps": 13.149904160888736,
+        "rotorRpm": 324,
+        "engineRpm": 6583.958092525055,
+        "collective": 0.7428853328878512,
+        "water": false
       },
       "rpmRange": [
-        252.20958275397376,
-        339.972199568151
+        323.7450987632601,
+        324
       ],
-      "minIas": 2.2643561418065286,
-      "firstFlare": 98.84806909021839,
-      "seconds": 6.135
+      "minIas": 4.692960184012316,
+      "firstFlare": null,
+      "seconds": 0.159
     },
     {
       "name": "hot-high-wind",
-      "duration": 19.972055165956757,
+      "duration": 19.972055165956743,
       "endReason": "contact",
       "finite": true,
       "endOK": true,
@@ -6326,7 +6328,7 @@
       "restore": true,
       "massKg": 2800,
       "contact": {
-        "time": 19.172055165956756,
+        "time": 19.172055165956742,
         "part": "skidLeft",
         "point": [
           2.9576856303336134,
@@ -6341,21 +6343,21 @@
           "roughness": 0.4,
           "slope": 0.025092213023649543
         },
-        "supportHeightM": 0.4134002554890843,
+        "supportHeightM": 0.41340025548908876,
         "normalSpeedMps": 1.3518002565267473,
-        "descentMps": 1.8474780622579798,
-        "groundSpeedMps": 2.0427647324851397,
-        "rotorRpm": 239.80472354811354,
-        "engineRpm": 41.992183820444204,
-        "collective": 2.0162748483649815
+        "descentMps": 1.847478062257956,
+        "groundSpeedMps": 2.0427647324851046,
+        "rotorRpm": 239.80472354811414,
+        "engineRpm": 41.992183820444396,
+        "collective": 2.016274848364977
       },
       "rpmRange": [
-        239.80472354811354,
+        239.80472354811414,
         339.609880749076
       ],
-      "minIas": 6.302756904689805,
+      "minIas": 6.302756904689925,
       "firstFlare": 110.91722845318425,
-      "seconds": 3.329
+      "seconds": 2.625
     },
     {
       "name": "cold-crosswind",
@@ -6396,7 +6398,7 @@
       ],
       "minIas": 12.96610200079382,
       "firstFlare": 112.99034113067594,
-      "seconds": 5.278
+      "seconds": 4.354
     },
     {
       "name": "developing",
@@ -6437,7 +6439,7 @@
       ],
       "minIas": 5.215273373504167,
       "firstFlare": 95.33320574744349,
-      "seconds": 4.802
+      "seconds": 3.84
     }
   ],
   "guided": [
@@ -10502,6 +10504,6 @@
       ]
     }
   ],
-  "started": "2026-10-28T13:58:36.931Z",
-  "finished": "2026-10-28T14:00:07.205Z"
+  "started": "2026-11-03T19:44:51.911Z",
+  "finished": "2026-11-03T19:45:58.383Z"
 }
