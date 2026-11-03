@@ -65,3 +65,13 @@ test('v0.43 görsellik: zemin malzemesi ayrıntı dokusu, kabartı, bulut gölge
  assert.ok(env.includes('uDet')&&env.includes('normal_fragment_maps')&&env.includes('uCloud'));
  assert.ok(/this\.wind\.visible=false/.test(sv),'rüzgâr oku görünür');assert.ok(sv.includes('FogExp2'));
 });
+test('v0.43 veri: bina kat etiketi metinli olsa da yükseklik sayı; ortam kapatma dokuları önbellek listesinde',async()=>{
+ const {buildingHeightOf}=await import('../../terrain-data.js');
+ assert.equal(buildingHeightOf({tags:{building:'commercial','building:levels':'Kat 2'}}),6);
+ assert.ok(Number.isFinite(buildingHeightOf({tags:{building:'yes'}})));
+ const sw=readFileSync(new URL('../../sw.js',import.meta.url),'utf8');for(const f of ['tepeler-ao.png','golbasi-ao.png','guvercinlik-ao.png']){assert.ok(sw.includes(f),f);assert.ok(readFileSync(new URL('../../assets/terrain/'+f,import.meta.url)).length>1000,f);}
+});
+test('v0.43 program uçuşunda duruş değişim hızı ≤ ≈30°/s (kopma / dönüş arızaları hariç)',()=>{
+ for(const e of EMERGENCIES.filter(x=>x.kind==='program'&&!['mast-bumping','rotor-system','tr-components','lte','tr-loss-hover','fixed-pedal-hover'].includes(x.id))){const r=programRun(emCfg(e),[]);let prev=null,mx=0;for(const s of r.samples){if(prev&&!s.onGround&&!prev.onGround)mx=Math.max(mx,Math.abs(s.pitch-prev.pitch)/r.dt,Math.abs(s.roll-prev.roll)/r.dt);prev=s;}
+  assert.ok(mx/R<32,`${e.id} ${(mx/R).toFixed(0)}°/s`);}
+});
