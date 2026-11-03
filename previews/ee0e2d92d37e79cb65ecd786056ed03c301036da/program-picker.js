@@ -13,7 +13,7 @@ export class ProgramPicker{
   root.querySelector('.pp-filter').oninput=e=>{this.filter=e.target.value.toLocaleLowerCase('tr-TR');this.sig='';this.render();};
   this.list.onclick=e=>{const b=e.target.closest('[data-id]');if(!b)return;const id=b.dataset.id;
    if(this.tab==='emergency'){const em=EMERGENCIES.find(x=>x.id===id),st=em.start??{h:500,v:80},area=em.area??'terrain';
-    this.onSelect?.({program:'emergency',emergencyId:id,customStart:true,startHeightFt:st.h,startIasKt:st.v,startX:0,startZ:0,...(area==='airfield'?{headingDeg:65}:{}),...(area?{flightArea:area}:{}),...(em.kind==='total'||em.kind==='partial'?{powerLossMode:em.kind}:{})},em.title);}
+    this.onSelect?.({program:'emergency',emergencyId:id,customStart:true,startHeightFt:st.h,startIasKt:st.v,startX:st.x??0,startZ:st.z??0,...(st.hdg!==undefined?{headingDeg:st.hdg}:area==='airfield'?{headingDeg:65}:{headingDeg:0}),...(area?{flightArea:area}:{}),...(em.kind==='total'||em.kind==='partial'?{powerLossMode:em.kind}:{})},em.title);}
    else{const m=MANEUVERS.find(x=>x.id===id),st=m.start;this.onSelect?.({program:'maneuver',maneuverId:id,customStart:true,startHeightFt:st.h,startIasKt:st.v,flightArea:st.area??'terrain',startX:st.x??0,startZ:st.z??0,...(st.hdg!==undefined?{headingDeg:st.hdg}:{})},m.title);}};
  }
  update(config){this.config=config;if(config.program&&this.sig===''&&!this.touched){this.tab=config.program;}this.touched=true;this.render();}

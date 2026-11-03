@@ -274,7 +274,11 @@ export class Cockpit{
    dev:clamp(Math.sin(brg(0,0)-240*R)*3,-1,1),to:Math.cos(brg(0,0)-240*R)>0,cdiOff:this.cbOut('cdi')||!ac};
   for(const L of this.live){const k=L.key(ls);if(k===L.k)continue;if(L.id!=='adi'&&L.k!==undefined&&this.frame%2)continue;L.k=k;L.draw(L.ctx,L.n,ls);L.tex.needsUpdate=true;}
   // warning / caution lights
-  const prog=p.program,lights={...caution(p,time,config),...this.switchLights(p)};const testC=on('cautionTest')===2,mc=Object.keys(lights).some(k=>lights[k]&&k!=='rpm'&&k!=='fire');
+  const prog=p.program,lights={...caution(p,time,config),...this.switchLights(p)};const testC=on('cautionTest')===2;let mc;{/* v0.42 MASTER CAUTION yalnız yeni bir ikaz segmenti yandığında yanar; pilot ≈4 s içinde RESET eder (segment yanık kalır) */
+   const segs=Object.keys(lights).filter(k=>lights[k]&&k!=='rpm'&&k!=='fire'&&k!=='mc');if(this.mcT===undefined||time<this.mcT-.5){this.mcSeen=new Set();this.mcSince=null;}this.mcT=time;
+   if(on('cautionTest')===0){for(const k of segs)this.mcSeen.add(k);this.mcSince=null;}
+   const fresh=segs.filter(k=>!this.mcSeen.has(k));if(fresh.length&&this.mcSince===null)this.mcSince=time;if(this.mcSince!==null&&time-this.mcSince>4){for(const k of fresh)this.mcSeen.add(k);this.mcSince=null;}
+   mc=prog?!!(prog.lights??[]).includes?.('mc')||(prog.lights instanceof Set&&prog.lights.has('mc'))||(fresh.length>0&&this.mcSince!==null):fresh.length>0&&this.mcSince!==null;}
   const lit=dcOn&&!this.cbOut('caution');this.drawCaution(lit?lights:{},lit&&testC,on('cautionDim')===1);
   this.drawLight('fire',dcOn&&!this.cbOut('fireDet')&&(!!prog?.warn?.fire||on('fireTest')===1));this.drawLight('rpm',dcOn&&!this.cbOut('rpmWarn')&&(!!lights.rpm||testC));this.drawLight('mc',lit&&(mc||testC));
   this.drawLight('cargo',dcOn&&on('cargoRel')===1);
