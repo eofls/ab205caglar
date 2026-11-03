@@ -2,7 +2,7 @@ import {AIRFIELD_FEATURES} from './assets/terrain/guvercinlik-osm.js';
 import {LITE} from './device-profile.js';
 import {makeAreaScene,disposeArea} from './area-scene.js';
 import {CockpitGauges} from './cockpit-gauges.js';
-import {SURFACE_U,WATER_MATS,setSurfaceArea,createGrass,updateGrass,createSky,updateSky,createClouds,updateClouds,createDownwash,updateDownwash,updateAirfieldExtras,mergeStatic,createRain,updateRain,createSmoke,updateSmoke} from './environment.js';
+import {SURFACE_U,WATER_MATS,setSurfaceArea,addFarClouds,createGrass,updateGrass,createSky,updateSky,createClouds,updateClouds,createDownwash,updateDownwash,updateAirfieldExtras,mergeStatic,createRain,updateRain,createSmoke,updateSmoke} from './environment.js';
 import {terrainColor,DEM,FEATURES,extraFeatures} from './terrain-data.js';
 import {REAL_AREAS} from './real-area.js';
 import {isManualProgram} from './program-flight.js';
@@ -49,7 +49,7 @@ export class SceneView{
   this.areaRoot=makeAreaScene('terrain');this.scene.add(this.areaRoot);this.areaDetail=addTerrainDetail(this.scene,[...FEATURES,...extraFeatures('terrain')]);this.flightArea='terrain';setSurfaceArea('terrain');this.areaKey='terrain:0:0';
   const marker=new T.ArrowHelper(new T.Vector3(0,0,-1),new T.Vector3(40,8,25),10,0xf1d6a1,3,2);this.wind=marker;this.scene.add(marker);
   this.sky=createSky();this.scene.add(this.sky);
-  this.clouds=createClouds();this.scene.add(this.clouds);
+  this.clouds=createClouds();addFarClouds(this.clouds);this.scene.add(this.clouds);
   this.downwash=createDownwash();this.scene.add(this.downwash);this.grass=createGrass();if(this.grass)this.scene.add(this.grass);
   this.rain=createRain();this.scene.add(this.rain);
   this.smoke=createSmoke();this.scene.add(this.smoke);this.smokeTrail=[];

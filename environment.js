@@ -59,8 +59,11 @@ export function createClouds(){
 }
 export function updateClouds(group,weather,cover){
  const n=cover==='clear'?0:cover==='scattered'?16:46;
- group.children.forEach((s,i)=>{s.visible=i<n;s.material.color.set(weather.cloudColor);s.material.opacity=cover==='overcast'?.95:.8;});
+ group.children.forEach((s,i)=>{if(s.userData.far){s.visible=cover!=='overcast';s.material.color.set(weather.cloudColor);s.material.opacity=cover==='clear'?.55:.7;return;}s.visible=i<n;s.material.color.set(weather.cloudColor);s.material.opacity=cover==='overcast'?.95:.8;});
 }
+/* v0.43 açık havada da ufukta birkaç uzak kümülüs (8–12 km, gölgesiz): gökyüzü boş ve yapay görünmez */
+export function addFarClouds(group){if(typeof document==='undefined'||group.userData.farAdded)return;group.userData.farAdded=true;const tex=cloudTexture();let seed=29;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
+ for(let i=0;i<9;i++){const m=new T.SpriteMaterial({map:tex,color:'#ffffff',transparent:true,depthWrite:false,fog:false,opacity:.55});const sp=new T.Sprite(m);const a=r()*Math.PI*2,d=6500+r()*2200;sp.position.set(Math.cos(a)*d,700+r()*400,Math.sin(a)*d);const k=1100+r()*1300;sp.scale.set(k,k*.38,1);sp.userData.far=true;group.add(sp);}}
 
 // ---------- Surface detail for terrain/runway materials (world-space noise, slope rock, snow line) ----------
 /* v0.43 gerçekçilik: zemin malzemesi için ortak (paylaşılan) uniform'lar — bulut gölgesi, rüzgâr, zaman, ayrıntı dokusu */
@@ -264,11 +267,11 @@ const _n3=(x,y,z)=>{const s=Math.sin(x*12.9898+y*78.233+z*37.719)*43758.5453;ret
 const _sn3=(x,y,z)=>{const fx=Math.floor(x),fy=Math.floor(y),fz=Math.floor(z),ux=x-fx,uy=y-fy,uz=z-fz,sm=t=>t*t*(3-2*t),a=sm(ux),b=sm(uy),c=sm(uz);let r=0;for(let i=0;i<2;i++)for(let j=0;j<2;j++)for(let k=0;k<2;k++)r+=_n3(fx+i,fy+j,fz+k)*(i?a:1-a)*(j?b:1-b)*(k?c:1-c);return r;};
 function smoothByKey(g,keys){/* aynı noktadaki köşelerin normalleri birleştirilir: yumuşak (yuvarlak) taç gölgelemesi */g.computeVertexNormals();const n=g.attributes.normal,acc=new Map();for(let i=0;i<n.count;i++){const k=keys[i];const a=acc.get(k)??[0,0,0];a[0]+=n.getX(i);a[1]+=n.getY(i);a[2]+=n.getZ(i);acc.set(k,a);}
  for(let i=0;i<n.count;i++){const a=acc.get(keys[i]),l=Math.hypot(...a)||1;n.setXYZ(i,a[0]/l,a[1]/l,a[2]/l);}n.needsUpdate=true;}
-export function lumpyCrown(low){const g=new T.IcosahedronGeometry(1,low?1:2),p=g.attributes.position,col=[],keys=[];const v=new T.Vector3();
+export function lumpyCrown(low){const g=LITE&&low?new T.DodecahedronGeometry(1,0):new T.IcosahedronGeometry(1,low?1:2), /* telefonda kalabalık ormanda 36 üçgen */p=g.attributes.position,col=[],keys=[];const v=new T.Vector3();
  for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();keys.push(Math.round(v.x*1e3)+','+Math.round(v.y*1e3)+','+Math.round(v.z*1e3));const r=1+.22*(_sn3(v.x*2.2+3,v.y*2.2+1,v.z*2.2+7)-.5)*2+.08*(_sn3(v.x*5,v.y*5,v.z*5)-.5)*2;v.multiplyScalar(r);if(v.y<-.25)v.y=-.25+(v.y+.25)*.6;p.setXYZ(i,v.x,v.y,v.z);
   const sh=.62+.42*Math.min(1,Math.max(0,(v.y+.9)/1.9)),vr=.96+.08*_sn3(v.x*4+9,v.y*4,v.z*4);col.push(sh*vr,sh*vr,sh*vr*.97);}
  g.setAttribute('color',new T.Float32BufferAttribute(col,3));smoothByKey(g,keys);return g;}
-function coniferGeo(low){const g=new T.ConeGeometry(1,1,low?8:12,low?4:7,false);g.translate(0,.5,0);const p=g.attributes.position,col=[];
+function coniferGeo(low){const g=new T.ConeGeometry(1,1,low?(LITE?6:8):12,low?(LITE?2:3):7,false);g.translate(0,.5,0);const p=g.attributes.position,col=[];
  for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i),a=Math.atan2(z,x),rr=Math.hypot(x,z);const tier=.78+.22*((y*5)%1),jag=1+.1*Math.sin(a*7+y*13);const k=rr>1e-4?tier*jag:1;p.setXYZ(i,x*k,y,z*k);
   const sh=.6+.45*y;col.push(sh,sh,sh*.96);}
  g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g;}
