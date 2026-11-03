@@ -298,6 +298,7 @@ function emergencyDirector(e,config,choices,ctx){
   {const aglN=st.y-terrainHeight(st.x,st.z,area);if(runonT&&!ctx.apN1&&D<380){ctx.apN1=1;ev(t,'Anlatım','Yaklaşma oranı','Açı kollektifle korunur; yer hızı artar gibi görünene kadar sürat muhafaza edilir, sonra alçalma ve yakınlaşma oranı yavaş yavaş azaltılır.');}
    if(runonT&&!ctx.apN2&&aglN<7&&D<120){ctx.apN2=1;ev(t,'Anlatım','Temas öncesi','Geçiş kaldırıcı kuvvetin üzerinde: kollektifle süzülüş oranı, saykılıkla ufkiyet ve yer izi, pedallarla baş istikameti.');}
    if(!runonT&&e.landing!=='trees'&&!ctx.apN1&&aglN<95&&D<520){ctx.apN1=1;ev(t,'Anlatım','Yer hızı analizi','Açı sabit; yer hızı hızlı yürüyüşe düşecek şekilde saykılıkla yavaşlanır, açı kollektifle korunur.');}}
+  if(e.effects.finalRpm&&D<650&&!st.onGround){base.eng=e.effects.finalRpm;base.rpm=e.effects.finalRpm*324/6600;base.rpmRate=6;if(!ctx.frMsg){ctx.frMsg=1;ev(t,'Usul','Gaz kolu · RPM 6000',`Son yaklaşmada gaz kolu ile motor RPM'i ${e.effects.finalRpm}'e düşürüldü: tork azaldı, burun istikamete geldi; ruleli iniş.`);}} /* v0.42 anlatılan adım uygulanır */
   ctx.phase=runonT?'Alçak yaklaşma · ruleli iniş':'Normal yaklaşma';ctx.reason=`${Math.round(D)} m · hedef ${Math.round(hDes/FT)} ft · ${sp.toFixed(0)} kt`;
   if(ctx.ditchT)return ditchPhase(st,t,ctx,base,ev);
   if(!runonT&&D<6&&kt<4){ // termination: hover, then set down

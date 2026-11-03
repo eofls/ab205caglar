@@ -10,7 +10,7 @@ Bu depo hem Claude hem ChatGPT/Codex tarafından düzenlenir. Tek doğru kaynak 
 ## Yapı
 - Kök klasör uygulamanın kendisidir (statik site, ES modülleri, Three.js r170). `index.html` kökte; `python3 -m http.server` ile sunulur.
 - Program uçuşları (manevra / emercensi hazır akışı): `program-flight.js`, `maneuver-catalog.js`, `emergency-catalog.js`.
-- Gerçek uçuş sahaları: `real-area.js` + `assets/terrain/*-real.js` (Tepeler = mountain, Gölbaşı = terrain). Yerel metre çerçevesi: x doğu, z güney.
+- Gerçek uçuş sahaları: `real-area.js` + `assets/terrain/*-real.js` (Tepeler = mountain ±6,5 km, Gölbaşı = terrain ±4,5 km). Yerel metre çerçevesi: x doğu, z güney. Saha yarıçapı `environment.js` (REAL_GROUND), `area-scene.js`, `start-map.js` ve `program-flight.js` (saha arama sınırı) içinde birlikte değişir; veri paketi `claude/tools/build_real.py` ile `RI` / `NI` ortam değişkenleriyle üretilir.
 - Telefon modu: `device-profile.js` (`LITE`). Telefonda `*-lite` model ve dokular kullanılır; yeni büyük doku eklerken lite karşılığını da üret. `?lite=0/1` zorlar.
 - Ortak hız / rüzgâr / atmosfer tanımları: `flight-reference.js`.
 - `sw.js` içindeki `CACHE` adı ve `flight-reference.js` içindeki `APP_VERSION` her sürümde birlikte artırılır; yeni dosya eklenirse `sw.js` SHELL listesine de eklenir.
