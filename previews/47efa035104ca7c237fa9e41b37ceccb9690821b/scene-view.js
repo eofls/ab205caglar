@@ -75,7 +75,7 @@ export class SceneView{
   this.flow=new T.Group();this.flow.visible=false;this.scene.add(this.flow);
   for(const z of [-2.5,2.5])this.flow.add(new T.ArrowHelper(new T.Vector3(0,1,0),new T.Vector3(-.3,1,z),5,0x8dcde2,1,.6));
   this.regimeHalo=new T.Mesh(new T.TorusGeometry(7.36,.08,5,64,Math.PI*1.7),new T.MeshBasicMaterial({color:'#ffad52',transparent:true,opacity:.7}));this.regimeHalo.rotation.x=Math.PI/2;this.regimeHalo.position.y=4.2;this.regimeHalo.visible=false;this.heli.root.add(this.regimeHalo);
-  this.guide=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3(0,10,0)]),new T.LineDashedMaterial({color:'#efe6c9',dashSize:1,gapSize:.7}));this.scene.add(this.guide);
+  this.guide=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3(0,10,0)]),new T.LineDashedMaterial({color:'#efe6c9',dashSize:1,gapSize:.7}));this.guide.visible=false;this.scene.add(this.guide); /* v0.42 helikopter altındaki kesik çizgi ve koni kaldırıldı */
   this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();this.preset('close');this.precompile();
  }
  /* v0.33.1: compile every shader program up front (hidden objects included: dust, debris, splash, rain, markers, ghost)
@@ -134,6 +134,10 @@ if(!m.transparent)return;if(m.userData.outsideOpacity===undefined)m.userData.out
   const p=s.physicalState,agl=p?.heightAglFt??99;let open=0,jet=0;
   if(id==='ditch-power'&&k!=null){open=Math.max(0,Math.min(1,(t-k)/1.5));jet=Math.max(0,t-k-1.5);}else if(id==='ditch-nopower'&&t>4)open=Math.max(0,Math.min(1,(80-agl)/40));
   setDoors(this.heli,{front:open,slide:open,jettison:id==='ditch-power'?jet:0});this.doorsSet=true;}
+ debris(session,s){/* v0.42 kuyruk rotorundan parça kopması: kopan parçalar kuyruk rotorundan savrulur ve düşer */const pg=s.physicalState?.program,t=session.time,dt=t-4.05,on=pg?.kind==='emergency'&&pg.id==='tr-components'&&dt>=0&&dt<6;
+  if(!this.debrisG){this.debrisG=new T.Group();const mat=new T.MeshStandardMaterial({color:'#c9ccd0',roughness:.5,metalness:.4}),dark=new T.MeshStandardMaterial({color:'#2b2d30',roughness:.6});this.debrisP=[];for(let i=0;i<8;i++){const m=new T.Mesh(new T.BoxGeometry(i<2?.22:.14,.05,i<2?1.1:.45),i%3===2?dark:mat);const a=i*2.39;m.userData.v=new T.Vector3(Math.cos(a)*(3+i%3*2),2+(i%4)*1.5,Math.sin(a)*(3+i%2*3));m.userData.w=new T.Vector3(7+i,5+i*1.3,3+i*.7);this.debrisG.add(m);this.debrisP.push(m);}this.scene.add(this.debrisG);}
+  this.debrisG.visible=on;if(!on)return;const tail=new T.Vector3();this.heli.tail.getWorldPosition(tail);
+  const vh=s.physicalState?.velocityMps??[0,0,0],lag=dt-(1-Math.exp(-.9*dt))/.9;for(const m of this.debrisP){const v=m.userData.v;m.position.set(tail.x+v.x*dt-vh[0]*lag,tail.y+v.y*dt-4.9*dt*dt-vh[1]*dt,tail.z+v.z*dt-vh[2]*lag);const g=terrainHeight(m.position.x,m.position.z,this.flightArea);if(m.position.y<g+.05)m.position.y=g+.05;m.rotation.set(m.userData.w.x*dt,m.userData.w.y*dt,m.userData.w.z*dt);}}
  updateMark(m){/* v0.41 anlatımda gösterilen nokta (R/A–E/B kesişimi vb.) yerde sarı halkayla işaretlenir */if(!this.markRing){this.markRing=new T.Mesh(new T.RingGeometry(34,40,48),new T.MeshBasicMaterial({color:'#ffd23f',side:T.DoubleSide,transparent:true,opacity:.85,depthWrite:false}));this.markRing.rotation.x=-Math.PI/2;this.markRing.renderOrder=5;this.scene.add(this.markRing);}
   this.markRing.visible=!!m;if(m)this.markRing.position.set(m.x,terrainHeight(m.x,m.z,this.flightArea)+1.5,m.z);}
  worldTarget(id){if(id==='wing')return this.wingOn?this.wingHeli.root.position.clone().add(new T.Vector3(0,1.6,0)):null;if(id==='mark'){const m=this.lastPhysical?.program?.mark;return m?new T.Vector3(m.x,terrainHeight(m.x,m.z,this.flightArea)+2,m.z):null;}if(id==='lz'){const lz=this.lastPhysical?.program?.lz;return lz?new T.Vector3(lz.x,terrainHeight(lz.x,lz.z,this.flightArea)+1,lz.z):null;}return this.cpit.targetPos(id)??this.cpit.worldPos(id);}
@@ -175,7 +179,7 @@ if(!m.transparent)return;if(m.userData.outsideOpacity===undefined)m.userData.out
   const overlays=flightOverlays(session.time,session.scenario,session.config,session.choices());
   this.fields.visible=overlays.visible;
   this.overlays=overlays;
-  const entries=[...overlays.targets,...(overlays.prediction?[{id:'prediction',label:'T',position:overlays.prediction}]:[])],signature=entries.map(t=>t.id).join('|');
+  const entries=[...overlays.targets] /* v0.42 tahmini temas (T, beyaz koni) sahnede gösterilmez */,signature=entries.map(t=>t.id).join('|');
   if(signature!==this.markerSignature){
    for(const child of [...this.fields.children]){child.geometry?.dispose();child.material?.map?.dispose();child.material?.dispose();this.fields.remove(child);}
    this.fieldMarkers=[];this.fieldLabels=[];this.markerSignature=signature;
@@ -193,7 +197,7 @@ if(!m.transparent)return;if(m.userData.outsideOpacity===undefined)m.userData.out
   this.flow.visible=overlays.airflow;
   this.flow.children.forEach(a=>a.setDirection(new T.Vector3(...overlays.flowDirection)));
 
-const s=sampleScene(session.time,session.scenario,session.config,session.choices()),p=new T.Vector3(...s.position);if(this.follow){const d=p.clone().sub(this.previous);this.camera.position.add(d);this.controls.target.add(d);}this.previous.copy(p);this.flow.position.copy(p);this.heli.root.position.copy(p);this.heli.root.rotation.order='YZX';this.heli.root.rotation.set(s.roll,s.heading,s.pitch);this.heli.rotor.rotation.y=s.rotorAngle;this.heli.tail.rotation.z=s.tailAngle;applyDamageVisual(this.heli,s.physicalState);animateHelicopter(this.heli,s);this.doorState(session,s);{const o=this.cpit.outputs(s.physicalState,session.time,session.config);this.cpit.out=o;this.airframeLights(o,s.physicalState);this.cpit.warnSound(o,!!session.playing);}if(this.cockpit){this.cockpitHide(true);this.cockpitRotor(s.physicalState);}else if(this.heli.rotorBlur)for(const m of this.heli.rotorBlur)m.material.opacity=.055; /* v0.35.4 damage/animation passes must not re-show the rotor around the eye */
+const s=sampleScene(session.time,session.scenario,session.config,session.choices()),p=new T.Vector3(...s.position);if(this.follow){const d=p.clone().sub(this.previous);this.camera.position.add(d);this.controls.target.add(d);}this.previous.copy(p);this.flow.position.copy(p);this.heli.root.position.copy(p);this.heli.root.rotation.order='YZX';this.heli.root.rotation.set(s.roll,s.heading,s.pitch);this.heli.rotor.rotation.y=s.rotorAngle;this.heli.tail.rotation.z=s.tailAngle;applyDamageVisual(this.heli,s.physicalState);animateHelicopter(this.heli,s);this.doorState(session,s);this.debris(session,s);{const o=this.cpit.outputs(s.physicalState,session.time,session.config);this.cpit.out=o;this.airframeLights(o,s.physicalState);this.cpit.warnSound(o,!!session.playing);}if(this.cockpit){this.cockpitHide(true);this.cockpitRotor(s.physicalState);}else if(this.heli.rotorBlur)for(const m of this.heli.rotorBlur)m.material.opacity=.055; /* v0.35.4 damage/animation passes must not re-show the rotor around the eye */
   {/* v0.34.1 emergency smoke / fire and vibration */const pg=s.physicalState.program,sm=pg?.smoke??0,tNow=session.time;this.vib=pg?.vibration??0;
    const cab=pg?.smokeKind==='cabin',lp=k=>new T.Vector3(cab?.3:-2.7,cab?1.3:2.8,cab?(k%2?1.3:-1.3):0),last=this.smokeTrail.at(-1);
    if(!sm)this.smokeTrail=[];
