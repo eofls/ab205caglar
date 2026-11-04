@@ -267,18 +267,24 @@ const _n3=(x,y,z)=>{const s=Math.sin(x*12.9898+y*78.233+z*37.719)*43758.5453;ret
 const _sn3=(x,y,z)=>{const fx=Math.floor(x),fy=Math.floor(y),fz=Math.floor(z),ux=x-fx,uy=y-fy,uz=z-fz,sm=t=>t*t*(3-2*t),a=sm(ux),b=sm(uy),c=sm(uz);let r=0;for(let i=0;i<2;i++)for(let j=0;j<2;j++)for(let k=0;k<2;k++)r+=_n3(fx+i,fy+j,fz+k)*(i?a:1-a)*(j?b:1-b)*(k?c:1-c);return r;};
 function smoothByKey(g,keys){/* aynı noktadaki köşelerin normalleri birleştirilir: yumuşak (yuvarlak) taç gölgelemesi */g.computeVertexNormals();const n=g.attributes.normal,acc=new Map();for(let i=0;i<n.count;i++){const k=keys[i];const a=acc.get(k)??[0,0,0];a[0]+=n.getX(i);a[1]+=n.getY(i);a[2]+=n.getZ(i);acc.set(k,a);}
  for(let i=0;i<n.count;i++){const a=acc.get(keys[i]),l=Math.hypot(...a)||1;n.setXYZ(i,a[0]/l,a[1]/l,a[2]/l);}n.needsUpdate=true;}
-export function lumpyCrown(low){const g=LITE&&low?new T.DodecahedronGeometry(1,0):new T.IcosahedronGeometry(1,low?1:2), /* telefonda kalabalık ormanda 36 üçgen */p=g.attributes.position,col=[],keys=[];const v=new T.Vector3();
+export function lumpyCrown(low,det){const g=det!=null?(det<1?new T.DodecahedronGeometry(1,0):new T.IcosahedronGeometry(1,det)):LITE&&low?new T.DodecahedronGeometry(1,0):new T.IcosahedronGeometry(1,low?1:2), /* telefonda kalabalık ormanda 36 üçgen */p=g.attributes.position,col=[],keys=[];const v=new T.Vector3();
  for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();keys.push(Math.round(v.x*1e3)+','+Math.round(v.y*1e3)+','+Math.round(v.z*1e3));const r=1+.22*(_sn3(v.x*2.2+3,v.y*2.2+1,v.z*2.2+7)-.5)*2+.08*(_sn3(v.x*5,v.y*5,v.z*5)-.5)*2;v.multiplyScalar(r);if(v.y<-.25)v.y=-.25+(v.y+.25)*.6;p.setXYZ(i,v.x,v.y,v.z);
   const sh=.62+.42*Math.min(1,Math.max(0,(v.y+.9)/1.9)),vr=.96+.08*_sn3(v.x*4+9,v.y*4,v.z*4);col.push(sh*vr,sh*vr,sh*vr*.97);}
  g.setAttribute('color',new T.Float32BufferAttribute(col,3));smoothByKey(g,keys);return g;}
-function coniferGeo(low){const g=new T.ConeGeometry(1,1,low?(LITE?6:8):12,low?(LITE?2:3):7,false);g.translate(0,.5,0);const p=g.attributes.position,col=[];
+function coniferGeo(low,seg,rows){const g=new T.ConeGeometry(1,1,seg??(low?(LITE?6:8):12),rows??(low?(LITE?2:3):7),false);g.translate(0,.5,0);const p=g.attributes.position,col=[];
  for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i),a=Math.atan2(z,x),rr=Math.hypot(x,z);const tier=.78+.22*((y*5)%1),jag=1+.1*Math.sin(a*7+y*13);const k=rr>1e-4?tier*jag:1;p.setXYZ(i,x*k,y,z*k);
   const sh=.6+.45*y;col.push(sh,sh,sh*.96);}
  g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g;}
+/* v0.43.1 orman: hücrelere bölünmüş, mesafeye göre ayrıntı seviyeli (LOD) çizim.
+   Her ~400 m hücrenin kendi örnek (instance) kümesi var; kameraya yakın hücrede ayrıntılı yumrulu taç ve gölge,
+   orta mesafede sade taç, uzakta gövdesiz en sade taç çizilir. Görüş dışındaki hücreler hiç çizilmez (frustum).
+   Aynı ağaçlar, aynı yerler; yalnız çizim maliyeti düşer (yazılım WebGL'de ≈3 kat hızlı). */
+/* uzak hücreler için en sade taç (36 / 12 üçgen) */
+function lumpyFar(){const g=new T.DodecahedronGeometry(1,0),p=g.attributes.position,col=[];const v=new T.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();if(v.y<-.25)v.y=-.25+(v.y+.25)*.6;p.setXYZ(i,v.x,v.y,v.z);const sh=.62+.42*Math.min(1,Math.max(0,(v.y+.9)/1.9));col.push(sh,sh,sh*.97);}g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g;}
+function coniferFar(){const g=new T.ConeGeometry(1,1,6,1,false);g.translate(0,.5,0);const p=g.attributes.position,col=[];for(let i=0;i<p.count;i++){const sh=.6+.45*p.getY(i);col.push(sh,sh,sh*.96);}g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g;}
 export function createForest(objects,{time}={time:{value:0}}){
- const group=new T.Group();group.name='Orman';const conifer=[],broad=[];
- const poplar=[];objects.forEach((t,i)=>(t.treeKind==='conifer'?conifer:t.treeKind==='poplar'?poplar:t.treeKind==='broad'?broad:(hash(t.x*.13,t.z*.17)>.38)?conifer:broad).push(t));
- const many=objects.length>(LITE?3000:9000),tiersN=many?2:3; // v0.33: large forests use two crown tiers and no shadow casting (tablet frame rate)
+ const group=new T.Group();group.name='Orman';
+ const many=objects.length>(LITE?3000:9000),tiersN=many?2:3; // v0.33: large forests use two crown tiers
  const sway=(mat,amp)=>{mat.onBeforeCompile=sh=>{sh.uniforms.uTime=time;sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uTime;').replace('#include <begin_vertex>',`#include <begin_vertex>
   #ifdef USE_INSTANCING
   float ph=instanceMatrix[3].x*.031+instanceMatrix[3].z*.027;float k=max(0.,position.y+.5)*${amp.toFixed(3)};transformed.x+=sin(uTime*1.3+ph)*k;transformed.z+=cos(uTime*1.1+ph*1.7)*k*.7;
@@ -288,22 +294,45 @@ export function createForest(objects,{time}={time:{value:0}}){
   sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vLeaf;float lh(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,37.719)))*43758.5453);}float ln(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(lh(i),lh(i+vec3(1,0,0)),f.x),mix(lh(i+vec3(0,1,0)),lh(i+vec3(1,1,0)),f.x),f.y),mix(mix(lh(i+vec3(0,0,1)),lh(i+vec3(1,0,1)),f.x),mix(lh(i+vec3(0,1,1)),lh(i+vec3(1,1,1)),f.x),f.y),f.z);}')
    .replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=.72+.42*ln(vLeaf*1.6)+.16*(ln(vLeaf*5.3)-.5);');};mat.customProgramCacheKey=()=>'sway2'+amp;return mat;};
  const trunkMat=new T.MeshStandardMaterial({color:'#4e3f2f',roughness:1});
- const coneGeo=coniferGeo(many);
  const crownC=sway(new T.MeshStandardMaterial({color:'#ffffff',roughness:.92,vertexColors:true}),.05);
  const crownB=sway(new T.MeshStandardMaterial({color:'#ffffff',roughness:.9,vertexColors:true}),.06);
+ /* ayrıntı seviyeleri: 0 yakın, 1 orta, 2 uzak */
+ const trunkGeo=new T.CylinderGeometry(.22,.38,1,6).translate(0,.5,0);
+ const coneG=[LITE?coniferGeo(0,8,3):coniferGeo(false),LITE?coniferGeo(0,6,2):coniferGeo(true),coniferFar()],ballG=[lumpyCrown(0,LITE?1:2),lumpyCrown(0,LITE?0:1),lumpyFar()];
  const o=new T.Object3D(),col=new T.Color();
- const trunks=new T.InstancedMesh(new T.CylinderGeometry(.22,.38,1,6).translate(0,.5,0),trunkMat,objects.length);
- const tiers=new T.InstancedMesh(coneGeo,crownC,Math.max(1,conifer.length*tiersN)),balls=new T.InstancedMesh(lumpyCrown(many),crownB,Math.max(1,broad.length*2+poplar.length));
- objects.forEach((t,i)=>{o.position.set(t.x,t.y,t.z);o.rotation.set(0,0,0);o.scale.set(1,t.height*.55,1);o.updateMatrix();trunks.setMatrixAt(i,o.matrix);});
- conifer.forEach((t,i)=>{const tint=hash(t.x,t.z);for(let k=0;k<tiersN;k++){const f=tiersN===2?[.2,.5][k]:.22+k*.22,base=t.y+t.height*f,hgt=t.height*(tiersN===2?[.62,.5][k]:.48-k*.08),rad=t.radius*(1-(tiersN===2?.35:.24)*k)*.95;o.position.set(t.x,base,t.z);o.rotation.set(0,tint*6+k,0);o.scale.set(rad,hgt,rad);o.updateMatrix();tiers.setMatrixAt(i*tiersN+k,o.matrix);
-  col.setRGB((.10+tint*.05)*.9,(.21+tint*.07-k*.01)*.9,(.11+tint*.04)*.9);tiers.setColorAt(i*tiersN+k,col);}});
- poplar.forEach((t,i)=>{const tint=hash(t.z,t.x);o.position.set(t.x,t.y+t.height*.55,t.z);o.rotation.set(0,tint*4,0);o.scale.set(t.radius,t.height*.46,t.radius);o.updateMatrix();balls.setMatrixAt(broad.length*2+i,o.matrix);col.setRGB(.12+tint*.05,.22+tint*.05,.09+tint*.03);balls.setColorAt(broad.length*2+i,col);});
- broad.forEach((t,i)=>{const tint=hash(t.z,t.x);for(let k=0;k<2;k++){o.position.set(t.x+(k?1.4:-.8)*(tint-.5)*2,t.y+t.height*(.62+k*.12),t.z+(k?-.9:1.1)*(tint-.5)*2);o.rotation.set(tint*3,tint*5+k,0);o.scale.set(t.radius*(.95-.2*k),t.height*(.30-.05*k),t.radius*(.95-.2*k));o.updateMatrix();balls.setMatrixAt(i*2+k,o.matrix);
-  col.setRGB((.14+tint*.07)*.82,(.21+tint*.06)*.82,(.08+tint*.04)*.82);balls.setColorAt(i*2+k,col);}});
- for(const m of [trunks,tiers,balls]){m.castShadow=!many;m.receiveShadow=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;group.add(m);}
+ /* hücrelere dağıt */
+ const C=LITE?450:400,cells=new Map();
+ objects.forEach(t=>{const k=Math.floor(t.x/C)+':'+Math.floor(t.z/C);let c=cells.get(k);if(!c){c={ix:Math.floor(t.x/C),iz:Math.floor(t.z/C),conifer:[],broad:[],poplar:[],all:[],y:0};cells.set(k,c);}c.all.push(t);c.y+=t.y;
+  (t.treeKind==='conifer'?c.conifer:t.treeKind==='poplar'?c.poplar:t.treeKind==='broad'?c.broad:(hash(t.x*.13,t.z*.17)>.38)?c.conifer:c.broad).push(t);});
+ const list=[];
+ for(const c of cells.values()){
+  const cg=new T.Group();cg.name='Orman hücresi';const cx=(c.ix+.5)*C,cz=(c.iz+.5)*C,cy=c.y/c.all.length;
+  const trunks=new T.InstancedMesh(trunkGeo,trunkMat,c.all.length);
+  c.all.forEach((t,i)=>{o.position.set(t.x,t.y,t.z);o.rotation.set(0,0,0);o.scale.set(1,t.height*.55,1);o.updateMatrix();trunks.setMatrixAt(i,o.matrix);});
+  const nT=Math.max(1,c.conifer.length*tiersN),nB=Math.max(1,c.broad.length*2+c.poplar.length);
+  const tiers=new T.InstancedMesh(coneG[0],crownC,nT),balls=new T.InstancedMesh(ballG[0],crownB,nB);
+  if(!c.conifer.length)tiers.count=0;if(!c.broad.length&&!c.poplar.length)balls.count=0;
+  c.conifer.forEach((t,i)=>{const tint=hash(t.x,t.z);for(let k=0;k<tiersN;k++){const f=tiersN===2?[.2,.5][k]:.22+k*.22,base=t.y+t.height*f,hgt=t.height*(tiersN===2?[.62,.5][k]:.48-k*.08),rad=t.radius*(1-(tiersN===2?.35:.24)*k)*.95;o.position.set(t.x,base,t.z);o.rotation.set(0,tint*6+k,0);o.scale.set(rad,hgt,rad);o.updateMatrix();tiers.setMatrixAt(i*tiersN+k,o.matrix);
+   col.setRGB((.10+tint*.05)*.9,(.21+tint*.07-k*.01)*.9,(.11+tint*.04)*.9);tiers.setColorAt(i*tiersN+k,col);}});
+  c.poplar.forEach((t,i)=>{const tint=hash(t.z,t.x);o.position.set(t.x,t.y+t.height*.55,t.z);o.rotation.set(0,tint*4,0);o.scale.set(t.radius,t.height*.46,t.radius);o.updateMatrix();balls.setMatrixAt(c.broad.length*2+i,o.matrix);col.setRGB(.12+tint*.05,.22+tint*.05,.09+tint*.03);balls.setColorAt(c.broad.length*2+i,col);});
+  c.broad.forEach((t,i)=>{const tint=hash(t.z,t.x);for(let k=0;k<2;k++){o.position.set(t.x+(k?1.4:-.8)*(tint-.5)*2,t.y+t.height*(.62+k*.12),t.z+(k?-.9:1.1)*(tint-.5)*2);o.rotation.set(tint*3,tint*5+k,0);o.scale.set(t.radius*(.95-.2*k),t.height*(.30-.05*k),t.radius*(.95-.2*k));o.updateMatrix();balls.setMatrixAt(i*2+k,o.matrix);
+   col.setRGB((.14+tint*.07)*.82,(.21+tint*.06)*.82,(.08+tint*.04)*.82);balls.setColorAt(i*2+k,col);}});
+  if(!c.conifer.length)tiers.setColorAt(0,col);if(!c.broad.length&&!c.poplar.length)balls.setColorAt(0,col);
+  trunks.computeBoundingSphere();tiers.computeBoundingSphere();balls.computeBoundingSphere();
+  /* aynı örnek matrisleri ve renkleri paylaşan sade kopyalar (orta / uzak) */
+  const lod=(src,geos)=>geos.map((g,i)=>{if(i===0)return src;const m=new T.InstancedMesh(g,src.material,src.count||1);m.instanceMatrix=src.instanceMatrix;m.instanceColor=src.instanceColor;m.count=src.count;m.boundingSphere=src.boundingSphere;m.visible=false;return m;});
+  const T3=lod(tiers,coneG),B3=lod(balls,ballG);
+  for(const m of [trunks,...T3,...B3]){m.receiveShadow=true;m.castShadow=false;if(m.instanceColor)m.instanceColor.needsUpdate=true;cg.add(m);}
+  list.push({cx,cz,cy,trunks,T3,B3,level:-1});group.add(cg);}
+ /* kamera konumuna göre ayrıntı seviyesi (her karede çağrılır; 15 m altı hareketlerde atlanır) */
+ const near=LITE?320:420,mid=LITE?900:1300,last={x:1e9,y:0,z:1e9};
+ group.userData.updateLOD=cam=>{if(Math.abs(cam.x-last.x)+Math.abs(cam.z-last.z)+Math.abs(cam.y-last.y)<15)return;last.x=cam.x;last.y=cam.y;last.z=cam.z;
+  for(const c of list){const dx=Math.max(0,Math.abs(cam.x-c.cx)-C/2),dz=Math.max(0,Math.abs(cam.z-c.cz)-C/2),d=Math.hypot(dx,dz,Math.max(0,cam.y-c.cy-30)*.5);const L=d<near?0:d<mid?1:2;if(L===c.level)continue;c.level=L;
+   c.T3.forEach((m,i)=>m.visible=i===L);c.B3.forEach((m,i)=>m.visible=i===L);c.trunks.visible=L<2;
+   const sh=L===0&&!(LITE&&many);c.T3[0].castShadow=c.B3[0].castShadow=c.trunks.castShadow=sh;}};
+ group.userData.lodCells=list.length;
  return group;
 }
-
 // ---------- Draw-call reduction: merge static meshes sharing a material colour ----------
 export function mergeStatic(group){
  const buckets=new Map(),drop=[];group.updateMatrixWorld(true);
