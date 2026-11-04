@@ -27,10 +27,10 @@ test('v0.43 kapalı bölge: rüzgâraltı son yaklaşmanın tersine uçulur, son
  const base=r.samples.filter(s=>s.phase==='Esas bacak').at(-1),appr=r.samples.find(s=>s.phase==='Normal yaklaşma');
  assert.ok(Math.abs(wrap(base.hdg-appr.hdg))>50*R,`son yaklaşmaya dönüş ${(Math.abs(wrap(base.hdg-appr.hdg))/R).toFixed(0)}°`);
 });
-test('v0.43 meydan turu ölçüleri: 24 yan/esas bacak 200 m kısa, tırmanış 50 m uzun; 06 rüzgâraltı 100 m kısa',()=>{
+test('v0.49 meydan turu: kullanıcının haritada çizdiği 06 ve 24 köşeleri',()=>{
  const src=readFileSync(new URL('../../maneuver-catalog.js',import.meta.url),'utf8');
- assert.match(src,/'06':\{A:\[1500,-159\],B:\[1500,1350\],C:\[-2150,1350\],D:\[-2150,-159\]/);
- assert.match(src,/'24':\{A:\[-1610,-159\],B:\[-1610,1300\],C:\[2330,1300\],D:\[2330,-159\]/);
+ assert.match(src,/'06':\{A:\[1468,-159\],B:\[1295,801\],C:\[-1358,574\],D:\[-1452,-131\]/);
+ assert.match(src,/'24':\{A:\[-1551,-159\],B:\[-1563,529\],C:\[1373,748\],D:\[1507,-64\]/);
 });
 test('v0.43 kararlar: “usulü uygula” ifadesi yok, doğru seçenek her soruda ilk sırada değil, etiketler kısa',()=>{
  let first=0,total=0;
