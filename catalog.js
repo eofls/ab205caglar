@@ -12,9 +12,9 @@ export const SOURCES = {
   chart:{use:'Yükseklik–hız sekmesindeki diyagram ve kaçınılacak bölge.',title:'Gönderdiğin H/V diyagramı',file:'Ekran görüntüsü 2026-10-13 225631.png',id:'libfile_85b25953c5ec8191b917ac957bf11c5c',pages:'Tek görsel',printed:'Figure 9-3 • Change 8 • 9-13',status:'Çatı/burun IAS ölçekleri ve ağırlık eğrileri var; sayısallaştırma bekliyor'}
 };
 export const CREW = {
-  developing:{label:'Gelişmekte',text:'Yapılandırılmış görev paylaşımı ve açık hatırlatmalar gösterilir.'},
-  proficient:{label:'Yetkin',text:'Standart çağrılar ve karşılıklı teyit vurgulanır.'},
-  experienced:{label:'Deneyimli',text:'Kısa çağrılar ve bağımsız çapraz kontrol vurgulanır.'}
+  developing:{label:'Gelişmekte',text:'Yapılandırılmış görev paylaşımı ve açık hatırlatmalar gösterilir. Arızayı geç tanır; ilk seçtiği sahada kalır, süzülüş süratini erişime göre ayarlamaz, engelde saykılıkla tırmanma eğilimindedir; fleyır ve son kollektif geç.'},
+  proficient:{label:'Yetkin',text:'Standart çağrılar ve karşılıklı teyit vurgulanır. Sahayı aralıkla yeniden değerlendirir, süzülüş süratini erişime göre ayarlar, son yaklaşmadaki telleri ve taşma alanını hesaba katar.'},
+  experienced:{label:'Deneyimli',text:'Kısa çağrılar ve bağımsız çapraz kontrol vurgulanır. Arızayı anında tanır; sahayı sürekli değerlendirir, süzülüşü erişime göre yönetir, engel karşısında enerjiyi korur, yükselen arazide fleyırı öndeki zemine göre başlatır.'}
 };
 export const genericDecisions = (low=false) => [
   {id:'priority',at:8,title:'İlk dikkat önceliğin ne?',options:[

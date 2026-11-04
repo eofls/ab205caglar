@@ -4,7 +4,9 @@ const clamp=x=>Math.max(0,Math.min(1,x));
 export function componentDamage(p){
  const c=p.contact;if(!c||c.time===0)return {parts:[],breakup:false,firstContact:null,summary:'Dinamik temas yok'};
  const mass=(p.massKg??2800)/2800,w=Math.max(0,c.descentMps),normal=mass*(w/5)**2,slide=(Math.max(0,c.groundSpeedMps-7)/12)**2 /* v0.43 GKK üzerinde (≈15–25 kt) ruleli temas skid için olağan: kayma payı 7 m/s üzerinden */,roll=p.roll??0,first=c.part??'skidLeft';
- const severity={skidLeft:clamp(normal*.45*(1+roll)+slide*.08),skidRight:clamp(normal*.45*(1-roll)+slide*.08),cabin:clamp((normal-1)*.27),cockpit:clamp((normal-1.8)*.22),engine:clamp((normal-1.2)*.23),transmission:clamp((normal-1)*.25),mast:clamp((normal-2)*.22),controls:clamp((normal-1.5)*.2),tailBoom:clamp((normal-2.5)*.15),tailRotor:0,mainRotor:0,stabilizer:0,fin:0,crosstube:clamp((normal-.8)*.32+slide*.05),glazing:clamp((normal-2.2)*.2+(roll!==0?Math.abs(roll)*.4:0)*slide),blades:0};
+ /* v0.51 temas sertliği ile tutarlı ölçek: %100 sertlik (5 m/s) skid ve çapraz borularda ağır, gövde tabanı ve transmisyon
+    bağlantılarında belirgin deformasyon; %20'nin altı (≈2,2 m/s) hafif. Önceki ölçekte %100 temas yalnız skidde hafif iz bırakıyordu. */
+ const severity={skidLeft:clamp((normal-.04)*.95*(1+roll)+slide*.08),skidRight:clamp((normal-.04)*.95*(1-roll)+slide*.08),cabin:clamp((normal-.55)*1.1),cockpit:clamp((normal-1.2)*.35),engine:clamp((normal-.7)*.8),transmission:clamp((normal-.6)*.9),mast:clamp((normal-1.3)*.3),controls:clamp((normal-.9)*.35),tailBoom:clamp((normal-1.6)*.2),tailRotor:0,mainRotor:0,stabilizer:0,fin:0,crosstube:clamp((normal-.2)*1.0+slide*.05),glazing:clamp((normal-1.4)*.25+(roll!==0?Math.abs(roll)*.4:0)*slide),blades:0};
  if(!first.startsWith('skid'))severity[first]=Math.max(severity[first]??0,clamp(.35+normal*.2+slide*.1));
  for(const id of p.ground?.secondaryContacts??[])severity[id]=Math.max(severity[id]??0,id.includes('Rotor')?.85:.65);
  const rotorStrike=['tailRotor','mainRotor'].includes(first)||(p.ground?.secondaryContacts??[]).some(x=>x.includes('Rotor'));

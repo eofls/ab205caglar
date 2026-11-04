@@ -4,8 +4,8 @@ import {landingPolicy,adaptivePilot,glideSpeedKt,hoverEntryKt} from './adaptive-
 import {terminalEnvelope} from './terminal-control.js';
 // Experimental controller gains and thresholds; not AB-205 control instructions.
 import {targetGuidance} from './flight-guidance.js';
-import {obstacleAhead} from './landing-zone.js';
-import {terrainHeight} from './terrain-data.js';
+import {obstacleAhead,naturalDistance} from './landing-zone.js';
+import {terrainHeight,obstacleTopNear} from './terrain-data.js';
 const OBST=new WeakMap();
 /* obstacle check every 0.25 s of flight time (the controls see AGL; the predictor needs the absolute height) */
 function obstacleNow(s,p,target=null){let m=OBST.get(p);if(!m){m=new Map();OBST.set(p,m);}const k=Math.floor(s.t/.25)+(target?'t':'');if(m.has(k))return m.get(k);const v=obstacleAhead({...s,y:s.y+terrainHeight(s.x,s.z,p.flightArea)},p.flightArea,{windX:p.windX,windZ:p.windZ,target});m.set(k,v);if(m.size>600)m.delete(m.keys().next().value);return v;}
@@ -23,7 +23,9 @@ export function controlTargets(s,p,choices,sink){
   // v0.33 glide steering to the chosen field: fly the bearing to it at a speed that matches the glide still needed
   // (63 KIAS min-sink, faster when short of range, slower = steeper when high), turns limited by the normal accel cap.
   const site=s.pilotSite,dx=site.x-s.x,dz=site.z-s.z,d=Math.hypot(dx,dz),agl=Math.max(0,s.y),need=Math.max(0,d-(X.gateD??200))/Math.max(1,agl-(X.gateH??35)),glide=3.3;
-  const kias=!X.speedSteer||agl<(X.gateH??30)+5?plan.speedKt:need>glide*1.08?Math.min(80,63+(need/glide-1)*60):need<glide*.85?Math.max(X.slowKt??50,63-(1-need/glide)*40):63,v=Math.max(Math.min(kias,X.maxKt??80),Math.min(45,plan.speedKt))*1852/3600*p.tasFactor;
+  const GC=X.gc??p.crew?.glideCtl;let gcKt=null;const hS=s.yAbs!=null?Math.max(0,s.yAbs-terrainHeight(site.x,site.z,p.flightArea)):agl; /* v0.51 erişim sahanın zeminine göre */if(GC&&hS>(GC.minM??38)&&agl>(GC.minM??38)*.6){const ias=(s.v??0)/(1852/3600)/p.tasFactor,natD=naturalDistance(hS/.3048,Math.min(80,Math.max(40,ias)))/Math.sqrt((p.mass??2800)/2800)*(p.flightArea==='mountain'||p.flightArea==='terrain'?.86:1),e=(natD-d)/Math.max(80,natD);gcKt=clamp(63-(GC.k??80)*e,GC.lo??45,GC.hi??80);
+   if(GC.ratio){const gsN=Math.hypot(s.vx??0,s.vz??0),r=gsN/Math.max(1,s.w??0),reach=r*Math.max(0,hS-(GC.hf??30))+(GC.df??4.2)*gsN,e2=(reach-d)/Math.max(80,reach);if((s.w??0)>4)gcKt=clamp(63-(GC.k??80)*e2,GC.lo??45,GC.hi??80);}}
+  const kias=gcKt!=null?gcKt:!X.speedSteer||agl<(X.gateH??30)+5?plan.speedKt:need>glide*1.08?Math.min(80,63+(need/glide-1)*60):need<glide*.85?Math.max(X.slowKt??50,63-(1-need/glide)*40):63,v=Math.max(Math.min(kias,X.maxKt??80),Math.min(45,plan.speedKt))*1852/3600*p.tasFactor;
   const high=need<glide*(X.planBelow??0)&&agl>(X.planAbove??55)&&guidance?.plan; // far too high for the field: descending S-turns / orbit (offset pursuit)
   const ahead=dx*Math.sin(s.heading??p.heading)-dz*Math.cos(s.heading??p.heading)>0||(s.v??0)>15||(!X.noLead&&d>60);
   /* v0.33.1: lead turn - the commanded track is the present track turned at most ~35 deg toward the field, so the cyclic
@@ -34,7 +36,10 @@ export function controlTargets(s,p,choices,sink){
  /* v0.33.1 obstacle avoidance: a wire / tree line / roof on the path that cannot be stopped short of is cleared by a cyclic
     zoom when the speed can buy the height; otherwise the pilot slows down now and lands short of it */
  {const X=globalThis.EXP??{};if(!X.noAvoid&&!plan.cushion&&s.y>6){const o=obstacleNow(s,p,s.pilotSite),site=s.pilotSite,beyond=o&&site&&o.distance>Math.hypot(site.x-s.x,site.z-s.z)-15; /* obstacles past the field are not on the way */
-  if(o&&!beyond&&o.time<5&&(!plan.flare||o.stopM>o.distance*.8)){
+  /* v0.51 deneyimli/yetkin pilot: engelin üstünden şimdiki yükseklikle rahatça geçilecekse (ağaç / çatı) saykılıkla tırmanılmaz;
+     enerji korunur, normal süzülüş ve fleyır engeli aşar. */
+  const SA=X.smartAvoid??p.crew?.smartAvoid,skip=o&&SA&&o.kind!=='wire'&&(s.y+terrainHeight(s.x,s.z,p.flightArea))-obstacleTopNear(o.x,o.z,p.flightArea,7)>(SA.m??8);
+  if(o&&!beyond&&!skip&&o.time<5&&(!plan.flare||o.stopM>o.distance*.8)){
    if(o.canClimb)return {...plan,flare:true,cushion:false,flareAccel:5,speedKt:20,guidance:null,levelCyclic:false,holdCyclic:false,managed:true,yawManaged:p.pedalMode==='auto',turnRate:0,phase:'Engel geçişi · saykılıkla tırmanış',reason:'Önde '+(o.kind==='wire'?'enerji hattı':'engel')+': ileri sürat geri saykılıkla irtifaya çevriliyor.'};
    if(!plan.flare)return {...plan,flare:true,flareAccel:2.7,speedKt:0,guidance:null,managed:true,yawManaged:p.pedalMode==='auto',turnRate:0,phase:'Engel önünde yavaşlama',reason:'Önde '+(o.kind==='wire'?'enerji hattı':'engel')+' ve tırmanacak sürat yok: hemen yavaşlanıyor.'};}}}
  return {...plan,reason:plan.reason+' '+(s.pilotForecast?.reason??'')+(s.pilotSite?' Zemin ve erişim taramasıyla iniş hedefi seçildi.':''),managed:true,yawManaged:p.pedalMode==='auto',turnRate:0,guidance};}
