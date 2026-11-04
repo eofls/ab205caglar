@@ -171,7 +171,7 @@ export function bouldersInBox(minX,maxX,minZ,maxZ,area){if(area!=='mountain'&&ar
 const BUILDING_HEIGHT={industrial:9,apartments:15,hangar:12,school:10,roof:5,construction:8,train_station:8,yes:6,house:6,barn:8,shed:4};
 /* v0.35 one height per building, shared by rendering and collision: OSM height / levels, else a type range varied by a
    hash of the footprint (Ankara: 4–10 storey apartment blocks, 6–12 m industrial sheds, 10–14 m hangars) */
-export function buildingHeightOf(f){const t=f.tags??{};if(Number(t.height))return Number(t.height);if(t['building:levels'])return Number(t['building:levels'])*3;
+export function buildingHeightOf(f){const t=f.tags??{};if(Number(t.height))return Number(t.height);if(t['building:levels']){const lv=parseFloat(String(t['building:levels']).replace(',','.').replace(/[^0-9.]/g,''));if(Number.isFinite(lv)&&lv>0)return lv*3;} /* v0.43 “Kat 2” gibi etiketler */
  const p=f.points??[[0,0]],cx=p.reduce((a,q)=>a+q[0],0)/p.length,cz=p.reduce((a,q)=>a+q[1],0)/p.length,k=hash2(Math.round(cx),Math.round(cz)),b=t.building;
  if(t.aeroway==='hangar'||b==='hangar')return 10+k*4;if(b==='apartments')return 12+Math.floor(k*7)*3;if(b==='industrial')return 6+k*6;if(b==='school')return 9+k*3;if(b==='roof')return 4.5;if(b==='construction')return 6+k*9;if(b==='train_station')return 8;if(b==='shed')return 3.5;if(b==='barn')return 6+k*2;
  return BUILDING_HEIGHT[b]?BUILDING_HEIGHT[b]*(.8+k*.5):5+k*4;}
