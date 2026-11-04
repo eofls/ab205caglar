@@ -20,6 +20,14 @@ Bu depo hem Claude hem ChatGPT/Codex tarafından düzenlenir. Tek doğru kaynak 
 - Arayüzdeki “?” açıklamaları `ui-help.js` içindeki `HELP` listesinde (seçici → paragraflar); yeni bölüm eklenirse oraya da açıklama yaz.
 - Zemin malzemesi `environment.js` `enhanceSurface` (ayrıntı dokusu, kabartı, bulut gölgesi; ortak uniform `SURFACE_U`). Telefonda (`LITE`) kabartı kapalı.
 
+## Kare süresi ve görsellik (v0.44)
+- Orman `environment.js` `createForest`: ≈250 m hücreler, her hücrede yakın / orta / uzak taç geometrisi (aynı örnek matrisleri); `group.userData.updateLOD(kamera)` her karede `scene-view.js` `animateEnvironment` içinden çağrılır. Ağaçlar gölge haritasına girmez; gölgeleri güneşe göre yatırılmış yumuşak elips (`placeShade`, `setSun`).
+- `scene-view.js` `precompile`: ısıtma çiziminde her geometriden tek üçgen çizilir; paylaşılan geometri bir kez kaydedilip geri yüklenir (aksi halde kokpit panosu ve ağaçlar kırpık kalır).
+- Uydu görüntüleri önceden keskinleştirilir: `claude/tools/bake_sharpen.py` → `assets/terrain/*-s2k.jpg` (kaynak `*-s2.jpg` değişmez). Çalışma anında görüntü işleme ekleme: açılış telefonda uzar.
+- Zemin gölgelendiricisinde (`enhanceSurface`, `canopy:true`) uydu görüntüsündeki koyu ağaç tepeleri gölgeli toprağa çevrilir (3B ağaçların altı yeşil halı gibi görünmez); kuzey yamaçlar koyu / yeşil, güney yamaçlar kuru.
+- Küçük dikdörtgen evlerde kiremit kırma çatı: `terrain-detail.js` `hipRoof`.
+- Görsel kontrol: sahne tam pencere ekran görüntüsü için scratchpad'deki `vshot.py` benzeri bir betik (`?lite=0`, `#scene-host` sabit tam ekran) kullan; yazılım WebGL'de kare süresini `renderer.render` + `readPixels` ile ölç.
+
 ## Testler
 - `node tests/ci.mjs` — ChatGPT/Codex test seti (sözdizimi, regresyon, otorotasyon tezgâhı, programlar). Sonuçları `ci-results/` altına yazar; `tests/*-results.json` dosyalarını commit etme.
 - `npm run test:claude` — Claude test seti (`claude/tests`, 200 test: manevralar, emercensiler, sahalar, kokpit, sahne).
