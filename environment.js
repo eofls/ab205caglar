@@ -98,7 +98,9 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
     vec3 base=diffuseColor.rgb;float lum=dot(base,vec3(.299,.587,.114));
     ${asphalt?`float det=(n2-.5)*.10+(n3-.5)*.10+(n4-.5)*.08+(n5-.5)*.06*nearF;diffuseColor.rgb*=1.+det*uDetail;
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.82,smoothstep(.55,.8,vnoise(w*vec2(.05,.9))));
-    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.62,smoothstep(.72,.9,vnoise(w*vec2(.9,.012)))*.55);${runway?`
+    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.62,smoothstep(.72,.9,vnoise(w*vec2(.9,.012)))*.55);
+    {/* v0.45 asfaltta çatlak (sırt gürültüsü) ve onarım yaması; piksel boyutundan inceyse söner */float fwA=length(fwidth(w)),ca=1.-smoothstep(.08,.3,fwA);float r1=abs(vnoise(w*.16+vec2(vnoise(w*.05)*3.))-.5);diffuseColor.rgb*=1.-(1.-smoothstep(.0,.022,r1))*.2*ca*smoothstep(.45,.65,vnoise(w*.03+5.));
+     vec2 pc=floor(w/vec2(7.,4.5));float pt=step(.93,h21(pc));diffuseColor.rgb*=1.-pt*.13*(1.-smoothstep(.6,1.6,fwA));diffuseColor.rgb*=1.+(h21(floor(w*.5))-.5)*.05*ca;}${runway?`
     {/* v0.43 pist: teker izi (lastik birikintisi) temas bölgelerinde ve orta hatta, yamalı asfalt */vec2 rd=vec2(${Math.sin(RUNWAY.heading).toFixed(5)},${(-Math.cos(RUNWAY.heading)).toFixed(5)}),rp=vec2(-rd.y,rd.x);float ra=dot(w,rd),rc=dot(w,rp);
      float dth=1008.-abs(ra),tz=smoothstep(100.,200.,dth)*(1.-smoothstep(600.,800.,dth));float lane=exp(-pow(rc/5.5,2.));float streak=vnoise(vec2(ra*.04,rc*3.1));
      diffuseColor.rgb*=1.-.42*tz*lane*smoothstep(.25,.75,streak);diffuseColor.rgb*=1.-.12*lane*smoothstep(.4,.8,vnoise(vec2(ra*.01,rc*.8)));
@@ -122,6 +124,10 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
     {float hl=max(0.,dot(diffuseColor.rgb,vec3(.299,.587,.114))-.32);diffuseColor.rgb=diffuseColor.rgb/(1.+hl*1.6)*mix(vec3(1.),vec3(1.,.95,.86),smoothstep(0.,.25,hl));} /* v0.44 kireçli / açık zemin kar gibi beyaz parlamaz: tepe değerleri sıkıştırılır, sıcak ton */
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.92,1.02,.9),green*smoothstep(.3,.7,n2)*.35);`}
     float slope=1.-clamp(normalize(vWorldN).y,0.,1.);
+    ${asphalt?'':`{/* v0.45 çıplak yamaçlarda yağmur oyuntusu (yarıntı) izleri: eğim yönünde uzun, enine dar koyu çizgiler; Ankara çevresi marn tepelerine özgü */
+     vec3 wn=normalize(vWorldN);vec2 dn=wn.xz/max(1e-3,length(wn.xz));float sl=smoothstep(.06,.28,1.-wn.y)*(1.-smoothstep(1800.,3500.,cd));
+     if(sl>.01){vec2 q=vec2(dot(w,dn)*.025,dot(w,vec2(-dn.y,dn.x))*.32);float gl=vnoise(q+vec2(0.,vnoise(q*.7+3.)*2.))*.7+vnoise(q*2.1+9.)*.3;float fwG=length(fwidth(w))*.32;
+      float rill=smoothstep(.6,.82,gl)*(1.-smoothstep(.4,1.,fwG));diffuseColor.rgb*=1.-rill*sl*(.16+.2*smoothstep(.3,.6,lum))*uDetail;diffuseColor.rgb*=1.+smoothstep(.15,.3,1.-gl)*sl*.05;}}`}
     ${asphalt?'':'{vec3 wn=normalize(vWorldN);float nf=clamp(-wn.z*4.,0.,1.)*smoothstep(.02,.18,1.-wn.y),sf=clamp(wn.z*4.,0.,1.)*smoothstep(.02,.18,1.-wn.y);diffuseColor.rgb*=mix(vec3(1.),vec3(.86,.93,.82),nf*.7);diffuseColor.rgb*=mix(vec3(1.),vec3(1.05,1.01,.94),sf*.5);} /* v0.44 kuzey yamaçlar daha koyu ve yeşil (nem), güney yamaçlar kuru ve açık */'}
     float rk=smoothstep(.24,.5,slope+(n2-.5)*.12)*uRock;
     vec3 rockC=mix(vec3(.35,.33,.29),vec3(.47,.44,.38),n3)*(0.8+n1*.4);diffuseColor.rgb=mix(diffuseColor.rgb,rockC,rk);
@@ -288,6 +294,9 @@ const _n3=(x,y,z)=>{const s=Math.sin(x*12.9898+y*78.233+z*37.719)*43758.5453;ret
 const _sn3=(x,y,z)=>{const fx=Math.floor(x),fy=Math.floor(y),fz=Math.floor(z),ux=x-fx,uy=y-fy,uz=z-fz,sm=t=>t*t*(3-2*t),a=sm(ux),b=sm(uy),c=sm(uz);let r=0;for(let i=0;i<2;i++)for(let j=0;j<2;j++)for(let k=0;k<2;k++)r+=_n3(fx+i,fy+j,fz+k)*(i?a:1-a)*(j?b:1-b)*(k?c:1-c);return r;};
 function smoothByKey(g,keys){/* aynı noktadaki köşelerin normalleri birleştirilir: yumuşak (yuvarlak) taç gölgelemesi */g.computeVertexNormals();const n=g.attributes.normal,acc=new Map();for(let i=0;i<n.count;i++){const k=keys[i];const a=acc.get(k)??[0,0,0];a[0]+=n.getX(i);a[1]+=n.getY(i);a[2]+=n.getZ(i);acc.set(k,a);}
  for(let i=0;i<n.count;i++){const a=acc.get(keys[i]),l=Math.hypot(...a)||1;n.setXYZ(i,a[0]/l,a[1]/l,a[2]/l);}n.needsUpdate=true;}
+/* v0.45 kaya: düzensiz, altı yassı ve koyu, yüzeyi köşeli (taş görünümü) */
+export function rockGeometry(){const g=new T.IcosahedronGeometry(1,1),p=g.attributes.position,col=[],v=new T.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();const r=1+.28*(_sn3(v.x*1.7+5,v.y*1.7,v.z*1.7+2)-.5)*2+.12*(_sn3(v.x*4,v.y*4+3,v.z*4)-.5)*2;v.multiplyScalar(r);if(v.y<-.2)v.y=-.2+(v.y+.2)*.3;p.setXYZ(i,v.x,v.y,v.z);const sh=.55+.5*Math.min(1,Math.max(0,(v.y+.3)/1.2));col.push(sh,sh*.98,sh*.95);}
+ g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g;}
 export function lumpyCrown(low,det){const g=det!=null?(det<1?new T.DodecahedronGeometry(1,0):new T.IcosahedronGeometry(1,det)):LITE&&low?new T.DodecahedronGeometry(1,0):new T.IcosahedronGeometry(1,low?1:2), /* telefonda kalabalık ormanda 36 üçgen */p=g.attributes.position,col=[],keys=[];const v=new T.Vector3();
  for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();keys.push(Math.round(v.x*1e3)+','+Math.round(v.y*1e3)+','+Math.round(v.z*1e3));const r=1+.24*(_sn3(v.x*2.2+3,v.y*2.2+1,v.z*2.2+7)-.5)*2+.1*(_sn3(v.x*5,v.y*5,v.z*5)-.5)*2+(det===2||(det==null&&!low)?.09*(_sn3(v.x*10+2,v.y*10,v.z*10+5)-.5)*2:0); /* v0.44 yakın ayrıntıda ince yumrular */v.multiplyScalar(r);if(v.y<-.25)v.y=-.25+(v.y+.25)*.6;p.setXYZ(i,v.x,v.y,v.z);
   const sh=.34+.74*Math.pow(Math.min(1,Math.max(0,(v.y+.9)/1.9)),.85),vr=.9+.2*_sn3(v.x*4+9,v.y*4,v.z*4);col.push(sh*vr,sh*vr,sh*vr*.97);}
@@ -458,7 +467,7 @@ export function createGrass(){if(typeof document==='undefined')return null;const
  const a=new T.PlaneGeometry(1,1);a.translate(0,.5,0);const b=a.clone().rotateY(Math.PI/2);const g=new T.BufferGeometry();
  const merge=[a,b];const pos=[],uv=[],nor=[],idx=[];let o=0;for(const q of merge){pos.push(...q.attributes.position.array);uv.push(...q.attributes.uv.array);for(let i=0;i<q.attributes.position.count;i++)nor.push(0,1,0);idx.push(...Array.from(q.index.array,v=>v+o));o+=q.attributes.position.count;}
  g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('normal',new T.Float32BufferAttribute(nor,3));g.setIndex(idx);
- const m=new T.MeshLambertMaterial({map:grassTexture(),alphaTest:.45,side:T.DoubleSide,color:'#ffffff'});m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\n normal=normalize((viewMatrix*vec4(0.,1.,0.,0.)).xyz);');}; /* ot yaprakları yukarı bakan normalle aydınlanır: arka yüz kararmaz */
+ const m=new T.MeshLambertMaterial({map:grassTexture(),alphaTest:.45,side:T.DoubleSide,color:'#ffffff'});m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\n normal=normalize((viewMatrix*vec4(0.,1.,0.,0.)).xyz);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.16;');}; /* v0.45 ince ot yaprağı ışığı geçirir: alçak güneşte kara leke olmaz */ /* ot yaprakları yukarı bakan normalle aydınlanır: arka yüz kararmaz */
  const mesh=new T.InstancedMesh(g,m,N);mesh.name='Ot kümeleri';mesh.count=0;mesh.frustumCulled=false;mesh.receiveShadow=true;mesh.userData={at:null,area:null,N};return mesh;}
 const GRASS_TINT={grass:[.8,.76,.55],stubble:[.92,.82,.58],field:[.84,.78,.55],rough:[.82,.74,.54],wetland:[.6,.7,.44],forest:[.6,.66,.42]}; /* v0.44 kasım bozkırı: kuru saman ve gri-yeşil */
 const _vn2=(x,z)=>{const xi=Math.floor(x),zi=Math.floor(z),u=x-xi,v=z-zi,su=u*u*(3-2*u),sv=v*v*(3-2*v),h=(a,b)=>{const q=Math.sin(a*127.1+b*311.7)*43758.5453;return q-Math.floor(q);};return (h(xi,zi)*(1-su)+h(xi+1,zi)*su)*(1-sv)+(h(xi,zi+1)*(1-su)+h(xi+1,zi+1)*su)*sv;};
