@@ -60,7 +60,10 @@ export function landingPolicy(s,p,sink,{terminal='timed',enabled=true,flareMode=
  if(levelCyclic&&!cushion){phase='Saykılık · ufkiyete erken geçiş';reason='Seçilen ileri saykılık düzeltmesi disk eğimini azaltıyor; fleyır frenlemesi sonlandırılıyor.';}
  if(holdCyclic&&!cushion){phase='Saykılık · mevcut konum tutuluyor';reason='Seçilen saykılık konumu korunuyor; disk eğimi otomatik ufkiyet talebi almıyor.';}
  if(terminal==='hold'&&!cushion){phase='Son kollektif ertelendi · mevcut hatve talebi';reason='Son fırsatta da kollektif uygulanmaması seçildi; otomatik temas yumuşatma yapılmıyor.';collective=s.collective??collective;}
- return {collective,speedKt,flare,cushion,phase,reason,flareAccel:profile?profile.a:flareAccel,levelCyclic,holdCyclic,flareHeightM:flareHeight,...envelope};
+ // v0.50 S01 (TR Standart Otorotasyon): fleyır ~100 ft'te yumuşak başlar, alçaldıkça artar; erken asılı kalma (balon) azalır,
+ // sürat yine 15 ft'te en aza iner. Yalnızca senaryoda flareTune tanımlıysa.
+ let fa=flareAccel;const PG=p.flareTune?.prog;if(PG&&flare&&!cushion)fa=Math.min(fa,PG.amin+(PG.cap-PG.amin)*clamp((flareHeight-h)/Math.max(1,flareHeight-PG.hfull),0,1));
+ return {collective,speedKt,flare,cushion,phase,reason,flareAccel:profile?profile.a:fa,levelCyclic,holdCyclic,flareHeightM:flareHeight,...envelope};
 }
 export function adaptivePilot(s,p,sink){
  const rpm=s.omega*30/Math.PI,h=Math.max(0,s.y),ttg=h/Math.max(.5,s.w);
