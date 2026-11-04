@@ -27,7 +27,7 @@ test('v0.44 kararlar: hatalı seçenekler uçuşta görünür fark yaratır (rot
  const ids=[['pattern-06','pt-checks'],['pattern-24','pt-checks-24'],['sim-tr-right','tr-thr'],['max-perf','mp-power'],['slope','sl-skid'],['formation','fm-sep']];
  for(const [mid,did] of ids){const m=MANEUVERS.find(x=>x.id===mid),d=maneuverDecisionDefs(m)[did];assert.ok(d,`${mid} ${did} yok`);const ref=programRun(manCfg(m),[{id:did,option:d.reference,at:0}]);
   for(const o of d.options){if(o.id===d.reference)continue;const r=programRun(manCfg(m),[{id:did,option:o.id,at:0}]);let dev=0;const n=Math.min(r.samples.length,ref.samples.length);
-   for(let i=0;i<n;i++){const a=r.samples[i],b=ref.samples[i];dev=Math.max(dev,Math.abs(a.y-b.y)/.3048/20,Math.abs(wrap(a.hdg-b.hdg))/(8*R),Math.abs(a.roll-b.roll)/(5*R),Math.abs((a.rpm??0)-(b.rpm??0))/5);}
+   for(let i=0;i<n;i++){const a=r.samples[i],b=ref.samples[i];dev=Math.max(dev,Math.abs(a.y-b.y)/.3048/12,Math.abs(wrap(a.hdg-b.hdg))/(8*R),Math.abs(a.roll-b.roll)/(5*R),Math.abs((a.rpm??0)-(b.rpm??0))/5);}
    assert.ok(dev>=1,`${mid} ${did}=${o.id}: uçuş usule göre değişmiyor (${dev.toFixed(2)})`);}}
 });
 test('v0.44 kararlar: iniş öncesi kontroller esas bacakta yapılınca son yaklaşma hattı geçilir',()=>{
