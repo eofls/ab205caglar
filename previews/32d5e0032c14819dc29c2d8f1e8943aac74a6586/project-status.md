@@ -1,3 +1,11 @@
+# v0.45.0 — 4 Kasım 2026 (görsellik, ikinci tur)
+
+Tepeler yamaçlarında eğim yönünde yağmur oyuntusu (yarıntı) izleri; meydanda yıpranmış boyalı H panelleri ve asfaltta seyrek çatlak dolgusu / onarım yaması; kayalar düzensiz, yarı gömülü ve renk farklı; uzak arazi pusu biraz ince ve mavimsi; gün batımında ortam ışığı düşük (alçak güneşin ışığı ve gölgeler belirgin).
+
+# v0.44.0 — 4 Kasım 2026 (görsellik ve kare süresi)
+
+Orman ≈250 m hücrelere bölündü; yakın / orta / uzak taç geometrisi, görüş dışındaki hücreler çizilmez. Ağaçlar gölge haritasına girmez; gölgeleri güneşe göre yatırılmış yumuşak elips (bütün sahada). Geniş yapraklı ve kavaklarda üç yumrulu, düzensiz taç; ağaçtan ağaca renk farkı. Uydu görüntüsündeki koyu ağaç tepeleri zeminde gölgeli toprağa çevrilir (3B ağaçların altı yeşil halı gibi görünmez). Zemin: yeni ayrıntı dokusu (çizik çizgi yok), 3–15 m ölçekli doğal düzensizlik, bozkırda çalı benekleri, kuzey yamaçlar koyu ve yeşil, açık renkli zemin kar gibi parlamaz, dünya uzayında kabartı (yatık bakışta çizgi yok) ve orta mesafede yamaç kabartısı. Ot öbek öbek, dipte koyu. Küçük evlerde kiremit kırma çatı, hangarlarda kemerli çatı, asfalt yolda şerit çizgileri. Isıtma çizimi tek üçgenle, uydu görüntüleri önceden keskinleştirilmiş: açılış ≈37 s (yazılım WebGL), CI tarayıcı testleri v0.42 süresinde. Kararlar: hatalı seçeneklerin sonucu uçuşta görülür (iniş öncesi kontroller, sabit pedal, yamaç, kol uçuşu, azami performans). Testler: claude/tests/v044.test.mjs.
+
 # v0.43.0 — 3–4 Kasım 2026 (karar, arayüz ve görsellik gece turu)
 
 Arazi MT paterni (Tepeler kapalı bölge / tepe / keşif) bacak takibiyle: keşiften sonra rüzgâraltı hattına 90° ile katılış, rüzgâraltı son yaklaşmanın tersi istikamette, esas bacağa ≈90–105° dönüş (yatış 15–30°, esas bacakta ≥6 s düz uçuş), son yaklaşmaya ≈75° dönüş; 150–200°'lik dönüş kalmadı. 24 meydan turunda yan / esas bacak 200 m kısa, tırmanış 50 m uzun; 06'da rüzgâraltı 100 m kısa. Kokpit: varsayılan bakış biraz aşağı, göstergeye bakışta yakınlaşma, "Göstergeler" düğmesi (1 tuşu).
