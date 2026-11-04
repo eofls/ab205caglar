@@ -1,3 +1,11 @@
+# v0.49.0 — 4 Kasım 2026 (meydan turu çizime göre, keşif, kontrol)
+
+06 ve 24 meydan turları kullanıcının haritada çizdiği köşelerden geçer (dönüşler ≈30° yatış, rüzgâraltı sonunda 70 kt). Keşifte yüksek keşif bitince doğrudan rüzgâraltı–esas bacak kesişimine gidilir. Program seçicide hareket başı hep hareketin kendi başı (güçlü kurtarma önceki senaryonun başıyla ağaçlığa gitmiyor). Acil durum usulleri Operatör Talimnamesi Bölüm 9 ile karşılaştırıldı: bariz çelişki yok. Bütün acil durum ve hareketlerin bütün karar seçenekleri süzüldü (claude/sweeps/k34.mjs, k35.mjs): doğru kararlarda bütün inişler yumuşak.
+
+# v0.48.0 — 4 Kasım 2026 (bulutlar)
+
+Parçalı bulutlu havada kümülüs: tabanı düz ve gölgeli, üstü kabarık ve güneş tarafı parlak, dört farklı biçim. Kapalı havada ayrı bulut topları yerine geniş, gri stratus tabakası. Uydu görüntüsü renkleri biraz daha soluk (kasım bozkırı).
+
 # v0.47.0 — 4 Kasım 2026 (orman helikopterle birlikte, kare süresi)
 
 Orman artık başlangıç noktası çevresinde sabit değil: kameranın 2 km (telefonda 1,1 km) çevresindeki ağaç hücreleri uçuş sırasında dilim dilim kurulur, uzaklaşanlar bırakılır; uzun meydan turu ve Tepeler paternlerinde yakındaki ağaçlar hep 3B. Uzak ağaç noktaları 1 km karolarda (görüş dışı çizilmez, 3B ağaçların olduğu yerde gizli). Uzak seviyede ağaç başına tek yumru taç. Düz çatılarda membran / panel dokusu ve çatı cihazları. Ağaçsız sahada sahne güncellemesi hata vermez. Yazılım WebGL'de kare süresi v0.46'ya göre ≈%30 kısa.
