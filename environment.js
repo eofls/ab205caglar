@@ -94,6 +94,7 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
    .replace('#include <color_fragment>',`#include <color_fragment>
    {vec2 w=vWorldPos.xz;float cd=length(cameraPosition-vWorldPos),nearF=1.-smoothstep(90.,700.,cd);
     float n1=fbm(w*.012),n2=vnoise(w*.19),n3=vnoise(w*1.7),n4=vnoise(w*7.3),n5=vnoise(w*23.);
+    {float fw0=length(fwidth(w));n3=mix(.5,n3,1.-smoothstep(.3,.9,fw0*1.7));n4=mix(.5,n4,1.-smoothstep(.3,.9,fw0*7.3));n5=mix(.5,n5,1.-smoothstep(.3,.9,fw0*23.));} /* v0.44 piksel boyutundan ince gürültü söner: uzakta moire çizgisi olmaz */
     vec3 base=diffuseColor.rgb;float lum=dot(base,vec3(.299,.587,.114));
     ${asphalt?`float det=(n2-.5)*.10+(n3-.5)*.10+(n4-.5)*.08+(n5-.5)*.06*nearF;diffuseColor.rgb*=1.+det*uDetail;
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.82,smoothstep(.55,.8,vnoise(w*vec2(.05,.9))));
@@ -108,11 +109,11 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
      vec3 floorC=mix(vec3(.15,.115,.07),vec3(.11,.105,.06),n2)*(.85+.3*n3);base=mix(base,floorC,cn*.92);diffuseColor.rgb=base;lum=dot(base,vec3(.299,.587,.114));}`:''}
     float green=clamp((base.g-max(base.r,base.b))*7.+.25,0.,1.),bright=smoothstep(.38,.68,lum);
     float macro=(n1-.5)*.30+(n2-.5)*.15;
-    {/* v0.44 orta ölçek (3–15 m) doğal düzensizlik: uydu pikselinin bulanık “fırça” görünümü kırılır */float mf=1.-smoothstep(1400.,4200.,cd);${LITE?'float m1=vnoise(w*.075);':'float m1=fbm(w*.075+3.1);'}float m2=vnoise(w*.31+7.);macro+=((m1-.5)*.34+(m2-.5)*.24)*mf;
+    {/* v0.44 orta ölçek (3–15 m) doğal düzensizlik: uydu pikselinin bulanık “fırça” görünümü kırılır */float mf=1.-smoothstep(1400.,4200.,cd);float m1=vnoise(w*.075+3.1)*.65+vnoise(w*.19+1.3)*.35;float m2=vnoise(w*.31+7.);macro+=((m1-.5)*.34+(m2-.5)*.24)*mf;
      diffuseColor.rgb*=mix(vec3(1.),vec3(.94,1.03,.9),smoothstep(.55,.8,m1)*mf*(.3+.7*(1.-bright)));}
     {/* v0.44 bozkırda çalı / ot öbeği benekleri (≈2 m, öbekler hâlinde): açık renkli kuru zeminde 1,5 km'ye kadar görülür; piksel boyutundan küçükse söner (titreme olmaz) */
-     float fw=length(fwidth(w)),vis=1.-smoothstep(1.4,4.,fw),sp=${LITE?'smoothstep(.6,.82,vnoise(w*.42+11.))':'shrubs(w*.42+11.)'}*smoothstep(.4,.7,vnoise(w*.06-4.));
-     diffuseColor.rgb*=1.-sp*vis*(.3+.25*bright)*(1.-green*.5)*uDetail;}
+     float fw=length(fwidth(w)),vis=(1.-smoothstep(1.4,4.,fw))*(1.-smoothstep(1500.,2200.,cd)),cl=smoothstep(.4,.7,vnoise(w*.06-4.));
+     if(vis*cl>.02){float sp=${LITE?'smoothstep(.6,.82,vnoise(w*.42+11.))':'shrubs(w*.42+11.)'}*cl;diffuseColor.rgb*=1.-sp*vis*(.3+.25*bright)*(1.-green*.5)*uDetail;}}
     float grass=(n4-.5)*.24+(n5-.5)*.20-smoothstep(.62,.8,vnoise(w*2.6))*.16;
     float soil=(n3-.5)*.18+(n5-.5)*.12-step(.955,h21(floor(w*2.2)))*.22;
     diffuseColor.rgb*=1.+(macro+mix(soil,grass,green)*nearF*.6)*uDetail;
@@ -127,13 +128,18 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
     float sn=smoothstep(uSnow-18.,uSnow+12.,vWorldPos.y+(n1-.5)*60.)*(1.-smoothstep(.45,.7,slope));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.93,.95,.97),sn);
     if(uAOR>0.){vec2 aq=(w+uAOR)/(2.*uAOR);if(aq.x>0.&&aq.y>0.&&aq.x<1.&&aq.y<1.)diffuseColor.rgb*=mix(1.,texture2D(uAO,aq).r,.85);} /* vadiler, dere yatakları ve tepe etekleri gölgede */
     /* bulut gölgeleri rüzgârla kayar */
-    ${LITE?'float cs=smoothstep(.48,.72,vnoise(w*.0015-uWind*uTime*.0015+vec2(13.,5.)));':'float cs=smoothstep(.48,.72,fbm(w*.0015-uWind*uTime*.0015+vec2(13.,5.)));'}diffuseColor.rgb*=1.-cs*uCloud;}`)
+    if(uCloud>.001){${LITE?'float cs=smoothstep(.48,.72,vnoise(w*.0015-uWind*uTime*.0015+vec2(13.,5.)));':'float cs=smoothstep(.48,.72,fbm(w*.0015-uWind*uTime*.0015+vec2(13.,5.)));'}diffuseColor.rgb*=1.-cs*uCloud;}}`)
    .replace('#include <normal_fragment_maps>',LITE?'#include <normal_fragment_maps>':`#include <normal_fragment_maps>
-   {/* v0.43 yakında zemin kabartısı: tarla izleri, tümsek ve taşlar ışıkta görünür (bump, görünüm uzayında) */
-    vec2 w=vWorldPos.xz;float cd=length(cameraPosition-vWorldPos),bf=1.-smoothstep(60.,520.,cd),mf=${asphalt?'0.':'(1.-smoothstep(900.,3200.,cd))*smoothstep(.015,.12,1.-normalize(vWorldN).y)'};
-    if(bf>0.||mf>0.){float H=(${asphalt?'vnoise(w*3.)*.015+vnoise(w*11.)*.006':'fbm(w*.09)*.55+vnoise(w*.8)*.22+vnoise(w*3.4)*.07+vnoise(w*11.)*.025'})*bf${asphalt?'':'+(fbm(w*.022+1.7)*3.2+vnoise(w*.06)*1.1)*mf'}; /* v0.44 orta mesafede yamaçlarda 15–45 m ölçekli kabartı (sırt, yarıntı): tepeler kum tepesi gibi pürüzsüz görünmez */
-     vec2 dH=vec2(dFdx(H),dFdy(H));vec3 sx=dFdx(-vViewPosition),sy=dFdy(-vViewPosition),R1=cross(sy,normal),R2=cross(normal,sx);float fd=dot(sx,R1)*faceDirection;
-     normal=normalize(abs(fd)*normal-sign(fd)*(dH.x*R1+dH.y*R2));}}`);
+   {/* v0.44 zemin kabartısı dünya uzayında sonlu farkla: ekran türevli (dFdx) kabartı yatık bakışta çizgi çizgi görünüyordu.
+       Yakında tümsek ve taşlar, orta mesafede yamaçlarda 15–45 m ölçekli sırt ve yarıntı. */
+    vec2 w=vWorldPos.xz;float fwB=length(fwidth(w));
+    float cd=length(cameraPosition-vWorldPos),bf=1.-smoothstep(60.,520.,cd),mf=${asphalt?'0.':'(1.-smoothstep(900.,3200.,cd))*smoothstep(.015,.12,1.-normalize(vWorldN).y)'};
+    if(bf>0.||mf>0.){float a1=1.-smoothstep(.3,.9,fwB*.8),a2=1.-smoothstep(.3,.9,fwB*3.4),e=max(.06,fwB*.6);
+     #define HB(q) (${asphalt?'(vnoise((q)*3.)*.015)*bf':'(vnoise((q)*.09)*.38+vnoise((q)*.21+2.)*.18+vnoise((q)*.8)*.22*a1+vnoise((q)*3.4)*.06*a2)*bf+(vnoise((q)*.022+1.7)*2.4+vnoise((q)*.06)*1.1)*mf'})
+     float h0=HB(w),hx=HB(w+vec2(e,0.)),hz=HB(w+vec2(0.,e));vec3 nW=normalize(normalize(vWorldN)+vec3(-(hx-h0)/e,0.,-(hz-h0)/e));
+     normal=normalize((viewMatrix*vec4(nW,0.)).xyz)*(gl_FrontFacing?1.:-1.);
+     #undef HB
+    }}`);
  };
  material.customProgramCacheKey=()=>'surface2-'+[rock,snowLine,detail,asphalt,runway,canopy].join('-');
  material.needsUpdate=true;return material;
@@ -301,6 +307,8 @@ let _shadeTex=null;function treeShadeTex(){if(_shadeTex||typeof document==='unde
 function lumpyFar(){const g=new T.DodecahedronGeometry(1,0),p=g.attributes.position,col=[];const v=new T.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();if(v.y<-.25)v.y=-.25+(v.y+.25)*.6;p.setXYZ(i,v.x,v.y,v.z);const sh=.34+.74*Math.min(1,Math.max(0,(v.y+.9)/1.9));col.push(sh,sh,sh*.97);}g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g;}
 function coniferFar(){const g=new T.ConeGeometry(1,1,6,1,false);g.translate(0,.5,0);const p=g.attributes.position,col=[];for(let i=0;i<p.count;i++){const sh=.36+.7*p.getY(i);col.push(sh,sh,sh*.96);}g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g;}
 const SUN0=new T.Vector3(.58,.56,.42).normalize();
+/* v0.44 ağaç rengi çeşitliliği: koyu yeşil, zeytin, sarımsı yeşil, griye çalan yeşil (aynı türde de ağaçtan ağaca fark) */
+const TREE_PAL=[[1,1,1],[1,1,1],[.85,.92,1.15],[1.25,1.12,.85],[1.15,.98,.8],[.9,.85,.95],[1.35,1.2,.7]];
 function placeShade(m,sun){const o=new T.Object3D(),up=new T.Vector3(0,1,0),nrm=new T.Vector3(),q=new T.Quaternion(),el=Math.max(.12,Math.asin(Math.min(1,sun.y))),hx=-sun.x,hz=-sun.z,hl=Math.hypot(hx,hz)||1,dx=hx/hl,dz=hz/hl,yaw=Math.atan2(dx,dz),k=1/Math.tan(el);
  m.userData.trees.forEach((t,i)=>{const L=Math.min(t.h*k,t.h*4),len=Math.max(2*t.r,L*.85+t.r),off=Math.max(0,L*.5-t.r*.2);nrm.set(t.nx,1,t.nz).normalize();q.setFromUnitVectors(up,nrm);o.quaternion.copy(q).multiply(new T.Quaternion().setFromAxisAngle(up,yaw));o.position.set(t.x+dx*off,t.y+.12+off*(-t.nx*dx-t.nz*dz),t.z+dz*off);o.scale.set(t.r*2.1,1,len);o.updateMatrix();m.setMatrixAt(i,o.matrix);});
  m.instanceMatrix.needsUpdate=true;m.computeBoundingSphere();}
@@ -337,9 +345,9 @@ export function createForest(objects,{time,area}={time:{value:0}}){
   if(!c.conifer.length)tiers.count=0;if(!c.broad.length&&!c.poplar.length)balls.count=0;
   c.conifer.forEach((t,i)=>{const tint=hash(t.x,t.z);for(let k=0;k<tiersN;k++){const f=tiersN===2?[.2,.5][k]:.22+k*.22,base=t.y+t.height*f,hgt=t.height*(tiersN===2?[.62,.5][k]:.48-k*.08),rad=t.radius*(1-(tiersN===2?.35:.24)*k)*.95;o.position.set(t.x,base,t.z);o.rotation.set(0,tint*6+k,0);o.scale.set(rad,hgt,rad);o.updateMatrix();tiers.setMatrixAt(i*tiersN+k,o.matrix);
    col.setRGB((.06+tint*.04),(.15+tint*.06-k*.01),(.08+tint*.03));tiers.setColorAt(i*tiersN+k,col);}});
-  c.poplar.forEach((t,i)=>{const tint=hash(t.z,t.x),u=hash(t.x*.7,t.z*1.3);for(let k=0;k<PL;k++){const f=[.42,.62,.8][k],rr=t.radius*[1,.86,.58][k]*(.9+.2*hash(t.x+k,t.z)),hh=t.height*[.3,.26,.2][k];o.position.set(t.x+(hash(t.x+k*3,t.z)-.5)*t.radius*.5,t.y+t.height*f,t.z+(hash(t.x,t.z+k*5)-.5)*t.radius*.5);o.rotation.set((u-.5)*.25,tint*4+k*1.7,(hash(t.z+k,t.x)-.5)*.2);o.scale.set(rr,hh,rr*(.85+.25*u));o.updateMatrix();const n=c.broad.length*BL+i*PL+k;balls.setMatrixAt(n,o.matrix);col.setRGB((.10+tint*.05)*(1+.06*k),(.19+tint*.05)*(1+.05*k),(.06+tint*.03));balls.setColorAt(n,col);}});
+  c.poplar.forEach((t,i)=>{const tint=hash(t.z,t.x),u=hash(t.x*.7,t.z*1.3);for(let k=0;k<PL;k++){const f=[.42,.62,.8][k],rr=t.radius*[1,.86,.58][k]*(.9+.2*hash(t.x+k,t.z)),hh=t.height*[.3,.26,.2][k];o.position.set(t.x+(hash(t.x+k*3,t.z)-.5)*t.radius*.5,t.y+t.height*f,t.z+(hash(t.x,t.z+k*5)-.5)*t.radius*.5);o.rotation.set((u-.5)*.25,tint*4+k*1.7,(hash(t.z+k,t.x)-.5)*.2);o.scale.set(rr,hh,rr*(.85+.25*u));o.updateMatrix();const n=c.broad.length*BL+i*PL+k;balls.setMatrixAt(n,o.matrix);const pv=TREE_PAL[Math.floor(hash(t.x*3.1,t.z*1.7)*TREE_PAL.length)];col.setRGB((.10+tint*.05)*(1+.06*k)*pv[0],(.19+tint*.05)*(1+.05*k)*pv[1],(.06+tint*.03)*pv[2]);balls.setColorAt(n,col);}});
   c.broad.forEach((t,i)=>{const tint=hash(t.z,t.x),u=hash(t.x*1.9,t.z*.3);for(let k=0;k<BL;k++){const a=tint*6.28+k*2.1,sp=t.radius*(k?.55:.15),rr=t.radius*(k?.72+.18*hash(t.x+k,t.z):.95),hh=t.height*(k?.24:.3)*(.9+.2*u);o.position.set(t.x+Math.cos(a)*sp,t.y+t.height*(k?.6+.08*hash(t.z+k,t.x):.66),t.z+Math.sin(a)*sp);o.rotation.set(tint*3+k,tint*5+k*1.3,(u-.5)*.4);o.scale.set(rr,hh,rr*(.85+.3*hash(t.x,t.z+k)));o.updateMatrix();balls.setMatrixAt(i*BL+k,o.matrix);
-   col.setRGB((.09+tint*.07)*(1+.05*k),(.16+tint*.07)*(1+.05*k),(.05+tint*.04));balls.setColorAt(i*BL+k,col);}});
+   {const pv=TREE_PAL[Math.floor(hash(t.x*2.3,t.z*4.1)*TREE_PAL.length)];col.setRGB((.09+tint*.07)*(1+.05*k)*pv[0],(.16+tint*.07)*(1+.05*k)*pv[1],(.05+tint*.04)*pv[2]);}balls.setColorAt(i*BL+k,col);}});
   if(!c.conifer.length)tiers.setColorAt(0,col);if(!c.broad.length&&!c.poplar.length)balls.setColorAt(0,col);
   /* v0.44 ağaç gölgesi: güneşin tersine uzanan yumuşak elips (zemin eğimine yatık). Gölge haritası yalnız helikopterin
      çevresini kapsadığı için ağaçlar gölge haritasına girmez; bütün sahada aynı ve ucuz gölge. */
@@ -352,7 +360,7 @@ export function createForest(objects,{time,area}={time:{value:0}}){
   if(shade){shade.castShadow=shade.receiveShadow=false;cg.add(shade);}
   list.push({cx,cz,cy,trunks,T3,B3,shade,level:-1});group.add(cg);}
  /* kamera konumuna göre ayrıntı seviyesi (her karede çağrılır; 15 m altı hareketlerde atlanır) */
- const near=LITE?180:220,mid=LITE?600:700,last={x:1e9,y:0,z:1e9};
+ const near=LITE?140:160,mid=LITE?480:560,last={x:1e9,y:0,z:1e9};
  group.userData.updateLOD=cam=>{if(Math.abs(cam.x-last.x)+Math.abs(cam.z-last.z)+Math.abs(cam.y-last.y)<15)return;last.x=cam.x;last.y=cam.y;last.z=cam.z;
   for(const c of list){const dx=Math.max(0,Math.abs(cam.x-c.cx)-C/2),dz=Math.max(0,Math.abs(cam.z-c.cz)-C/2),d=Math.hypot(dx,dz,Math.max(0,cam.y-c.cy-30)*.5);const L=d<near?0:d<mid?1:2;if(L===c.level)continue;c.level=L;
    c.T3.forEach((m,i)=>m.visible=i===L);c.B3.forEach((m,i)=>m.visible=i===L);c.trunks.visible=L<2;if(c.shade)c.shade.visible=L<2;

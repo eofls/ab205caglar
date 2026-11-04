@@ -52,7 +52,7 @@ test('v0.43 arayüz: Geliştirme kaydı yok, sürüm koddan, kaynak sayfası bö
  const html=readFileSync(new URL('../../index.html',import.meta.url),'utf8');
  assert.ok(!/Geliştirme kaydı/.test(html)&&!/id="roadmap"/.test(html));
  for(const id of ['src-books','src-map','src-heli','src-phys','src-soft','src-tech','source-list','reference-rows','curve-rpm','curve-rows','curve-overlay','app-version'])assert.ok(html.includes(`id="${id}"`),id);
- assert.equal(APP_VERSION,'0.43.0');assert.ok(readFileSync(new URL('../../sw.js',import.meta.url),'utf8').includes("ab205-v0.43.0"));
+ assert.match(APP_VERSION,/^0\.(4[3-9]|[5-9]\d)\.\d+$/);assert.ok(readFileSync(new URL('../../sw.js',import.meta.url),'utf8').includes('ab205-v'+APP_VERSION),'sw.js önbellek adı sürümle aynı değil');
  for(const [k,s] of Object.entries(SOURCES))assert.ok(s.use&&s.use.length>20,`${k} kullanım notu`);
 });
 test('v0.43 yardım: her bölüm için ayrıntılı açıklama (≥25 yer, her biri ≥2 cümle)',()=>{
