@@ -52,3 +52,9 @@ test('v0.44 görsellik: uydu ağaç tepeleri bastırılır, ağaç gölgesi gün
  assert.ok(td.includes('function hipRoof')&&td.includes('tileRoofMat'),'kırma çatı yok');
  assert.ok(env.includes('_vn2('),'ot öbekleri yok');
 });
+test('v0.46 gece: pencere ışıkları ve sokak lambaları gece açılır, gündüz kapalı; ortam haritası gece kısılır',()=>{
+ const td=readFileSync(new URL('../../terrain-detail.js',import.meta.url),'utf8'),sv=readFileSync(new URL('../../scene-view.js',import.meta.url),'utf8');
+ assert.ok(td.includes('export function setNightLights')&&td.includes('function streetLamps')&&td.includes('emissiveMap:nightTexture(kind)'));
+ assert.ok(/setNightLights\(weather\.night\?1:/.test(sv),'gece ışığı scene-view içinde ayarlanmıyor');
+ assert.ok(/environmentIntensity=weather\.night\?\.0\d+/.test(sv),'ortam haritası gece kısılmıyor');
+});
