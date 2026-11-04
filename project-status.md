@@ -1,3 +1,7 @@
+# v0.49.0 — 4 Kasım 2026 (meydan turu çizime göre, keşif, kontrol)
+
+06 ve 24 meydan turları kullanıcının haritada çizdiği köşelerden geçer (dönüşler ≈30° yatış, rüzgâraltı sonunda 70 kt). Keşifte yüksek keşif bitince doğrudan rüzgâraltı–esas bacak kesişimine gidilir. Program seçicide hareket başı hep hareketin kendi başı (güçlü kurtarma önceki senaryonun başıyla ağaçlığa gitmiyor). Acil durum usulleri Operatör Talimnamesi Bölüm 9 ile karşılaştırıldı: bariz çelişki yok. Bütün acil durum ve hareketlerin bütün karar seçenekleri süzüldü (claude/sweeps/k34.mjs, k35.mjs): doğru kararlarda bütün inişler yumuşak.
+
 # v0.48.0 — 4 Kasım 2026 (bulutlar)
 
 Parçalı bulutlu havada kümülüs: tabanı düz ve gölgeli, üstü kabarık ve güneş tarafı parlak, dört farklı biçim. Kapalı havada ayrı bulut topları yerine geniş, gri stratus tabakası. Uydu görüntüsü renkleri biraz daha soluk (kasım bozkırı).
