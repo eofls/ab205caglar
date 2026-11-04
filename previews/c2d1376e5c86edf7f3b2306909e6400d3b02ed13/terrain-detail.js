@@ -118,6 +118,12 @@ let TILE=null;function tileTexture(){if(TILE||typeof document==='undefined')retu
  TILE=new T.CanvasTexture(c);TILE.wrapS=TILE.wrapT=T.RepeatWrapping;TILE.colorSpace=T.SRGBColorSpace;TILE.anisotropy=4;return TILE;}
 const TILE_COLS=['#a24f36','#9a4a33','#b05b3d','#8f4632','#a8613f','#7f4636'];
 function tileRoofMat(cx,cz){const k=Math.abs(Math.sin(cx*7.13+cz*3.71)*15731.7)%1,col=TILE_COLS[Math.floor(k*TILE_COLS.length)];return mat('tile'+col,()=>new T.MeshStandardMaterial({color:col,map:tileTexture(),roughness:.85}));}
+/* v0.47 düz çatı dokusu: membran / beton panel izleri, lekeler, kenarda koyu parapet hissi (ekstrüzyon üst yüzü metre ölçekli uv) */
+let ROOFT=null;function roofTexture(){if(ROOFT||typeof document==='undefined')return ROOFT;const N=256,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.fillStyle='#d8d8d8';x.fillRect(0,0,N,N);let sd=71;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ for(let i=0;i<N;i+=32){x.fillStyle='rgba(0,0,0,.06)';x.fillRect(i,0,2,N);x.fillRect(0,i,N,2);}
+ for(let i=0;i<40;i++){const px=r()*N,py=r()*N,rad=6+r()*30;const g=x.createRadialGradient(px,py,0,px,py,rad);g.addColorStop(0,`rgba(${r()<.5?60:255},${r()<.5?60:250},${r()<.5?55:240},${.06+r()*.1})`);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(px-rad,py-rad,rad*2,rad*2);}
+ for(let i=0;i<14;i++){x.fillStyle='rgba(70,72,74,.55)';const px=r()*N,py=r()*N;x.fillRect(px,py,4+r()*6,3+r()*5);} /* çatı üstü cihazlar */
+ ROOFT=new T.CanvasTexture(c);ROOFT.wrapS=ROOFT.wrapT=T.RepeatWrapping;ROOFT.repeat.set(1/24,1/24);ROOFT.colorSpace=T.SRGBColorSpace;ROOFT.anisotropy=4;return ROOFT;}
 function mat(key,make){if(!MATS.has(key))MATS.set(key,make());return MATS.get(key);}
 const STYLE={apt:{walls:['#ece5d3','#e8d3b4','#dccabb','#eeeae1','#e5cba9','#d9d2c4'],win:'#3f4c58',roofs:['#76797b','#9c5c45','#8b8d8c']},
  ind:{walls:['#cfd2d3','#bcc6cc','#d7d5cd','#aeb8bc','#dad6c8','#c9c1b0'],win:'#64788a',roofs:['#8f9597','#a3a8aa','#6f7c84','#5d6b78','#8a5a48','#9a9c96']},
@@ -125,7 +131,7 @@ const STYLE={apt:{walls:['#ece5d3','#e8d3b4','#dccabb','#eeeae1','#e5cba9','#d9d
  other:{walls:['#ddd3bf','#e9e2d2','#d5c3a6','#e3dccd'],win:'#4a5661',roofs:['#9b5a43','#7e7f80','#a9674a','#8f8577']}};
 function buildingStyle(f,cx,cz){const t=f.tags,b=t.building,kind=t.aeroway==='hangar'||b==='hangar'?'hangar':b==='apartments'?'apt':b==='industrial'||b==='warehouse'?'ind':'other',S=STYLE[kind],k=Math.abs(Math.sin(cx*12.9898+cz*78.233)*43758.5453)%1,k2=Math.abs(Math.sin(cx*39.3468+cz*11.135)*24634.6345)%1;
  const wall=S.walls[Math.floor(k*S.walls.length)],roof=S.roofs[Math.floor(k2*S.roofs.length)];
- return {wall:mat('w'+kind+wall,()=>{const m=weatherWall(new T.MeshStandardMaterial({color:'#ffffff',map:facadeTexture(kind,wall,S.win),emissiveMap:nightTexture(kind),emissive:'#000000',emissiveIntensity:0,roughness:kind==='ind'||kind==='hangar'?.7:.9,metalness:kind==='hangar'?.15:0}));WALL_MATS.add(m);return m;}),roof:mat('r'+roof,()=>new T.MeshStandardMaterial({color:roof,roughness:.85}))};}
+ return {wall:mat('w'+kind+wall,()=>{const m=weatherWall(new T.MeshStandardMaterial({color:'#ffffff',map:facadeTexture(kind,wall,S.win),emissiveMap:nightTexture(kind),emissive:'#000000',emissiveIntensity:0,roughness:kind==='ind'||kind==='hangar'?.7:.9,metalness:kind==='hangar'?.15:0}));WALL_MATS.add(m);return m;}),roof:mat('r'+roof,()=>new T.MeshStandardMaterial({color:roof,map:roofTexture(),roughness:.85}))};}
 function addPart(buckets,material,geo,gr){let b=buckets.get(material);if(!b)buckets.set(material,b={mat:material,pos:[],nor:[],uv:[],base:[]});const P=geo.attributes.position.array,N=geo.attributes.normal.array,U=geo.attributes.uv.array,end=gr.start+gr.count;
  let y0=Infinity;for(let i=1;i<P.length;i+=3)y0=Math.min(y0,P[i]);
  for(let i=gr.start;i<end;i++){b.pos.push(P[i*3],P[i*3+1],P[i*3+2]);b.nor.push(N[i*3],N[i*3+1],N[i*3+2]);b.uv.push(U[i*2],U[i*2+1]);b.base.push(y0);}}
@@ -142,7 +148,7 @@ export function airfieldGroundTexture(){const t=airfieldGroundTextureDrawn();if(
 /* v0.39 gerçek arazi / tepeler zemini: Sentinel-2 cloudless 2023 (EOX, CC BY-NC-SA 4.0), ±4.5 km, zemin düzlemiyle aynı kapsam */
 export function realGroundTexture(area){if(typeof document==='undefined')return null;const N=LITE?2048:4096,c=document.createElement('canvas');c.width=c.height=N;const ctx=c.getContext('2d');if(!ctx)return null;ctx.fillStyle='#8c7b5c';ctx.fillRect(0,0,N,N);
  const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;const img=new Image();img.decoding='async';
- img.onload=()=>{ctx.filter='saturate(0.74) hue-rotate(11deg) contrast(1.12) brightness(0.96)'; /* v0.43 bozkır renkleri: biraz daha kontrast ve doygunluk */ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,N,N);ctx.filter='none'; /* v0.43.1 keskinleştirme önceden yapıldı */
+ img.onload=()=>{ctx.filter='saturate(0.66) hue-rotate(9deg) contrast(1.12) brightness(0.95)'; /* v0.43 bozkır renkleri: biraz daha kontrast ve doygunluk */ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,N,N);ctx.filter='none'; /* v0.43.1 keskinleştirme önceden yapıldı */
   /* fine field texture on top of the 4–10 m satellite pixels: soft furrows and mottling (not new features) */
   let seed=91;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};for(let i=0;i<(LITE?12000:60000);i++){const x=rand()*N,y=rand()*N;ctx.fillStyle=rand()>.5?'rgba(255,255,255,.035)':'rgba(30,25,10,.05)';ctx.fillRect(x,y,1+rand()*3,1+rand()*2);}
   t.needsUpdate=true;};img.src='assets/terrain/'+(area==='mountain'?'tepeler':'golbasi')+'-s2k.jpg';return t;}
