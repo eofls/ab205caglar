@@ -49,7 +49,9 @@ export function addTerrainDetail(scene,features=FEATURES,area="terrain"){
   if((f.tags.natural==='water'||f.tags.water)&&f.points.length>3){/* v0.43 göl / gölet yüzeyi: su malzemesi (gökyüzü yansıması, güneş parıltısı, rüzgâr dalgası) */const pts=f.points.slice(0,-1),lvl=Math.min(...pts.map(p=>height(p[0],p[1]))),shape=new T.Shape(pts.map(p=>new T.Vector2(p[0],-p[1]))),g=new T.ShapeGeometry(shape);g.rotateX(-Math.PI/2);g.translate(0,lvl+.35,0);const wm=new T.Mesh(g,waterMaterial(false));wm.name='Gölet';wm.renderOrder=1;group.add(wm);continue;}
   if(f.tags.aeroway==='apron'){const pts=f.points.slice(0,-1),shape=new T.Shape(pts.map(p=>new T.Vector2(p[0],-p[1]))),g=new T.ShapeGeometry(shape);g.rotateX(-Math.PI/2);const p=g.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,height(p.getX(i),p.getZ(i))+.06);const ap=new T.Mesh(g,new T.MeshStandardMaterial({color:'#a8a69e',roughness:1,side:T.DoubleSide}));ap.receiveShadow=true;group.add(ap);}
   if(f.tags.building||f.tags.aeroway==='hangar'){if(f.tags.layer==='-1')continue;const pts=f.points.slice(0,-1);if(pts.length<3)continue;const cx=pts.reduce((a,p)=>a+p[0],0)/pts.length,cz=pts.reduce((a,p)=>a+p[1],0)/pts.length,shape=new T.Shape(pts.map(p=>new T.Vector2(p[0]-cx,-(p[1]-cz)))),bh=buildingHeightOf(f);if(!Number.isFinite(bh)||!Number.isFinite(height(cx,cz))||pts.some(p=>!Number.isFinite(p[0])||!Number.isFinite(p[1])))continue; /* v0.43 NaN yükseklikli yapı birleşik bina ağını bozmasın */
-   const g=new T.ExtrudeGeometry(shape,{depth:bh,bevelEnabled:false});g.rotateX(-Math.PI/2);g.translate(cx,height(cx,cz)-.05,cz);const st=buildingStyle(f,cx,cz);for(const gr of g.groups)addPart(buckets,gr.materialIndex===0?st.roof:st.wall,g,gr);g.dispose();}
+   const st=buildingStyle(f,cx,cz),hip=hipRoof(pts,f,bh);
+   const g=new T.ExtrudeGeometry(shape,{depth:bh,bevelEnabled:false});g.rotateX(-Math.PI/2);g.translate(cx,height(cx,cz)-.05,cz);for(const gr of g.groups)addPart(buckets,gr.materialIndex===0?(hip?st.wall:st.roof):st.wall,g,gr);g.dispose();
+   if(hip){const rg=hip.geo;rg.translate(0,height(cx,cz)-.05+bh,0);addPart(buckets,tileRoofMat(cx,cz),rg,{start:0,count:rg.attributes.position.count});rg.dispose();}}
  }
  for(const b of buckets.values()){const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(b.pos,3));geo.setAttribute('normal',new T.Float32BufferAttribute(b.nor,3));geo.setAttribute('uv',new T.Float32BufferAttribute(b.uv,2));geo.setAttribute('baseY',new T.Float32BufferAttribute(b.base,1));const m=new T.Mesh(geo,b.mat);m.castShadow=m.receiveShadow=true;m.name='Binalar';group.add(m);}
  return group; /* v0.39 rastgele çalı / kaya ızgarası kaldırıldı: ağaçlar ve kayalar dünya modelinden gelir */
@@ -66,6 +68,25 @@ function facadeTexture(kind,wall,win){const key=kind+wall+win;if(FACADES.has(key
  else if(kind==='hangar'){for(let i=0;i<128;i+=6){x.fillStyle='rgba(0,0,0,.09)';x.fillRect(i,0,2,128);}x.fillStyle='rgba(0,0,0,.12)';x.fillRect(0,0,128,10);}
  else{x.fillStyle=win;x.fillRect(20,34,30,34);x.fillRect(78,34,30,34);x.fillStyle='rgba(0,0,0,.08)';x.fillRect(0,112,128,16);x.fillStyle='rgba(255,255,255,.18)';x.fillRect(20,34,30,4);x.fillRect(78,34,30,4);}
  const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(1/6,1/6);t.colorSpace=T.SRGBColorSpace;t.anisotropy=4;FACADES.set(key,t);return t;}
+/* v0.44 kırma çatı: küçük, dikdörtgene yakın evlerde kiremit kaplı kırma çatı (köy ve meydan çevresi evleri). Taban
+   dikdörtgen değilse ya da yapı büyük / çok katlıysa düz çatı kalır. */
+function hipRoof(pts,f,bh){const b=f.tags.building;if(!['house','yes','residential','detached','farm','semidetached_house','bungalow','shed','barn','garage'].includes(b))return null;if(bh>9)return null;
+ const P=pts.length===4?pts:null;if(!P)return null;const e=[0,1,2,3].map(i=>Math.hypot(P[(i+1)%4][0]-P[i][0],P[(i+1)%4][1]-P[i][1]));
+ for(let i=0;i<4;i++){const a=P[i],b2=P[(i+1)%4],c=P[(i+2)%4],v1=[b2[0]-a[0],b2[1]-a[1]],v2=[c[0]-b2[0],c[1]-b2[1]],cos=(v1[0]*v2[0]+v1[1]*v2[1])/(Math.hypot(...v1)*Math.hypot(...v2)||1);if(Math.abs(cos)>.2)return null;}
+ const area=e[0]*e[1];if(area>320||area<18)return null;const long=e[0]>=e[1]?0:1,L=e[long],W=e[1-long];
+ const ux=(P[long+1][0]-P[long][0])/L,uz=(P[long+1][1]-P[long][1])/L,vx=-uz,vz=ux,cx=P.reduce((s,q)=>s+q[0],0)/4,cz=P.reduce((s,q)=>s+q[1],0)/4,h=Math.min(3.2,W*.36),ov=.35,hl=L/2+ov,hw=W/2+ov,r=Math.max(0,hl-hw);
+ const C=(a,w,y)=>[cx+ux*a+vx*w,y,cz+uz*a+vz*w],c0=C(-hl,-hw,0),c1=C(hl,-hw,0),c2=C(hl,hw,0),c3=C(-hl,hw,0),r0=C(-r,0,h),r1=C(r,0,h),pos=[],uv=[];
+ const tri=(a,b,c)=>{pos.push(...a,...b,...c);uv.push(a[0]*.3,a[2]*.3,b[0]*.3,b[2]*.3,c[0]*.3,c[2]*.3);};
+ /* dört yüz; yönler dışa bakar (saat yönü kontrolü normal hesabında) */
+ tri(c0,c1,r1);tri(c0,r1,r0);tri(c2,c3,r0);tri(c2,r0,r1);tri(c1,c2,r1);tri(c3,c0,r0);
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.computeVertexNormals();
+ {const n=g.attributes.normal,p=g.attributes.position;for(let i=0;i<n.count;i+=3){const mx=(p.getX(i)+p.getX(i+1)+p.getX(i+2))/3-cx,mz=(p.getZ(i)+p.getZ(i+1)+p.getZ(i+2))/3-cz;if(n.getX(i)*mx+n.getZ(i)*mz<0){for(let k=0;k<3;k++)n.setXYZ(i+k,-n.getX(i+k),-n.getY(i+k),-n.getZ(i+k));const ax=p.getX(i+1),ay=p.getY(i+1),az=p.getZ(i+1);p.setXYZ(i+1,p.getX(i+2),p.getY(i+2),p.getZ(i+2));p.setXYZ(i+2,ax,ay,az);}}}
+ return {geo:g};}
+let TILE=null;function tileTexture(){if(TILE||typeof document==='undefined')return TILE;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#b8b8b8';x.fillRect(0,0,128,128);
+ for(let y=0;y<128;y+=8){x.fillStyle='rgba(0,0,0,.28)';x.fillRect(0,y+6,128,2);for(let k=0;k<128;k+=10){x.fillStyle=`rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},0,.07)`;x.fillRect(k+(y/8%2)*5,y,9,6);x.fillStyle='rgba(0,0,0,.12)';x.fillRect(k+(y/8%2)*5,y,1,6);}}
+ TILE=new T.CanvasTexture(c);TILE.wrapS=TILE.wrapT=T.RepeatWrapping;TILE.colorSpace=T.SRGBColorSpace;TILE.anisotropy=4;return TILE;}
+const TILE_COLS=['#a24f36','#9a4a33','#b05b3d','#8f4632','#a8613f','#7f4636'];
+function tileRoofMat(cx,cz){const k=Math.abs(Math.sin(cx*7.13+cz*3.71)*15731.7)%1,col=TILE_COLS[Math.floor(k*TILE_COLS.length)];return mat('tile'+col,()=>new T.MeshStandardMaterial({color:col,map:tileTexture(),roughness:.85}));}
 function mat(key,make){if(!MATS.has(key))MATS.set(key,make());return MATS.get(key);}
 const STYLE={apt:{walls:['#ece5d3','#e8d3b4','#dccabb','#eeeae1','#e5cba9','#d9d2c4'],win:'#3f4c58',roofs:['#76797b','#9c5c45','#8b8d8c']},
  ind:{walls:['#cfd2d3','#bcc6cc','#d7d5cd','#aeb8bc','#dad6c8'],win:'#64788a',roofs:['#a3a8aa','#babcb8','#8e9597']},
@@ -84,13 +105,7 @@ function weatherWall(m){m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.r
    dry-green fields further out (instead of the bare tan "desert") ---- */
 /* v0.37 Güvercinlik zemini: gerçek uydu görüntüsü (Sentinel-2 cloudless 2023, EOX — CC BY-NC-SA 4.0; Copernicus Sentinel
    verisi). Görüntü ±4 km'yi kaplar; zemin düzlemi ±3 km olduğundan ortası kırpılır. Yüklenene kadar eski çizim gösterilir. */
-/* v0.43 uydu görüntüsü keskinleştirme (unsharp mask, bir kez yüklemede): 4–6 m piksellerin tarla ve yol sınırları belirginleşir */
-function sharpenCanvas(ctx,N,amount=.9,r=2){try{const im=ctx.getImageData(0,0,N,N),d=im.data,L=N*N,tmp=new Uint8Array(L),blur=new Uint8Array(L),w=2*r+1; /* kanal kanal, 8 bit ara bellek: büyük dokuda bellek ≈2×N² bayt */
- for(let c=0;c<3;c++){
-  for(let y=0;y<N;y++){let s0=0;const row=y*N;for(let k=-r;k<=r;k++)s0+=d[(row+Math.min(N-1,Math.max(0,k)))*4+c];for(let x=0;x<N;x++){tmp[row+x]=s0/w;s0+=d[(row+Math.min(N-1,x+r+1))*4+c]-d[(row+Math.max(0,x-r))*4+c];}}
-  for(let x=0;x<N;x++){let s0=0;for(let k=-r;k<=r;k++)s0+=tmp[Math.min(N-1,Math.max(0,k))*N+x];for(let y=0;y<N;y++){blur[y*N+x]=s0/w;s0+=tmp[Math.min(N-1,y+r+1)*N+x]-tmp[Math.max(0,y-r)*N+x];}}
-  for(let i=0;i<L;i++){const q=i*4+c,v=d[q]+amount*(d[q]-blur[i]);d[q]=v<0?0:v>255?255:v;}}
- ctx.putImageData(im,0,0);}catch(e){}}
+/* v0.43.1 uydu görüntüsü keskinleştirmesi önceden yapılır: claude/tools/bake_sharpen.py (*-s2k.jpg) */
 export function airfieldGroundTexture(){const t=airfieldGroundTextureDrawn();if(!t||typeof Image==='undefined')return t;const img=new Image();img.decoding='async';
  img.onload=()=>{const c=t.image,ctx=c.getContext('2d');if(!ctx)return;const s=img.width*(6000/8000),o=(img.width-s)/2;ctx.filter='saturate(0.8) hue-rotate(6deg) contrast(1.06) brightness(1.04)';ctx.drawImage(img,o,o,s,s,0,0,c.width,c.height);ctx.filter='none'; /* v0.43.1 keskinleştirme önceden yapıldı (claude/tools/bake_sharpen.py) */ /* v0.38.3 satellite colours toned to the eye: less orange, a little more contrast */t.needsUpdate=true;};img.src='assets/terrain/guvercinlik-s2k.jpg';return t;}
 /* v0.39 gerçek arazi / tepeler zemini: Sentinel-2 cloudless 2023 (EOX, CC BY-NC-SA 4.0), ±4.5 km, zemin düzlemiyle aynı kapsam */
