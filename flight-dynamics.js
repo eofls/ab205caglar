@@ -93,7 +93,7 @@ function canopyAgl(s,agl,area){let top=-Infinity;for(const [dx,dz] of [[0,0],[9,
 /* v0.51 deneyimli / yetkin pilot: yükselen arazide fleyır ve son kollektif öndeki zemine göre (≈1,5 s ileri bakış) */
 /* v0.51 deneyimli pilot: sahaya yaklaşırken fleyır yüksekliği iniş yerinin zeminine göre (sırt / vadi üstünde erken veya geç fleyır yok);
    altında zemin 15 m’den yakınsa (veya öndeki zemin yükseliyorsa) yerel yükseklik esas */
-function siteAglCtl(s,agl,area,S){const site=s.pilotSite,hs=s.y-terrainHeight(site.x,site.z,area),la=lookAheadAgl(s,agl,area,{});if(agl<(S.near??15)||la<(S.near??15))return Math.min(agl,la,Math.max(0,hs));return Math.max(0,Math.min(hs,agl+ (S.up??25)));}
+function siteAglCtl(s,agl,area,S){const site=s.pilotSite,hs=s.y-terrainHeight(site.x,site.z,area),la=lookAheadAgl(s,agl,area,{});if(agl<(S.near??15)||la<(S.near??15))return Math.min(agl,la);return hs>la?Math.min(hs,la+(S.up??25)):la;} /* saha aşağıdaysa (sırt üstü) erken fleyır yok; saha yukarıdaysa yerel / öndeki zemin esas */
 function lookAheadAgl(s,agl,area,LA){const gs=Math.hypot(s.vx,s.vz);if(gs<5)return agl;let m=agl;for(const t of [.5,1,1.5]){const g=terrainHeight(s.x+s.vx*t*(LA.k??1),s.z+s.vz*t*(LA.k??1),area);m=Math.min(m,s.y-g);}return Math.max(0,m);}
 function derivative(s,p,choices){
  const agl=Math.max(0,s.y-terrainHeight(s.x,s.z,p.flightArea)),air=localAir(s,p,agl),airX=s.vx-air.x,airZ=s.vz-air.z,tas=Math.hypot(airX,airZ),ias=tas/KT/p.tasFactor,wa=s.w+air.up;
