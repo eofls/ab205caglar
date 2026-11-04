@@ -65,3 +65,8 @@ test('v0.47 orman helikopterle birlikte akar: yeni konumda hücre kurulur, uzakt
  assert.ok(near(0,0)>0);for(let i=0;i<500;i++)g.userData.updateLOD({x:4500,y:900,z:-3500});
  assert.ok(near(4500,-3500)>0,'yeni konumda ağaç hücresi yok');assert.equal(near(0,0),0,'uzaktaki hücreler bırakılmadı');
 });
+test('v0.47 ağaçsız sahada sahne güncellemesi hata vermez (orman / uzak ağaç araması null güvenli)',()=>{
+ const sv=readFileSync(new URL('../../scene-view.js',import.meta.url),'utf8');
+ assert.ok(/root\.userData\.forest\?\.userData\?\.updateLOD\?\./.test(sv)&&/root\.userData\.far\?\.userData\?\.update\?\./.test(sv),'null güvenli değil');
+ assert.ok(!/find\(c=>c\.name==='Orman'\)\|\|0/.test(sv),'0 ile işaretleme hata verir');
+});
