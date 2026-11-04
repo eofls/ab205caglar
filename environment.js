@@ -321,7 +321,7 @@ const TREE_PAL=[[1,1,1],[1,1,1],[.85,.92,1.15],[1.25,1.12,.85],[1.15,.98,.8],[.9
 function placeShade(m,sun){const o=new T.Object3D(),up=new T.Vector3(0,1,0),nrm=new T.Vector3(),q=new T.Quaternion(),el=Math.max(.12,Math.asin(Math.min(1,sun.y))),hx=-sun.x,hz=-sun.z,hl=Math.hypot(hx,hz)||1,dx=hx/hl,dz=hz/hl,yaw=Math.atan2(dx,dz),k=1/Math.tan(el);
  m.userData.trees.forEach((t,i)=>{const L=Math.min(t.h*k,t.h*4),len=Math.max(2*t.r,L*.85+t.r),off=Math.max(0,L*.5-t.r*.2);nrm.set(t.nx,1,t.nz).normalize();q.setFromUnitVectors(up,nrm);o.quaternion.copy(q).multiply(new T.Quaternion().setFromAxisAngle(up,yaw));o.position.set(t.x+dx*off,t.y+.12+off*(-t.nx*dx-t.nz*dz),t.z+dz*off);o.scale.set(t.r*2.1,1,len);o.updateMatrix();m.setMatrixAt(i,o.matrix);});
  m.instanceMatrix.needsUpdate=true;m.computeBoundingSphere();}
-export function createForest(objects,{time,area}={time:{value:0}}){
+export function createForest(objects,{time,area,provider=null,buildR=0}={time:{value:0}}){
  const group=new T.Group();group.name='Orman';
  const many=objects.length>(LITE?3000:9000),tiersN=many?2:3; // v0.33: large forests use two crown tiers
  const sway=(mat,amp)=>{mat.onBeforeCompile=sh=>{sh.uniforms.uTime=time;sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uTime;').replace('#include <begin_vertex>',`#include <begin_vertex>
@@ -341,11 +341,11 @@ export function createForest(objects,{time,area}={time:{value:0}}){
  const o=new T.Object3D(),col=new T.Color();
  const shadeTex=treeShadeTex(),shadeMat=shadeTex?new T.MeshBasicMaterial({map:shadeTex,color:'#000000',transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,fog:true}):null,shadeGeo=new T.PlaneGeometry(1,1).rotateX(-Math.PI/2);
  /* hücrelere dağıt */
- const C=LITE?300:250,cells=new Map();
- objects.forEach(t=>{const k=Math.floor(t.x/C)+':'+Math.floor(t.z/C);let c=cells.get(k);if(!c){c={ix:Math.floor(t.x/C),iz:Math.floor(t.z/C),conifer:[],broad:[],poplar:[],all:[],y:0};cells.set(k,c);}c.all.push(t);c.y+=t.y;
-  (t.treeKind==='conifer'?c.conifer:t.treeKind==='poplar'?c.poplar:t.treeKind==='broad'?c.broad:(hash(t.x*.13,t.z*.17)>.38)?c.conifer:c.broad).push(t);});
- const list=[];
- for(const c of cells.values()){
+ const C=LITE?300:250,built=new Map(); /* anahtar → hücre kaydı ya da null (boş hücre) */
+ const bucket=trees=>{const cells=new Map();trees.forEach(t=>{const k=Math.floor(t.x/C)+':'+Math.floor(t.z/C);let c=cells.get(k);if(!c){c={key:k,ix:Math.floor(t.x/C),iz:Math.floor(t.z/C),conifer:[],broad:[],poplar:[],all:[],y:0};cells.set(k,c);}c.all.push(t);c.y+=t.y;
+  (t.treeKind==='conifer'?c.conifer:t.treeKind==='poplar'?c.poplar:t.treeKind==='broad'?c.broad:(hash(t.x*.13,t.z*.17)>.38)?c.conifer:c.broad).push(t);});return cells;};
+ const list=[];let sunNow=SUN0;
+ const buildCell=c=>{
   const cg=new T.Group();cg.name='Orman hücresi';const cx=(c.ix+.5)*C,cz=(c.iz+.5)*C,cy=c.y/c.all.length;
   const trunks=new T.InstancedMesh(trunkGeo,trunkMat,c.all.length);
   c.all.forEach((t,i)=>{o.position.set(t.x,t.y,t.z);o.rotation.set(0,0,0);o.scale.set(1,t.height*.55,1);o.updateMatrix();trunks.setMatrixAt(i,o.matrix);});
@@ -365,17 +365,29 @@ export function createForest(objects,{time,area}={time:{value:0}}){
   /* aynı örnek matrisleri ve renkleri paylaşan sade kopyalar (orta / uzak) */
   const lod=(src,geos)=>geos.map((g,i)=>{if(i===0)return src;const m=new T.InstancedMesh(g,src.material,src.count||1);m.instanceMatrix=src.instanceMatrix;m.instanceColor=src.instanceColor;m.count=src.count;m.boundingSphere=src.boundingSphere;m.visible=false;return m;});
   const T3=lod(tiers,coneG),B3=lod(balls,ballG);
+  /* v0.47 uzak seviyede yuvarlak taçlı ağaç başına tek yumru (üç yumru yerine): uzakta fark görünmez, köşe sayısı üçte bir */
+  {const nb=c.broad.length+c.poplar.length;if(nb){const far=new T.InstancedMesh(ballG[2],crownB,nb);let n=0;for(const t of c.broad){const tint=hash(t.z,t.x),pv=TREE_PAL[Math.floor(hash(t.x*2.3,t.z*4.1)*TREE_PAL.length)];o.position.set(t.x,t.y+t.height*.64,t.z);o.rotation.set(0,tint*5,0);o.scale.set(t.radius*1.12,t.height*.36,t.radius*1.12);o.updateMatrix();far.setMatrixAt(n,o.matrix);col.setRGB((.09+tint*.07)*pv[0],(.16+tint*.07)*pv[1],(.05+tint*.04)*pv[2]);far.setColorAt(n++,col);}
+   for(const t of c.poplar){const tint=hash(t.z,t.x),pv=TREE_PAL[Math.floor(hash(t.x*3.1,t.z*1.7)*TREE_PAL.length)];o.position.set(t.x,t.y+t.height*.6,t.z);o.rotation.set(0,tint*4,0);o.scale.set(t.radius,t.height*.42,t.radius);o.updateMatrix();far.setMatrixAt(n,o.matrix);col.setRGB((.10+tint*.05)*pv[0],(.19+tint*.05)*pv[1],(.06+tint*.03)*pv[2]);far.setColorAt(n++,col);}
+   far.computeBoundingSphere();far.visible=false;B3[2]=far;}}
   for(const m of [trunks,...T3,...B3]){m.receiveShadow=true;m.castShadow=false;if(m.instanceColor)m.instanceColor.needsUpdate=true;cg.add(m);}
-  if(shade){shade.castShadow=shade.receiveShadow=false;cg.add(shade);}
-  list.push({cx,cz,cy,trunks,T3,B3,shade,level:-1});group.add(cg);}
+  if(shade){shade.castShadow=shade.receiveShadow=false;cg.add(shade);if(sunNow!==SUN0)placeShade(shade,sunNow);}
+  const rec={key:c.key,cx,cz,cy,cg,trunks,T3,B3,shade,level:-1};list.push(rec);group.add(cg);built.set(c.key,rec);return rec;};
+ for(const c of bucket(objects).values())buildCell(c);
+ /* v0.47 orman helikopterle birlikte: kameranın buildR çevresindeki eksik hücreler kare başına ≈5 ms'lik dilimlerle kurulur, uzaklaşan hücreler bırakılır */
+ const dropCell=rec=>{rec.cg.removeFromParent();for(const m of rec.cg.children)if(m.isInstancedMesh)m.dispose();const i=list.indexOf(rec);if(i>=0)list.splice(i,1);built.delete(rec.key);};
+ const stream=cam=>{if(!provider||!buildR)return false;const t0=performance.now(),i0=Math.floor((cam.x-buildR)/C),i1=Math.floor((cam.x+buildR)/C),j0=Math.floor((cam.z-buildR)/C),j1=Math.floor((cam.z+buildR)/C);let changed=false;
+  const want=[];for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i+':'+j;if(built.has(k))continue;const dx=Math.max(0,Math.abs(cam.x-(i+.5)*C)-C/2),dz=Math.max(0,Math.abs(cam.z-(j+.5)*C)-C/2);if(Math.hypot(dx,dz)<buildR)want.push([Math.hypot(dx,dz),i,j,k]);}
+  want.sort((a,b)=>a[0]-b[0]);for(const [,i,j,k] of want){if(performance.now()-t0>5)break;const trees=provider(i*C,(i+1)*C,j*C,(j+1)*C).filter(t=>Math.floor(t.x/C)===i&&Math.floor(t.z/C)===j);if(!trees.length){built.set(k,null);continue;}const c=bucket(trees).get(k);if(c){buildCell(c);changed=true;}}
+  for(const [k,rec] of [...built]){if(!rec){const [i,j]=k.split(':').map(Number);if(Math.hypot((i+.5)*C-cam.x,(j+.5)*C-cam.z)>buildR+700)built.delete(k);continue;}if(Math.hypot(rec.cx-cam.x,rec.cz-cam.z)>buildR+700){dropCell(rec);changed=true;}}
+  return changed;};
  /* kamera konumuna göre ayrıntı seviyesi (her karede çağrılır; 15 m altı hareketlerde atlanır) */
  const near=LITE?140:160,mid=LITE?480:560,last={x:1e9,y:0,z:1e9};
- group.userData.updateLOD=cam=>{if(Math.abs(cam.x-last.x)+Math.abs(cam.z-last.z)+Math.abs(cam.y-last.y)<15)return;last.x=cam.x;last.y=cam.y;last.z=cam.z;
+ group.userData.updateLOD=cam=>{const ch=stream(cam);if(!ch&&Math.abs(cam.x-last.x)+Math.abs(cam.z-last.z)+Math.abs(cam.y-last.y)<15)return;last.x=cam.x;last.y=cam.y;last.z=cam.z;
   for(const c of list){const dx=Math.max(0,Math.abs(cam.x-c.cx)-C/2),dz=Math.max(0,Math.abs(cam.z-c.cz)-C/2),d=Math.hypot(dx,dz,Math.max(0,cam.y-c.cy-30)*.5);const L=d<near?0:d<mid?1:2;if(L===c.level)continue;c.level=L;
    c.T3.forEach((m,i)=>m.visible=i===L);c.B3.forEach((m,i)=>m.visible=i===L);c.trunks.visible=L<2;if(c.shade)c.shade.visible=L<2;
    }};
- group.userData.lodCells=list.length;
- group.userData.setSun=(sun,strength)=>{if(!shadeMat)return;shadeMat.opacity=strength;shadeMat.visible=strength>.02;const k=sun.x.toFixed(2)+sun.y.toFixed(2)+sun.z.toFixed(2);if(group.userData.sunKey===k)return;group.userData.sunKey=k;for(const c of list)if(c.shade)placeShade(c.shade,sun);};
+ Object.defineProperty(group.userData,'lodCells',{get:()=>list.length,enumerable:true});
+ group.userData.setSun=(sun,strength)=>{if(!shadeMat)return;shadeMat.opacity=strength;shadeMat.visible=strength>.02;const k=sun.x.toFixed(2)+sun.y.toFixed(2)+sun.z.toFixed(2);if(group.userData.sunKey===k)return;group.userData.sunKey=k;sunNow=sun.clone();for(const c of list)if(c.shade)placeShade(c.shade,sun);};
  return group;
 }
 // ---------- Draw-call reduction: merge static meshes sharing a material colour ----------

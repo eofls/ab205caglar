@@ -58,3 +58,10 @@ test('v0.46 gece: pencere ışıkları ve sokak lambaları gece açılır, günd
  assert.ok(/setNightLights\(weather\.night\?1:/.test(sv),'gece ışığı scene-view içinde ayarlanmıyor');
  assert.ok(/environmentIntensity=weather\.night\?\.0\d+/.test(sv),'ortam haritası gece kısılmıyor');
 });
+test('v0.47 orman helikopterle birlikte akar: yeni konumda hücre kurulur, uzaktaki bırakılır',()=>{
+ const area='mountain',prov=(x0,x1,z0,z1)=>treesInBox(x0,x1,z0,z1,area).map(t=>({...t,treeKind:t.kind,kind:'tree',y:terrainHeight(t.x,t.z,area)}));
+ const g=createForest(prov(-1500,1500,-1500,1500),{time:{value:0},area,provider:prov,buildR:1500});
+ const near=(x,z)=>g.children.filter(c=>{const m=c.children[0];return m.boundingSphere&&Math.hypot(m.boundingSphere.center.x-x,m.boundingSphere.center.z-z)<500;}).length;
+ assert.ok(near(0,0)>0);for(let i=0;i<500;i++)g.userData.updateLOD({x:4500,y:900,z:-3500});
+ assert.ok(near(4500,-3500)>0,'yeni konumda ağaç hücresi yok');assert.equal(near(0,0),0,'uzaktaki hücreler bırakılmadı');
+});
