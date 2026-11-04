@@ -276,7 +276,7 @@ function coniferGeo(low,seg,rows){const g=new T.ConeGeometry(1,1,seg??(low?(LITE
   const sh=.6+.45*y;col.push(sh,sh,sh*.96);}
  g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g;}
 /* v0.43.1 orman: hücrelere bölünmüş, mesafeye göre ayrıntı seviyeli (LOD) çizim.
-   Her ~400 m hücrenin kendi örnek (instance) kümesi var; kameraya yakın hücrede ayrıntılı yumrulu taç ve gölge,
+   Her ~250 m hücrenin kendi örnek (instance) kümesi var; kameraya yakın hücrede ayrıntılı yumrulu taç ve gölge,
    orta mesafede sade taç, uzakta gövdesiz en sade taç çizilir. Görüş dışındaki hücreler hiç çizilmez (frustum).
    Aynı ağaçlar, aynı yerler; yalnız çizim maliyeti düşer (yazılım WebGL'de ≈3 kat hızlı). */
 /* uzak hücreler için en sade taç (36 / 12 üçgen) */
@@ -301,7 +301,7 @@ export function createForest(objects,{time}={time:{value:0}}){
  const coneG=[LITE?coniferGeo(0,8,3):coniferGeo(false),LITE?coniferGeo(0,6,2):coniferGeo(true),coniferFar()],ballG=[lumpyCrown(0,LITE?1:2),lumpyCrown(0,LITE?0:1),lumpyFar()];
  const o=new T.Object3D(),col=new T.Color();
  /* hücrelere dağıt */
- const C=LITE?450:400,cells=new Map();
+ const C=LITE?300:250,cells=new Map();
  objects.forEach(t=>{const k=Math.floor(t.x/C)+':'+Math.floor(t.z/C);let c=cells.get(k);if(!c){c={ix:Math.floor(t.x/C),iz:Math.floor(t.z/C),conifer:[],broad:[],poplar:[],all:[],y:0};cells.set(k,c);}c.all.push(t);c.y+=t.y;
   (t.treeKind==='conifer'?c.conifer:t.treeKind==='poplar'?c.poplar:t.treeKind==='broad'?c.broad:(hash(t.x*.13,t.z*.17)>.38)?c.conifer:c.broad).push(t);});
  const list=[];
@@ -325,7 +325,7 @@ export function createForest(objects,{time}={time:{value:0}}){
   for(const m of [trunks,...T3,...B3]){m.receiveShadow=true;m.castShadow=false;if(m.instanceColor)m.instanceColor.needsUpdate=true;cg.add(m);}
   list.push({cx,cz,cy,trunks,T3,B3,level:-1});group.add(cg);}
  /* kamera konumuna göre ayrıntı seviyesi (her karede çağrılır; 15 m altı hareketlerde atlanır) */
- const near=LITE?320:420,mid=LITE?900:1300,last={x:1e9,y:0,z:1e9};
+ const near=LITE?180:220,mid=LITE?600:700,last={x:1e9,y:0,z:1e9};
  group.userData.updateLOD=cam=>{if(Math.abs(cam.x-last.x)+Math.abs(cam.z-last.z)+Math.abs(cam.y-last.y)<15)return;last.x=cam.x;last.y=cam.y;last.z=cam.z;
   for(const c of list){const dx=Math.max(0,Math.abs(cam.x-c.cx)-C/2),dz=Math.max(0,Math.abs(cam.z-c.cz)-C/2),d=Math.hypot(dx,dz,Math.max(0,cam.y-c.cy-30)*.5);const L=d<near?0:d<mid?1:2;if(L===c.level)continue;c.level=L;
    c.T3.forEach((m,i)=>m.visible=i===L);c.B3.forEach((m,i)=>m.visible=i===L);c.trunks.visible=L<2;
