@@ -35,7 +35,7 @@ export const SCENARIOS = [
     context:'Düşük süratli uçuş; otorotatif akışı geliştirmek için gereken zaman ve irtifa önemli.',
     aero:'Düşük ileri süratte alçalışa geçiş ve hava akımının kurulması önem kazanır. Yükseklik–sürat bileşimi, rotor enerjisini yönetme payını sınırlayabilir.',
     outcome:'Bu konumda kontrolün korunması bile hasarsız inişi garanti etmez. Kaçınılacak bölge, kesin kaza sonucu anlamına da gelmez.'},
-  {id:'safe',name:'Güvenli saha',subtitle:'S01 · Ayrıntılı motor arızası · 400 ft / 60 kt',zone:'safe',zoneLabel:'Güvenli',height:400,ias:60,duration:60,decisions:SAFE_DECISIONS,lesson:'S01',
+  {id:'safe',name:'Güvenli saha',subtitle:'S01 · Ayrıntılı motor arızası · 400 ft / 60 kt',zone:'safe',zoneLabel:'Güvenli',height:400,ias:60,duration:60,decisions:SAFE_DECISIONS,lesson:'S01',flareTune:{prog:{amin:1,cap:5,hfull:5},ogain:.04},
     context:'Diyagramda güvenli olarak işaretlenen bölümden örnek başlangıç; saha ve hava şartları yine belirleyici.',
     aero:'İrtifa ve ileri sürat, otorotatif alçalışın kurulmasına daha fazla imkân verebilir. Enerji yönetimi, saha seçimi ve doğru teknik hâlâ gereklidir.',
     outcome:'Güvenli bölge ifadesi, test koşullarına bağlı imkânı tarif eder. Engel, zemin, hava ve uygulama hataları uygun başlangıç payını ortadan kaldırabilir.'},
