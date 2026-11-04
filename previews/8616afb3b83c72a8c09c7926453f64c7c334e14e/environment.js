@@ -65,9 +65,16 @@ export function createClouds(){
   const a=r()*Math.PI*2,d=500+r()*3800;s.position.set(Math.cos(a)*d,430+r()*260,Math.sin(a)*d);const k=260+r()*420;s.scale.set(k,k*.62,1);m.map=cloudTexture(i%4);group.add(s);}
  return group;
 }
+/* v0.48 kapalı havada stratus: geniş, yassı, tabanı koyu bulut tabakası (ayrı kümülüs topları değil) */
+let STRATUS=null;function stratusTexture(){if(STRATUS||typeof document==='undefined')return STRATUS;const W=256,H=96,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');let sd=53;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#d9dee3');g.addColorStop(.6,'#b7bfc8');g.addColorStop(1,'#98a2ad');x.fillStyle=g;x.fillRect(0,0,W,H);
+ for(let i=0;i<220;i++){const px=r()*W,py=r()*H,rad=8+r()*26;const q=x.createRadialGradient(px,py,0,px,py,rad);{const v=r()<.5?255:110;q.addColorStop(0,`rgba(${v},${v},${v+6},.07)`);}q.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=q;x.fillRect(px-rad,py-rad,rad*2,rad*2);}
+ x.globalCompositeOperation='destination-in';const m=x.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,W*.5);m.addColorStop(0,'rgba(0,0,0,.95)');m.addColorStop(.45,'rgba(0,0,0,.7)');m.addColorStop(1,'rgba(0,0,0,0)');x.save();x.scale(1,H/W*2);x.fillStyle=m;x.fillRect(0,0,W,W);x.restore();
+ STRATUS=new T.CanvasTexture(c);STRATUS.colorSpace=T.SRGBColorSpace;return STRATUS;}
 export function updateClouds(group,weather,cover){
- const n=cover==='clear'?0:cover==='scattered'?16:46;
- group.children.forEach((s,i)=>{if(s.userData.far){s.visible=cover!=='overcast';s.material.color.set(weather.cloudColor);s.material.opacity=cover==='clear'?.55:.7;return;}s.visible=i<n;s.material.color.set(weather.cloudColor);s.material.opacity=cover==='overcast'?.95:.8;});
+ const n=cover==='clear'?0:cover==='scattered'?16:46,ov=cover==='overcast';
+ group.children.forEach((s,i)=>{if(s.userData.far){s.visible=!ov;s.material.color.set(weather.cloudColor);s.material.opacity=cover==='clear'?.55:.7;return;}s.visible=i<n;s.material.color.set(weather.cloudColor);s.material.opacity=ov?.7:.85;
+  s.userData.cu??=s.material.map;s.userData.sc??=s.scale.clone();const st=ov&&typeof document!=='undefined';s.material.map=st?stratusTexture():s.userData.cu;if(st)s.scale.set(s.userData.sc.x*3,s.userData.sc.y*.7,1);else s.scale.copy(s.userData.sc);});
 }
 /* v0.43 açık havada da ufukta birkaç uzak kümülüs (8–12 km, gölgesiz): gökyüzü boş ve yapay görünmez */
 export function addFarClouds(group){if(typeof document==='undefined'||group.userData.farAdded)return;group.userData.farAdded=true;const tex=cloudTexture(1);let seed=29;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
