@@ -5,7 +5,7 @@ import {obstacleHeight,obstacleTopNear} from './terrain-data.js';
 import {obstacleAhead} from './landing-zone.js';
 import {isProgramFlight,programState,programEnd} from './program-flight.js';
 import {getScenario} from './catalog.js';
-import {chooseLandingZone} from './landing-zone.js';
+import {chooseLandingZone,pathBlock} from './landing-zone.js';
 import {airframeClearance,CONTACT_POINTS,worldPoint} from './airframe-contact.js';
 const WIRE_POINTS=CONTACT_POINTS.filter(q=>q.part==='mainRotor'||q.part==='skidLeft'||q.part==='skidRight'||q.part==='fin');
 import {maneuverState} from './maneuver-state.js';
@@ -38,11 +38,18 @@ function setup(s,c){const density=atmosphere(c).density,rawHeading=c.headingDeg*
  p.model=c.physicsModel==='blade'?'blade':'energy';
  // Crew profile → hazır akış pilot model (v0.31): recognition/reaction time after the failure and flare/cushion timing.
  // Baseline (yetkin/deneyimli) keeps the calibrated laws; 'gelişmekte' reacts later and flares/pulls later.
- {const pd=c.pilot==='developing'?1.4:0,cd=c.copilot==='developing'?.4:0;const X=globalThis.EXP??{},base=X.crewCushion??.82;p.crew={delay:pd+cd,flareScale:c.pilot==='developing'?.9:1,cushionScale:c.pilot==='developing'?base*1.25:c.pilot==='experienced'?base*(X.expCushion??.95):base};}
+ {const pd=c.pilot==='developing'?1.4:0,cd=c.copilot==='developing'?.4:0;const X=globalThis.EXP??{},base=X.crewCushion??.82;p.crew={delay:pd+cd,flareScale:c.pilot==='developing'?.9:1,cushionScale:c.pilot==='developing'?base*1.25:c.pilot==='experienced'?base*(X.expCushion??.95):base};
+  /* v0.51 pilot seviyesi yalnız tanıma süresi değil: saha seçimi ve yeniden değerlendirme, süzülüş sürati ile erişim yönetimi,
+     engel karşısında enerji korunumu, son yaklaşmada enerji hattı kontrolü, yükselen arazide ileri bakış.
+     Deneyimli: hepsi, sık yeniden değerlendirme. Yetkin: temel olanlar, daha seyrek. Gelişmekte: ilk saha seçiminde kalır,
+     süzülüş sürati sabit, engelde saykılıkla tırmanış eğilimi (tipik hata). */
+  if(c.pilot==='experienced')Object.assign(p.crew,{reeval:1.5,measReach:1,glideCtl:{ratio:1},smartAvoid:{},wireAppr:1,lookAhead:{},siteAgl:{},clearing:1});
+  else if(c.pilot==='proficient')Object.assign(p.crew,{reeval:3,measReach:1,glideCtl:{ratio:1},smartAvoid:{},wireAppr:1,clearing:1});}
  const tas=p.ias*KT*p.tasFactor,sink=sinkReference(p.ias,p.rpm).sinkMps*Math.sqrt(p.mass/PARAMETERS.massKg)*p.tasFactor; p.trimPower=Math.max(0,p.mass*G*sink-.5*density*PARAMETERS.dragAreaM2*tas**3)*(.4+.6*groundEffect(p.height,tas))/.694*(.4+.294*Math.pow(1/.7,PARAMETERS.profilePowerCollectiveExponent)+.1*(.5*density*PARAMETERS.dragAreaM2*tas*tas/(p.mass*G))**2);
  if(p.model==='blade'){const tr=trimPitch({rho:density,omega:p.rpm*Math.PI/30,mass:p.mass,tas,dragAreaM2:PARAMETERS.dragAreaM2,agl:p.height});p.thetaTrim=Math.max(ROTOR.thetaMinRad+.015,tr.theta75);p.trimPower=tr.power;const au=autorotationPitch({rho:density,omega:p.rpm*Math.PI/30,mass:p.mass,dragAreaM2:PARAMETERS.dragAreaM2});
   // pilot laws were written around a .7 glide collective; this bias moves them to the blade model's glide pitch
   p.collectiveBias=0;p.autoPitch=au.theta75;}else p.collectiveBias=0;
+ p.flareTune=p.powerFraction>0?null:s?.flareTune??null; // v0.50: yalnızca tam güç kaybı (kısmi güçte mevcut ayar)
  return p;}
 const keys=['x','y','z','vx','vz','w','omega','engine','angle','heading','pitch','roll','collective','cyclicX','cyclicZ','yawRate','pedal','inflowCapture'];
 function initial(p){const v=p.ias*KT*p.tasFactor,vx=Math.sin(p.heading)*v+p.windX,vz=-Math.cos(p.heading)*v+p.windZ,ax=vx-p.windX,az=vz-p.windZ,tas=Math.hypot(ax,az),drag=.5*p.density*PARAMETERS.dragAreaM2*tas;
@@ -83,10 +90,15 @@ function poweredTarget(pp,x,z){const d=(x-pp.x0)*pp.ux+(z-pp.z0)*pp.uz,f=Math.ma
 function poweredClimb(s,p){const pp=POWERED_PATHS.get(p);if(!pp){const look=2.5,ahead=startReference(s.x+(s.vx??0)*look,s.z+(s.vz??0)*look,p.flightArea),now=startReference(s.x,s.z,p.flightArea),target=(ahead>now+3?ahead:now)+p.height,wCmd=Math.max(-6,Math.min(6,(s.y-target)*.9));return (wCmd-s.w)*2.5;}
  const target=poweredTarget(pp,s.x,s.z),wCmd=Math.max(-8,Math.min(10,(s.y-target)*.9));return (wCmd-s.w)*2.5;} /* powered: up to about 1600 fpm climb, 2000 fpm descent */
 function canopyAgl(s,agl,area){let top=-Infinity;for(const [dx,dz] of [[0,0],[9,0],[-9,0],[0,9],[0,-9]])top=Math.max(top,obstacleHeight(s.x+dx,s.z+dz,area)-terrainHeight(s.x+dx,s.z+dz,area));return Math.max(0,agl-Math.max(0,top));}
+/* v0.51 deneyimli / yetkin pilot: yükselen arazide fleyır ve son kollektif öndeki zemine göre (≈1,5 s ileri bakış) */
+/* v0.51 deneyimli pilot: sahaya yaklaşırken fleyır yüksekliği iniş yerinin zeminine göre (sırt / vadi üstünde erken veya geç fleyır yok);
+   altında zemin 15 m’den yakınsa (veya öndeki zemin yükseliyorsa) yerel yükseklik esas */
+function siteAglCtl(s,agl,area,S){const site=s.pilotSite,hs=s.y-terrainHeight(site.x,site.z,area),la=lookAheadAgl(s,agl,area,{});if(agl<(S.near??15)||la<(S.near??15))return Math.min(agl,la);return hs>la?Math.min(hs,la+(S.up??25)):la;} /* saha aşağıdaysa (sırt üstü) erken fleyır yok; saha yukarıdaysa yerel / öndeki zemin esas */
+function lookAheadAgl(s,agl,area,LA){const gs=Math.hypot(s.vx,s.vz);if(gs<5)return agl;let m=agl;for(const t of [.5,1,1.5]){const g=terrainHeight(s.x+s.vx*t*(LA.k??1),s.z+s.vz*t*(LA.k??1),area);m=Math.min(m,s.y-g);}return Math.max(0,m);}
 function derivative(s,p,choices){
  const agl=Math.max(0,s.y-terrainHeight(s.x,s.z,p.flightArea)),air=localAir(s,p,agl),airX=s.vx-air.x,airZ=s.vz-air.z,tas=Math.hypot(airX,airZ),ias=tas/KT/p.tasFactor,wa=s.w+air.up;
  const rpm=s.omega*30/Math.PI,ref=sinkReference(ias,rpm),sink=ref.sinkMps*Math.sqrt(p.mass/PARAMETERS.massKg)*p.tasFactor,ge=groundEffect(agl,tas);
- const powered=s.t<4,aglCtl=p.flightArea==='forest'&&!globalThis.EXP?.noCanopy?canopyAgl(s,agl,p.flightArea):agl,controls=p.manual&&!powered?manualControls(s,p):controlTargets({...s,y:aglCtl,v:tas},p,choices,sink);
+ const powered=s.t<4,aglCtl0=p.flightArea==='forest'&&!globalThis.EXP?.noCanopy&&!((globalThis.EXP?.clearing??p.crew?.clearing)&&(s.pilotSite?.quality??0)>=.25&&Math.hypot(s.pilotSite.x-s.x,s.pilotSite.z-s.z)<(globalThis.EXP?.clearingR??140))?canopyAgl(s,agl,p.flightArea):agl, /* v0.51: açıklığa yaklaşırken fleyır / son kollektif zemine göre (ağaç tepesine göre değil) */LA=globalThis.EXP?.lookAhead??p.crew?.lookAhead,SAg=globalThis.EXP?.siteAgl??p.crew?.siteAgl,aglCtl=SAg&&!powered&&s.pilotSite&&Math.hypot(s.pilotSite.x-s.x,s.pilotSite.z-s.z)<(SAg.r??300)?siteAglCtl(s,aglCtl0,p.flightArea,SAg):LA&&!powered&&agl>3?lookAheadAgl(s,aglCtl0,p.flightArea,LA):aglCtl0,controls=p.manual&&!powered?manualControls(s,p):controlTargets({...s,y:aglCtl,yAbs:s.y,v:tas},p,choices,sink);
  const speed=controls.speedKt*KT*p.tasFactor,gx=controls.guidance?.groundX??(Math.sin(p.heading)*speed+p.windX),gz=controls.guidance?.groundZ??(-Math.cos(p.heading)*speed+p.windZ),holdTrack=p.trackHeading!==undefined&&!controls.guidance,crossGround=holdTrack?gx*Math.cos(p.trackHeading)+gz*Math.sin(p.trackHeading):0,desiredX=holdTrack?gx-crossGround*Math.cos(p.trackHeading):gx,desiredZ=holdTrack?gz-crossGround*Math.sin(p.trackHeading):gz; // airfield: cyclic into the wind holds the runway track at low airspeed
  const drag=.5*p.density*PARAMETERS.dragAreaM2*tas,dx=drag*airX,dz=drag*airZ;
  const limit=controls.flare?(p.bladeLaws?Math.min(controls.flareAccel??5,globalThis.EXP?.bladeAMax??2.7):(controls.flareAccel??5)):controls.guidance?.turning?(globalThis.EXP?.turnA??4):2;
@@ -140,6 +152,14 @@ function derivative(s,p,choices){
 }
 function advance(s,p,choices,dt){if(s.contact)return s;
  if(p.autonomous&&s.t>=4&&!s.pilotSite&&!globalThis.EXP?.noSite)s={...s,pilotSite:globalThis.EXP?.oldSite?choosePilotSite(s,p,(x,z)=>terrainHeight(x,z,p.flightArea),(x,z)=>surfaceProfile(x,z,p.flightArea),(x,z)=>obstacleHeight(x,z,p.flightArea)):chooseLandingZone(s,p)}; // v0.33: landing-zone assessment (slope, obstacles, surface, wires, approach)
+ /* v0.51 pilot seviyesi: deneyimli / yetkin pilot süzülüşte sahayı aralıkla yeniden değerlendirir (erişim, yaklaşma yolu,
+    engel); seçili saha erişilemiyorsa veya yolda engel varsa daha uygun sahaya geçer. Gelişmekte olan pilot ilk seçimde kalır. */
+ {const R=globalThis.EXP?.reeval??p.crew?.reeval;if(p.autonomous&&R&&s.pilotSite&&!s.flareActive&&!s.cushionActive&&s.t>=(s.siteCheckAt??4+R)-1e-9){const ar=p.flightArea,agl=s.y-terrainHeight(s.x,s.z,ar),minH=globalThis.EXP?.reevalMinM??p.crew?.reevalMinM??40;
+  if(agl>minH){const cur=s.pilotSite,d=Math.hypot(cur.x-s.x,cur.z-s.z),gs0=Math.hypot(s.vx,s.vz),meas0=s.w>4&&gs0>12?(gs0/s.w)*Math.max(0,agl-30)+4.2*gs0:null,gAhead=meas0!=null?terrainHeight(s.x+s.vx/gs0*meas0,s.z+s.vz/gs0*meas0,ar):0,meas=meas0!=null&&!globalThis.EXP?.measFlat?(gs0/s.w)*Math.max(0,Math.min(agl,s.y-gAhead)-30)+4.2*gs0:meas0,cand=chooseLandingZone(s,p,meas!=null&&(globalThis.EXP?.measReach??p.crew?.measReach)?{nat:meas}:{}),nat=cand.natural,tol=globalThis.EXP?.reevalTol??p.crew?.reevalTol??.22,o=obstacleAhead({...s},ar,{windX:p.windX,windZ:p.windZ,target:cur}),pb=pathBlock(s,cur.x,cur.z,ar);
+   const reach=d>=nat*(1-tol)-25&&d<=nat*(1+tol)+25,clear=!o&&pb<.3,moved=Math.hypot(cand.x-cur.x,cand.z-cur.z)>20;
+   const severe=!clear||d>nat*1.45+40||d<nat*.55-40; /* erişim payı çok aşıldı veya yol kapalı: daha düşük nitelikli saha da kabul */
+   if(moved&&((severe&&cand.quality>=.25)||(!reach&&cand.quality>=(cur.quality??0)-.1)))s={...s,pilotSite:{...cand,reselected:(cur.reselected??0)+1}};}
+  s={...s,siteCheckAt:s.t+R};}}
  // Resolve actuator/state-gate transitions at <=10 ms, including coarse prediction steps.
  if(dt>.010000001){let next=s;for(let left=dt;left>1e-10&&!next.contact;left-=.01)next=advance(next,p,choices,Math.min(.01,left));return next;}
 

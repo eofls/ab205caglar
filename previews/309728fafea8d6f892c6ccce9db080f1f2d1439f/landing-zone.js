@@ -11,16 +11,18 @@ export function slopeDeg(x,z,area,r=4){const h=(dx,dz)=>terrainHeight(x+dx,z+dz,
  return Math.atan(Math.hypot(gx,gz))*180/Math.PI;}
 export function wireHorizontalDistance(x,z,area){let best=Infinity;for(const line of POWER_LINES[area]??[])for(let i=1;i<line.length;i++){const [ax,az]=line[i-1],[bx,bz]=line[i],dx=bx-ax,dz=bz-az,t=clamp(((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz||1),0,1);best=Math.min(best,Math.hypot(x-ax-t*dx,z-az-t*dz));}return best;}
 // Obstacles under the final approach (from `bearing`, the direction of flight) compared with a shallow glide path.
-function approachBlock(x,z,area,bearing){if(bearing==null)return 0;const ux=Math.sin(bearing),uz=-Math.cos(bearing),g=Math.tan(LZ_LIMITS.glidePathDeg*Math.PI/180),floor=terrainHeight(x,z,area);let worst=0;
- for(let d=14;d<=230;d+=12){const px=x-ux*d,pz=z-uz*d,top=obstacleHeight(px,pz,area)-floor,allowed=d*g+1.5;if(top>allowed)worst=Math.max(worst,(top-allowed)/6);}return clamp(worst,0,1);} // flare run ≈150–200 m at low height: obstacles under it are not acceptable
+function approachBlock(x,z,area,bearing,wires=false){if(bearing==null)return 0;const ux=Math.sin(bearing),uz=-Math.cos(bearing),g=Math.tan(LZ_LIMITS.glidePathDeg*Math.PI/180),floor=terrainHeight(x,z,area);let worst=0;
+ for(let d=14;d<=230;d+=12){const px=x-ux*d,pz=z-uz*d,top=obstacleHeight(px,pz,area)-floor,allowed=d*g+1.5;if(top>allowed)worst=Math.max(worst,(top-allowed)/6);
+  if(wires&&!globalThis.EXP?.noOverrun&&d<=74){const qx=x+ux*d*.8,qz=z+uz*d*.8,ov=obstacleHeight(qx,qz,area)-floor;if(ov>2.5)worst=Math.max(worst,.25+Math.min(.4,(ov-2.5)/12)*(1-d/90));} /* v0.51 ileride taşma alanı (≈60 m) engelsiz */
+  if(wires){const wt=wireTopNear(px,pz,area);if(wt>-1e9){const over=wt-floor+5-Math.max(allowed,d*.3);if(over>0)worst=Math.max(worst,.4+over/10);}}} /* v0.51: son yaklaşmada enerji hattı (deneyimli / yetkin pilot) */return clamp(worst,0,1);} // flare run ≈150–200 m at low height: obstacles under it are not acceptable
 // When nothing usable is in reach the pilot still picks the least-bad spot: lowest and sparsest trees, gentlest slope
 // (a forced landing into trees is made into the lowest, thinnest canopy with the least speed). 0..1, higher is better.
 function leastBad(x,z,area,slope){const g=terrainHeight(x,z,area),canopy=Math.max(0,obstacleTopNear(x,z,area,8)-g),n=treesNear(x,z,14,area).filter(t=>Math.hypot(t.x-x,t.z-z)<10+t.radius).length;
  return ((1-Math.min(1,canopy/22))*.6+(1-Math.min(1,n/7))*.4)*(slope<=LZ_LIMITS.slopeDeg?1:slope<=15?.5:.15);}
-export function assessSpot(x,z,area,{bearing=null}={}){
+export function assessSpot(x,z,area,{bearing=null,wires=false}={}){
  const surf=surfaceProfile(x,z,area),reasons=[];
  if(surf.kind==='water')return {x,z,ok:false,score:0,fallback:0,slopeDeg:0,clearM:0,wireM:Infinity,surface:surf.kind,label:surf.label,reasons:['su']};
- const slope=slopeDeg(x,z,area),clear=obstacleClearance(x,z,area,40,1.5),wire=wireHorizontalDistance(x,z,area),block=approachBlock(x,z,area,bearing);
+ const slope=slopeDeg(x,z,area),clear=obstacleClearance(x,z,area,40,1.5),wire=wireHorizontalDistance(x,z,area),block=approachBlock(x,z,area,bearing,wires);
  const sSlope=slope<=3?1:slope<=LZ_LIMITS.slopeDeg?1-.55*(slope-3)/(LZ_LIMITS.slopeDeg-3):0;
  const sClear=clear>=LZ_LIMITS.clearGoodM?1:clear>=LZ_LIMITS.clearMinM?.35+.65*(clear-LZ_LIMITS.clearMinM)/(LZ_LIMITS.clearGoodM-LZ_LIMITS.clearMinM):0;
  const sSurf=SURFACE_SCORE[surf.kind]??.7,sWire=wire>=LZ_LIMITS.wireMinM?1:wire>=20?.35:0,sAppr=block>=.6?.05:1-.8*block;
@@ -54,18 +56,19 @@ export function turnPathLength(s,x,z,aTurn=4){const gs=Math.hypot(s.vx??0,s.vz??
  const R=gs*gs/aTurn;let px=s.x,pz=s.z,h=Math.atan2(s.vx,-s.vz),len=0;const e0=Math.atan2(Math.sin(Math.atan2(x-px,-(z-pz))-h),Math.cos(Math.atan2(x-px,-(z-pz))-h));if(Math.abs(e0)<.06)return d0;const side=Math.sign(e0),st=.05;
  for(let k=0;k<130;k++){const dx=x-px,dz=z-pz,d=Math.hypot(dx,dz),e=Math.atan2(Math.sin(Math.atan2(dx,-dz)-h),Math.cos(Math.atan2(dx,-dz)-h));if(Math.abs(e)<st*1.2||Math.sign(e)!==side)return len+d;if(d<R*.35)return Infinity;h+=side*st;px+=Math.sin(h)*R*st;pz-=Math.cos(h)*R*st;len+=R*st;}
  return Infinity;}
-export function chooseLandingZone(s,p){
+export function chooseLandingZone(s,p,opt={}){
  const X=globalThis.EXP??{},area=p.flightArea,floor=terrainHeight(s.x,s.z,area),h=Math.max(0,s.y-floor),gx=s.vx??0,gz=s.vz??0,speed=Math.hypot(gx,gz),kias=Math.hypot(gx-(p.windX??0),gz-(p.windZ??0))/(1852/3600)/(p.tasFactor??1),course=speed>1&&kias>=10?Math.atan2(gx,-gz):(s.heading??p.heading??0); // slow: the nose (into the wind), not the drift
  const mass=Math.sqrt((p.mass??2800)/2800);
  const ux=Math.sin(course),uz=-Math.cos(course);let nat=naturalDistance(h/.3048,kias)/mass;
  /* v0.33.1: sloping ground - the glide ends where the height above the ground there runs out, so the distance is iterated
     with the terrain at the predicted point (falling ground stretches it, rising ground shortens it) */
- if(!X.noNatIter)for(let k=0;k<4;k++){const g=terrainHeight(s.x+ux*nat,s.z+uz*nat,area),dg=floor-g,hk=Math.max(0,h+Math.sign(dg)*Math.max(0,Math.abs(dg)-8)),n2=naturalDistance(hk/.3048,kias)/mass;nat=Math.max(20,nat*.5+n2*.5);}
- if(area==='mountain'||area==='terrain')nat*=.86; /* v0.39 gerçek arazi: ölçülen süzülüş tablo değerinin ≈%86'sı (yer izi altındaki dalgalı arazi, yüksek saha) */
+ if(opt.nat!=null)nat=opt.nat; /* v0.51: ölçülen süzülüşten erişim (yeniden değerlendirme) */
+ else if(!X.noNatIter)for(let k=0;k<4;k++){const g=terrainHeight(s.x+ux*nat,s.z+uz*nat,area),dg=floor-g,hk=Math.max(0,h+Math.sign(dg)*Math.max(0,Math.abs(dg)-8)),n2=naturalDistance(hk/.3048,kias)/mass;nat=Math.max(20,nat*.5+n2*.5);}
+ if(opt.nat==null&&(area==='mountain'||area==='terrain'))nat*=.86; /* v0.39 gerçek arazi: ölçülen süzülüş tablo değerinin ≈%86'sı (yer izi altındaki dalgalı arazi, yüksek saha) */
  const cx=s.x+ux*nat,cz=s.z+uz*nat;
  const along=Math.max(30,nat*(X.lzAlong??.22)+25),lat=Math.max(30,nat*(X.lzLat??.22)+25),cand=[];
  for(let a=-along;a<=along+1e-6;a+=along/5)for(let l=-lat;l<=lat+1e-6;l+=lat/5){const x=cx+ux*a+uz*-l*-1*0+(-uz)*l,z=cz+uz*a+ux*l;cand.push([x,z,a,l]);}
- const aTurn=X.turnA??4,hiK=clamp((h/.3048-100)/200,0,1) /* low starts: distance is set by the speed bleed, both ways equally hard */,rate=(x,z,a,l)=>{const r=Math.hypot(x-s.x,z-s.z),q0=r<20?assessSpot(x,z,area):assessSpot(x,z,area,{bearing:Math.atan2(x-s.x,-(z-s.z))}),pb=X.noPath?0:pathBlock(s,x,z,area),tl=X.noTurnReach?r:turnPathLength(s,x,z,aTurn),sp=(pb>=.5?.02:1-1.5*pb)*(tl>Math.max(nat*1.18,r+40)?.05:1),q={...q0,score:q0.score*sp,fallback:q0.fallback*sp,pathBlock:pb},move=Math.hypot(a/along,l/lat)/1.4;
+ const aTurn=X.turnA??4,hiK=clamp((h/.3048-100)/200,0,1) /* low starts: distance is set by the speed bleed, both ways equally hard */,rate=(x,z,a,l)=>{const r=Math.hypot(x-s.x,z-s.z),q0=r<20?assessSpot(x,z,area):assessSpot(x,z,area,{bearing:Math.atan2(x-s.x,-(z-s.z)),wires:!!(X.wireAppr??p.crew?.wireAppr)}),pb=X.noPath?0:pathBlock(s,x,z,area),tl=X.noTurnReach?r:turnPathLength(s,x,z,aTurn),sp=(pb>=.5?.02:1-1.5*pb)*(tl>Math.max(nat*1.18,r+40)?.05:1),q={...q0,score:q0.score*sp,fallback:q0.fallback*sp,pathBlock:pb},move=Math.hypot(a/along,l/lat)/1.4;
   return {...q,dist:r,value:q.score-(X.lzMove??.35)*move-(a<0?(X.lzShortPen??.05)*(1-hiK):(X.lzLongPen??(area==="mountain"||area==="terrain"?.6:.15))*hiK*a/along),bad:q.fallback-.25*move};}; /* stretching a glide is harder than losing height */
  let best=null,leastBadSpot=null;for(const c of cand){const q=rate(...c);if(!best||q.value>best.value)best=q;if(!leastBadSpot||q.bad>leastBadSpot.bad)leastBadSpot=q;}
  if(best.score<.05&&!X.noLeastBad)best=leastBadSpot; /* nothing usable in the natural area: least-bad spot (fewest, lowest trees) */
@@ -75,7 +78,7 @@ export function chooseLandingZone(s,p){
  if(best.score<.25&&h>30){const fan=1.7;for(let f=.3;f<=1.2;f+=.06)for(let k=-10;k<=10;k++){const ang=course+fan*k/10,r=nat*f,x=s.x+Math.sin(ang)*r,z=s.z-Math.cos(ang)*r;
    // terrain-aware reach: glide height is measured to the candidate's own ground, and the straight glide line must clear the terrain between
    const hc=s.y-terrainHeight(x,z,area);if(hc<10)continue;const natC=naturalDistance(hc/.3048,kias)/mass*(area==="mountain"||area==="terrain"?.9:1); /* v0.39 gerçek arazide yer izi altındaki yükselti için pay */if(r>natC*1.05)continue;if(!X.noTurnReach){const tl=turnPathLength(s,x,z,aTurn);if(tl>natC*1.1)continue;}let blocked=false;for(let t=.2;t<.95&&!blocked;t+=.15){const px=s.x+(x-s.x)*t,pz=s.z+(z-s.z)*t,py=s.y-(s.y-(s.y-hc))*t;if(py<terrainHeight(px,pz,area)+25)blocked=true;}if(blocked)continue;
-   const q0=assessSpot(x,z,area,{bearing:ang});if(q0.score<.25)continue;const pb=X.noPath?0:pathBlock(s,x,z,area),q={...q0,score:q0.score*(pb>=.5?.02:1-1.5*pb)},v=q.score-.45*Math.abs(ang-course)/Math.PI-.15*Math.abs(r-natC)/natC;if(v>best.value+.1||(best.score<.05&&q.score>.25))best={...q,dist:r,value:v};}}
+   const q0=assessSpot(x,z,area,{bearing:ang,wires:!!(X.wireAppr??p.crew?.wireAppr)});if(q0.score<.25)continue;const pb=X.noPath?0:pathBlock(s,x,z,area),q={...q0,score:q0.score*(pb>=.5?.02:1-1.5*pb)},v=q.score-.45*Math.abs(ang-course)/Math.PI-.15*Math.abs(r-natC)/natC;if(v>best.value+.1||(best.score<.05&&q.score>.25))best={...q,dist:r,value:v};}}
  const bu=Math.atan2(best.x-s.x,-(best.z-s.z));
  return {id:'pilot',label:'P',x:best.x,z:best.z,ux:Math.sin(bu),uz:-Math.cos(bu),quality:best.score,slopeDeg:best.slopeDeg,clearM:best.clearM,surface:best.surface,surfaceLabel:best.label,reasons:best.reasons,natural:nat};
 }
