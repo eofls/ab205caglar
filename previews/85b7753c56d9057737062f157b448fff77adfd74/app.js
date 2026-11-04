@@ -1,7 +1,7 @@
-import {MAX_SESSION_BYTES,liveFlightState} from './flight-reference.js';
+import {MAX_SESSION_BYTES,liveFlightState,APP_VERSION} from './flight-reference.js';
 import {terrainHeight as liveTerrainHeight} from './terrain-data.js';
 import {HeliAudio,soundInputs} from './heli-audio.js';
-import {foldNotes} from './ui-help.js';
+import {foldNotes,watchHelp} from './ui-help.js';
 import {StartMap} from './start-map.js';
 import {ProgramPicker} from './program-picker.js';
 import {renderProgramDebrief} from './program-debrief.js';
@@ -61,7 +61,7 @@ setupTabs.forEach((button,index)=>{
  button.onkeydown=e=>{let next;if(e.key==='ArrowRight')next=(index+1)%setupTabs.length;else if(e.key==='ArrowLeft')next=(index+setupTabs.length-1)%setupTabs.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=setupTabs.length-1;else return;e.preventDefault();selectSetupTab(setupTabs[next]);setupTabs[next].focus();};
 });
 
-$('source-list').innerHTML=Object.entries(SOURCES).map(([id,s])=>`<article class="panel source-card" id="source-${id}"><span class="eyebrow">${esc(id.toUpperCase())} / KAYNAK KAYDI</span><h2>${esc(s.title)}</h2><p>${esc(s.file)}</p><p class="meta">${esc(s.pages)}<br>Basılı sayfa: ${esc(s.printed)}</p><p class="source-status">${esc(s.status)}</p></article>`).join('');
+$('source-list').innerHTML=Object.entries(SOURCES).map(([id,s])=>`<article class="src-card c-book source-card" id="source-${id}"><span class="src-tag">Belge</span><h3>${esc(s.title)}</h3><p class="src-what">${esc(s.file)}</p>${s.use?`<p class="src-use"><b>Uygulamada</b> ${esc(s.use)}</p>`:''}<p class="src-meta">Sayfalar: ${esc(s.pages)} · Basılı: ${esc(s.printed)}</p><p class="src-status">${esc(s.status)}</p></article>`).join('');
 document.querySelectorAll('[data-aircraft-options]').forEach(el=>el.innerHTML=Object.entries(AIRCRAFT_OPTIONS[el.name]).map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join(''));
 $('reference-rows').innerHTML=REFERENCE_ROWS.map(r=>`<tr><th scope="row">${esc(r.title)}</th><td>${esc(r.value)}</td><td>${esc(r.source)}<small>${esc(r.context)}</small>${r.image?`<a href="${r.image}" target="_blank" rel="noopener">Kaynak görseli ↗</a>`:''}</td><td>${esc(r.status)}</td></tr>`).join('');
 $('edit-aircraft').onclick=()=>{selectSetupTab($('setup-tab-aircraft'));$('setup-tab-aircraft').scrollIntoView({behavior:'smooth',block:'start'});$('setup-tab-aircraft').focus({preventScroll:true});};
@@ -82,7 +82,7 @@ $('chart-picker').onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDo
 $('config-form').oninput=()=>{$('dirty').textContent='Değişiklikler henüz uygulanmadı. Uygulamak mevcut akışı sıfırlar.';};
 $('config-form').onsubmit=e=>{e.preventDefault();try{const c={...session.config};for(const [k,v] of new FormData(e.target))c[k]=typeof DEFAULT_CONFIG[k]==='number'?Number(v):v;if(c.flightArea==='airfield'&&session.config.flightArea!=='airfield'&&c.headingDeg===session.config.headingDeg)c.headingDeg=65;if(c.flightArea!==session.config.flightArea){c.startX=0;c.startZ=0;}reset(c);}catch(e){error(e);}};
 function sourceButtons(keys){return keys.map(k=>`<button class="source-chip" data-source="${k}" title="Kaynak kaydını aç">${esc(SOURCES[k].title)}</button>`).join('');}
-document.addEventListener('click',async e=>{const b=e.target.closest('[data-source]');if(b){session.pause();render();save();try{await fullscreen.exit();showPage('sources');$('source-'+b.dataset.source).scrollIntoView({behavior:'smooth',block:'center'});}catch(err){error(err);}}});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-source]');if(b){session.pause();render();save();try{await fullscreen.exit();showPage('sources');{const el=$('source-'+b.dataset.source);el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('src-flash');setTimeout(()=>el.classList.remove('src-flash'),1600);}}catch(err){error(err);}}});
 function render(){
  renderReview();manualUi();
  $('weather-caption').textContent=visualWeather(session.config).label;
@@ -182,7 +182,7 @@ let last=performance.now();function frame(now){const delta=(now-last)/1000;last=
   const run=manualRun(session.config.manualRunId),finished=session.scenario.endReason==='contact'||(isManualProgram(session.config)&&session.time>=session.scenario.duration-.06); /* v0.41 elle program uçuşunun sonunda kayıt durur: son kare bozulmaz */
   if(session.playing&&session.time>=3.98&&(!finished||changed))run.record(session.time,inp);
   manualInput.view?.();}
- if(session.playing){session.tick(Math.min(delta,.25));if(!session.playing&&session.pending)autoResume=true;render();if(!session.playing||now-lastSave>1000){save();lastSave=now;}}try{sceneView.draw();}catch(e){console.error('3B çizim hatası',e);}requestAnimationFrame(frame);}
+ if(session.playing){session.tick(Math.min(delta,.25));if(!session.playing&&session.pending)autoResume=true;render();if(!session.playing||now-lastSave>6000){save();lastSave=now;}} /* v0.42 oynatırken kayıt 6 s'de bir (her saniye kaydetmek kısa takılmalara yol açıyordu); duraklatınca / sayfadan çıkınca hemen kaydedilir */try{sceneView.draw();}catch(e){console.error('3B çizim hatası',e);}requestAnimationFrame(frame);}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){session.pause();save();render();}});window.addEventListener('pagehide',save);
 fillForm();render();if(restoreMessage)$('save-status').textContent=restoreMessage;else save();requestAnimationFrame(frame);
 
@@ -281,9 +281,11 @@ $('alternative-button').onclick=()=>{try{const rows=alternativeResults(session);
 try{if('serviceWorker' in navigator&&(location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname))&&window.top===window)navigator.serviceWorker.register('sw.js').catch(()=>{});}catch{}
 try{watchSanitize(document.getElementById('lab'),document.getElementById('roadmap'));}catch(e){console.warn(e);}
 try{foldNotes();}catch(e){console.warn(e);}
+try{watchHelp();}catch(e){console.warn(e);}
 // v0.32.2: pilot experience only affects hazır akış / rehberli flights; hide it for manual flight.
 function syncPilotVis(){const l=document.querySelector('#config-form select[name=pilot]')?.closest('label');if(l)l.hidden=$('mode').value==='manual';}
 $('mode').addEventListener('change',syncPilotVis);syncPilotVis();
 // v0.33: start-position map under the H-V diagram
 var programPicker=null;try{programPicker=new ProgramPicker($('program-picker'),{onSelect:(patch,title)=>{try{const area=patch.flightArea&&patch.flightArea!==session.config.flightArea;reset({...session.config,...(area?{startX:0,startZ:0}:{}),...patch});flashNote?.('Senaryo seçildi: '+title);}catch(e){error(e);}}});programPicker.update(session.config);}catch(e){console.warn(e);}
 var startMap=null;try{startMap=new StartMap($('start-map'),{onChange:patch=>{try{reset({...session.config,...patch});flashNote?.('Başlangıç konumu güncellendi.');}catch(e){error(e);}}});startMap.update(session.config);}catch(e){console.warn(e);}
+try{const v=document.getElementById('app-version');if(v)v.textContent='v'+APP_VERSION;}catch{}
