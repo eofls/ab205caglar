@@ -46,25 +46,39 @@ export function updateSky(sky,weather,lighting,cover){
 }
 
 // ---------- Soft billboard clouds ----------
-function cloudTexture(){
- const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');let seed=7;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
- for(let i=0;i<34;i++){const px=60+r()*136,py=96+r()*70-(i<8?30:0),rad=26+r()*46,g=x.createRadialGradient(px,py,0,px,py,rad);g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(.6,'rgba(255,255,255,.22)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,256,256);}
- const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;return t;
+/* v0.48 kümülüs dokusu: üstü kabarık ve aydınlık, altı düz ve gri-mavi gölgeli; kenarda ince yumrular (yumuşak top yığını değil) */
+const CLOUD_TEX=[];function cloudTexture(v=0){if(CLOUD_TEX[v])return CLOUD_TEX[v];
+ const W=256,H=160,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');let seed=7+v*131;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
+ const base=H*.72,blobs=[];for(let i=0;i<26;i++){const px=40+r()*176,rad=14+r()*(30-Math.abs(px-128)/9),py=base-rad*.55-r()*rad*(1.2-Math.abs(px-128)/150);blobs.push([px,py,rad]);}
+ for(let i=0;i<60;i++){const q=blobs[Math.floor(r()*blobs.length)],a=r()*Math.PI*2,d=q[2]*(.7+r()*.3);blobs.push([q[0]+Math.cos(a)*d,Math.min(base-4,q[1]+Math.sin(a)*d*.8),q[2]*(.25+r()*.25)]);}
+ const al=document.createElement('canvas');al.width=W;al.height=H;const ax=al.getContext('2d');for(const [px,py,rad] of blobs){const g=ax.createRadialGradient(px,py,0,px,py,rad);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.75,'rgba(255,255,255,.9)');g.addColorStop(1,'rgba(255,255,255,0)');ax.fillStyle=g;ax.beginPath();ax.arc(px,py,rad,0,6.283);ax.fill();}
+ ax.globalCompositeOperation='destination-out';const gb=ax.createLinearGradient(0,base-2,0,base+10);gb.addColorStop(0,'rgba(0,0,0,0)');gb.addColorStop(1,'rgba(0,0,0,1)');ax.fillStyle=gb;ax.fillRect(0,base-2,W,H);
+ const sh=x.createLinearGradient(0,0,0,H);sh.addColorStop(0,'#f6f8fa');sh.addColorStop(.5,'#e9edf1');sh.addColorStop(.74,'#c6ced8');sh.addColorStop(1,'#b2bcc8');x.fillStyle=sh;x.fillRect(0,0,W,H);
+ for(const [px,py,rad] of blobs.slice(0,26)){const g=x.createRadialGradient(px-rad*.35,py-rad*.4,0,px-rad*.2,py-rad*.2,rad*.9);g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.beginPath();x.arc(px,py,rad,0,6.283);x.fill();} /* yumruların güneş tarafı parlak */
+ x.globalCompositeOperation='destination-in';x.drawImage(al,0,0);
+ const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;CLOUD_TEX[v]=t;return t;
 }
 export function createClouds(){
  const group=new T.Group();group.name='Bulutlar';if(typeof document==='undefined')return group;
- const tex=cloudTexture();let seed=11;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
+ const tex=cloudTexture(0);let seed=11;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
  for(let i=0;i<46;i++){const m=new T.SpriteMaterial({map:tex,color:'#ffffff',transparent:true,depthWrite:false,fog:true,opacity:.9});const s=new T.Sprite(m);
-  const a=r()*Math.PI*2,d=500+r()*3800;s.position.set(Math.cos(a)*d,430+r()*260,Math.sin(a)*d);const k=260+r()*420;s.scale.set(k,k*.42,1);group.add(s);}
+  const a=r()*Math.PI*2,d=500+r()*3800;s.position.set(Math.cos(a)*d,430+r()*260,Math.sin(a)*d);const k=260+r()*420;s.scale.set(k,k*.62,1);m.map=cloudTexture(i%4);group.add(s);}
  return group;
 }
+/* v0.48 kapalı havada stratus: geniş, yassı, tabanı koyu bulut tabakası (ayrı kümülüs topları değil) */
+let STRATUS=null;function stratusTexture(){if(STRATUS||typeof document==='undefined')return STRATUS;const W=256,H=96,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');let sd=53;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#d9dee3');g.addColorStop(.6,'#b7bfc8');g.addColorStop(1,'#98a2ad');x.fillStyle=g;x.fillRect(0,0,W,H);
+ for(let i=0;i<220;i++){const px=r()*W,py=r()*H,rad=8+r()*26;const q=x.createRadialGradient(px,py,0,px,py,rad);{const v=r()<.5?255:110;q.addColorStop(0,`rgba(${v},${v},${v+6},.07)`);}q.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=q;x.fillRect(px-rad,py-rad,rad*2,rad*2);}
+ x.globalCompositeOperation='destination-in';const m=x.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,W*.5);m.addColorStop(0,'rgba(0,0,0,.95)');m.addColorStop(.45,'rgba(0,0,0,.7)');m.addColorStop(1,'rgba(0,0,0,0)');x.save();x.scale(1,H/W*2);x.fillStyle=m;x.fillRect(0,0,W,W);x.restore();
+ STRATUS=new T.CanvasTexture(c);STRATUS.colorSpace=T.SRGBColorSpace;return STRATUS;}
 export function updateClouds(group,weather,cover){
- const n=cover==='clear'?0:cover==='scattered'?16:46;
- group.children.forEach((s,i)=>{if(s.userData.far){s.visible=cover!=='overcast';s.material.color.set(weather.cloudColor);s.material.opacity=cover==='clear'?.55:.7;return;}s.visible=i<n;s.material.color.set(weather.cloudColor);s.material.opacity=cover==='overcast'?.95:.8;});
+ const n=cover==='clear'?0:cover==='scattered'?16:46,ov=cover==='overcast';
+ group.children.forEach((s,i)=>{if(s.userData.far){s.visible=!ov;s.material.color.set(weather.cloudColor);s.material.opacity=cover==='clear'?.55:.7;return;}s.visible=i<n;s.material.color.set(weather.cloudColor);s.material.opacity=ov?.7:.85;
+  s.userData.cu??=s.material.map;s.userData.sc??=s.scale.clone();const st=ov&&typeof document!=='undefined';s.material.map=st?stratusTexture():s.userData.cu;if(st)s.scale.set(s.userData.sc.x*3,s.userData.sc.y*.7,1);else s.scale.copy(s.userData.sc);});
 }
 /* v0.43 açık havada da ufukta birkaç uzak kümülüs (8–12 km, gölgesiz): gökyüzü boş ve yapay görünmez */
-export function addFarClouds(group){if(typeof document==='undefined'||group.userData.farAdded)return;group.userData.farAdded=true;const tex=cloudTexture();let seed=29;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
- for(let i=0;i<9;i++){const m=new T.SpriteMaterial({map:tex,color:'#ffffff',transparent:true,depthWrite:false,fog:false,opacity:.55});const sp=new T.Sprite(m);const a=r()*Math.PI*2,d=6500+r()*2200;sp.position.set(Math.cos(a)*d,700+r()*400,Math.sin(a)*d);const k=1100+r()*1300;sp.scale.set(k,k*.38,1);sp.userData.far=true;group.add(sp);}}
+export function addFarClouds(group){if(typeof document==='undefined'||group.userData.farAdded)return;group.userData.farAdded=true;const tex=cloudTexture(1);let seed=29;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
+ for(let i=0;i<9;i++){const m=new T.SpriteMaterial({map:tex,color:'#ffffff',transparent:true,depthWrite:false,fog:false,opacity:.55});const sp=new T.Sprite(m);const a=r()*Math.PI*2,d=6500+r()*2200;sp.position.set(Math.cos(a)*d,700+r()*400,Math.sin(a)*d);const k=1100+r()*1300;sp.scale.set(k,k*.55,1);sp.material.map=cloudTexture(i%4);sp.userData.far=true;group.add(sp);}}
 
 // ---------- Surface detail for terrain/runway materials (world-space noise, slope rock, snow line) ----------
 /* v0.43 gerçekçilik: zemin malzemesi için ortak (paylaşılan) uniform'lar — bulut gölgesi, rüzgâr, zaman, ayrıntı dokusu */
@@ -214,7 +228,7 @@ export function createHorizon(area){
  for(let r=0;r<=rings;r++){const d=inner+(outer-inner)*Math.pow(r/rings,1.6);for(let i=0;i<=seg;i++){const a=i/seg*Math.PI*2,x=Math.cos(a)*d,z=Math.sin(a)*d,sq=Math.min(1,edge/Math.max(Math.abs(Math.cos(a)),Math.abs(Math.sin(a)))/d),ex=x*sq,ez=z*sq,y=real?terrainHeight(r===0?ex:x,r===0?ez:z,area)-(r===0?1.5:.3*Math.min(1,r/3)):hfun(x,z)+(r===0?terrainHeight(ex,ez,area)-2:0);pos.push(r===0?ex:x,y-(r>0&&Math.max(Math.abs(x),Math.abs(z))<half-5?18:0),r===0?ez:z); /* v0.39 ufuk halkası zemin düzleminin köşeleri altında kalır (z-fighting titremesi yok) */uv.push(((r===0?ex:x)+wr)/(2*wr),1-((r===0?ez:z)+wr)/(2*wr));
   const snow=area==='mountain'&&y>620?Math.min(1,(y-620)/140):0;const c=area==='water'&&y<=0?base:[base[0]*(.85+.2*Math.sin(i)),base[1],base[2]];col.push(...c.map((v,j)=>v*(1-snow)+[.92,.94,.96][j]*snow));}}
  for(let r=0;r<rings;r++)for(let i=0;i<seg;i++){const a=r*(seg+1)+i,b=a+seg+1;idx.push(a,b,a+1,a+1,b,b+1);}
- const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();if(real){g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));const tex=area==='airfield'?filteredTexture('assets/terrain/'+RG.wide,'saturate(0.76) hue-rotate(6deg) contrast(1.12) brightness(0.96)',1024):filteredTexture('assets/terrain/'+RG.wide,'saturate(0.74) hue-rotate(11deg) contrast(1.12) brightness(0.96)',LITE?1024:2048);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=4;const m=new T.Mesh(g,enhanceSurface(new T.MeshStandardMaterial({map:tex,roughness:1}),{detail:.4}));m.name='Ufuk arazisi (gerçek)';return m;}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();if(real){g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));const tex=area==='airfield'?filteredTexture('assets/terrain/'+RG.wide,'saturate(0.76) hue-rotate(6deg) contrast(1.12) brightness(0.96)',1024):filteredTexture('assets/terrain/'+RG.wide,'saturate(0.66) hue-rotate(9deg) contrast(1.12) brightness(0.95)',LITE?1024:2048);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=4;const m=new T.Mesh(g,enhanceSurface(new T.MeshStandardMaterial({map:tex,roughness:1}),{detail:.4}));m.name='Ufuk arazisi (gerçek)';return m;}
  const m=new T.Mesh(g,enhanceSurface(new T.MeshStandardMaterial({vertexColors:true,roughness:1}),{rock:area==='mountain'?1:0,snowLine:area==='mountain'?640:1e9,detail:.7}));m.name='Ufuk arazisi';return m;
 }
 function hash(x,z){const s=Math.sin(x*127.1+z*311.7)*43758.5453;return s-Math.floor(s);}
@@ -321,7 +335,7 @@ const TREE_PAL=[[1,1,1],[1,1,1],[.85,.92,1.15],[1.25,1.12,.85],[1.15,.98,.8],[.9
 function placeShade(m,sun){const o=new T.Object3D(),up=new T.Vector3(0,1,0),nrm=new T.Vector3(),q=new T.Quaternion(),el=Math.max(.12,Math.asin(Math.min(1,sun.y))),hx=-sun.x,hz=-sun.z,hl=Math.hypot(hx,hz)||1,dx=hx/hl,dz=hz/hl,yaw=Math.atan2(dx,dz),k=1/Math.tan(el);
  m.userData.trees.forEach((t,i)=>{const L=Math.min(t.h*k,t.h*4),len=Math.max(2*t.r,L*.85+t.r),off=Math.max(0,L*.5-t.r*.2);nrm.set(t.nx,1,t.nz).normalize();q.setFromUnitVectors(up,nrm);o.quaternion.copy(q).multiply(new T.Quaternion().setFromAxisAngle(up,yaw));o.position.set(t.x+dx*off,t.y+.12+off*(-t.nx*dx-t.nz*dz),t.z+dz*off);o.scale.set(t.r*2.1,1,len);o.updateMatrix();m.setMatrixAt(i,o.matrix);});
  m.instanceMatrix.needsUpdate=true;m.computeBoundingSphere();}
-export function createForest(objects,{time,area}={time:{value:0}}){
+export function createForest(objects,{time,area,provider=null,buildR=0}={time:{value:0}}){
  const group=new T.Group();group.name='Orman';
  const many=objects.length>(LITE?3000:9000),tiersN=many?2:3; // v0.33: large forests use two crown tiers
  const sway=(mat,amp)=>{mat.onBeforeCompile=sh=>{sh.uniforms.uTime=time;sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uTime;').replace('#include <begin_vertex>',`#include <begin_vertex>
@@ -341,11 +355,11 @@ export function createForest(objects,{time,area}={time:{value:0}}){
  const o=new T.Object3D(),col=new T.Color();
  const shadeTex=treeShadeTex(),shadeMat=shadeTex?new T.MeshBasicMaterial({map:shadeTex,color:'#000000',transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,fog:true}):null,shadeGeo=new T.PlaneGeometry(1,1).rotateX(-Math.PI/2);
  /* hücrelere dağıt */
- const C=LITE?300:250,cells=new Map();
- objects.forEach(t=>{const k=Math.floor(t.x/C)+':'+Math.floor(t.z/C);let c=cells.get(k);if(!c){c={ix:Math.floor(t.x/C),iz:Math.floor(t.z/C),conifer:[],broad:[],poplar:[],all:[],y:0};cells.set(k,c);}c.all.push(t);c.y+=t.y;
-  (t.treeKind==='conifer'?c.conifer:t.treeKind==='poplar'?c.poplar:t.treeKind==='broad'?c.broad:(hash(t.x*.13,t.z*.17)>.38)?c.conifer:c.broad).push(t);});
- const list=[];
- for(const c of cells.values()){
+ const C=LITE?300:250,built=new Map(); /* anahtar → hücre kaydı ya da null (boş hücre) */
+ const bucket=trees=>{const cells=new Map();trees.forEach(t=>{const k=Math.floor(t.x/C)+':'+Math.floor(t.z/C);let c=cells.get(k);if(!c){c={key:k,ix:Math.floor(t.x/C),iz:Math.floor(t.z/C),conifer:[],broad:[],poplar:[],all:[],y:0};cells.set(k,c);}c.all.push(t);c.y+=t.y;
+  (t.treeKind==='conifer'?c.conifer:t.treeKind==='poplar'?c.poplar:t.treeKind==='broad'?c.broad:(hash(t.x*.13,t.z*.17)>.38)?c.conifer:c.broad).push(t);});return cells;};
+ const list=[];let sunNow=SUN0;
+ const buildCell=c=>{
   const cg=new T.Group();cg.name='Orman hücresi';const cx=(c.ix+.5)*C,cz=(c.iz+.5)*C,cy=c.y/c.all.length;
   const trunks=new T.InstancedMesh(trunkGeo,trunkMat,c.all.length);
   c.all.forEach((t,i)=>{o.position.set(t.x,t.y,t.z);o.rotation.set(0,0,0);o.scale.set(1,t.height*.55,1);o.updateMatrix();trunks.setMatrixAt(i,o.matrix);});
@@ -365,17 +379,29 @@ export function createForest(objects,{time,area}={time:{value:0}}){
   /* aynı örnek matrisleri ve renkleri paylaşan sade kopyalar (orta / uzak) */
   const lod=(src,geos)=>geos.map((g,i)=>{if(i===0)return src;const m=new T.InstancedMesh(g,src.material,src.count||1);m.instanceMatrix=src.instanceMatrix;m.instanceColor=src.instanceColor;m.count=src.count;m.boundingSphere=src.boundingSphere;m.visible=false;return m;});
   const T3=lod(tiers,coneG),B3=lod(balls,ballG);
+  /* v0.47 uzak seviyede yuvarlak taçlı ağaç başına tek yumru (üç yumru yerine): uzakta fark görünmez, köşe sayısı üçte bir */
+  {const nb=c.broad.length+c.poplar.length;if(nb){const far=new T.InstancedMesh(ballG[2],crownB,nb);let n=0;for(const t of c.broad){const tint=hash(t.z,t.x),pv=TREE_PAL[Math.floor(hash(t.x*2.3,t.z*4.1)*TREE_PAL.length)];o.position.set(t.x,t.y+t.height*.64,t.z);o.rotation.set(0,tint*5,0);o.scale.set(t.radius*1.12,t.height*.36,t.radius*1.12);o.updateMatrix();far.setMatrixAt(n,o.matrix);col.setRGB((.09+tint*.07)*pv[0],(.16+tint*.07)*pv[1],(.05+tint*.04)*pv[2]);far.setColorAt(n++,col);}
+   for(const t of c.poplar){const tint=hash(t.z,t.x),pv=TREE_PAL[Math.floor(hash(t.x*3.1,t.z*1.7)*TREE_PAL.length)];o.position.set(t.x,t.y+t.height*.6,t.z);o.rotation.set(0,tint*4,0);o.scale.set(t.radius,t.height*.42,t.radius);o.updateMatrix();far.setMatrixAt(n,o.matrix);col.setRGB((.10+tint*.05)*pv[0],(.19+tint*.05)*pv[1],(.06+tint*.03)*pv[2]);far.setColorAt(n++,col);}
+   far.computeBoundingSphere();far.visible=false;B3[2]=far;}}
   for(const m of [trunks,...T3,...B3]){m.receiveShadow=true;m.castShadow=false;if(m.instanceColor)m.instanceColor.needsUpdate=true;cg.add(m);}
-  if(shade){shade.castShadow=shade.receiveShadow=false;cg.add(shade);}
-  list.push({cx,cz,cy,trunks,T3,B3,shade,level:-1});group.add(cg);}
+  if(shade){shade.castShadow=shade.receiveShadow=false;cg.add(shade);if(sunNow!==SUN0)placeShade(shade,sunNow);}
+  const rec={key:c.key,cx,cz,cy,cg,trunks,T3,B3,shade,level:-1};list.push(rec);group.add(cg);built.set(c.key,rec);return rec;};
+ for(const c of bucket(objects).values())buildCell(c);
+ /* v0.47 orman helikopterle birlikte: kameranın buildR çevresindeki eksik hücreler kare başına ≈5 ms'lik dilimlerle kurulur, uzaklaşan hücreler bırakılır */
+ const dropCell=rec=>{rec.cg.removeFromParent();for(const m of rec.cg.children)if(m.isInstancedMesh)m.dispose();const i=list.indexOf(rec);if(i>=0)list.splice(i,1);built.delete(rec.key);};
+ const stream=cam=>{if(!provider||!buildR)return false;const t0=performance.now(),i0=Math.floor((cam.x-buildR)/C),i1=Math.floor((cam.x+buildR)/C),j0=Math.floor((cam.z-buildR)/C),j1=Math.floor((cam.z+buildR)/C);let changed=false;
+  const want=[];for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i+':'+j;if(built.has(k))continue;const dx=Math.max(0,Math.abs(cam.x-(i+.5)*C)-C/2),dz=Math.max(0,Math.abs(cam.z-(j+.5)*C)-C/2);if(Math.hypot(dx,dz)<buildR)want.push([Math.hypot(dx,dz),i,j,k]);}
+  want.sort((a,b)=>a[0]-b[0]);for(const [,i,j,k] of want){if(performance.now()-t0>5)break;const trees=provider(i*C,(i+1)*C,j*C,(j+1)*C).filter(t=>Math.floor(t.x/C)===i&&Math.floor(t.z/C)===j);if(!trees.length){built.set(k,null);continue;}const c=bucket(trees).get(k);if(c){buildCell(c);changed=true;}}
+  for(const [k,rec] of [...built]){if(!rec){const [i,j]=k.split(':').map(Number);if(Math.hypot((i+.5)*C-cam.x,(j+.5)*C-cam.z)>buildR+700)built.delete(k);continue;}if(Math.hypot(rec.cx-cam.x,rec.cz-cam.z)>buildR+700){dropCell(rec);changed=true;}}
+  return changed;};
  /* kamera konumuna göre ayrıntı seviyesi (her karede çağrılır; 15 m altı hareketlerde atlanır) */
  const near=LITE?140:160,mid=LITE?480:560,last={x:1e9,y:0,z:1e9};
- group.userData.updateLOD=cam=>{if(Math.abs(cam.x-last.x)+Math.abs(cam.z-last.z)+Math.abs(cam.y-last.y)<15)return;last.x=cam.x;last.y=cam.y;last.z=cam.z;
+ group.userData.updateLOD=cam=>{const ch=stream(cam);if(!ch&&Math.abs(cam.x-last.x)+Math.abs(cam.z-last.z)+Math.abs(cam.y-last.y)<15)return;last.x=cam.x;last.y=cam.y;last.z=cam.z;
   for(const c of list){const dx=Math.max(0,Math.abs(cam.x-c.cx)-C/2),dz=Math.max(0,Math.abs(cam.z-c.cz)-C/2),d=Math.hypot(dx,dz,Math.max(0,cam.y-c.cy-30)*.5);const L=d<near?0:d<mid?1:2;if(L===c.level)continue;c.level=L;
    c.T3.forEach((m,i)=>m.visible=i===L);c.B3.forEach((m,i)=>m.visible=i===L);c.trunks.visible=L<2;if(c.shade)c.shade.visible=L<2;
    }};
- group.userData.lodCells=list.length;
- group.userData.setSun=(sun,strength)=>{if(!shadeMat)return;shadeMat.opacity=strength;shadeMat.visible=strength>.02;const k=sun.x.toFixed(2)+sun.y.toFixed(2)+sun.z.toFixed(2);if(group.userData.sunKey===k)return;group.userData.sunKey=k;for(const c of list)if(c.shade)placeShade(c.shade,sun);};
+ Object.defineProperty(group.userData,'lodCells',{get:()=>list.length,enumerable:true});
+ group.userData.setSun=(sun,strength)=>{if(!shadeMat)return;shadeMat.opacity=strength;shadeMat.visible=strength>.02;const k=sun.x.toFixed(2)+sun.y.toFixed(2)+sun.z.toFixed(2);if(group.userData.sunKey===k)return;group.userData.sunKey=k;sunNow=sun.clone();for(const c of list)if(c.shade)placeShade(c.shade,sun);};
  return group;
 }
 // ---------- Draw-call reduction: merge static meshes sharing a material colour ----------
