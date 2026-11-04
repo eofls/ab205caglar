@@ -6,6 +6,7 @@ import {terrainHeight,islandHeight,RUNWAY,runwayCoordinates,surfaceProfile} from
 
 const NOISE=`
 float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+float shrubs(vec2 p){vec2 i=floor(p),f=fract(p);float m=0.;for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 g=vec2(float(x),float(y)),c=i+g;vec2 o=vec2(h21(c),h21(c+7.3));float r=.22+.28*h21(c+3.1),pr=step(.42,h21(c+9.7));float d=length(g+o-f);m=max(m,pr*(1.-smoothstep(r*.45,r,d))*(.6+.4*h21(c+1.9)));}return m;}
 float vnoise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);
  return mix(mix(h21(i),h21(i+vec2(1,0)),u.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),u.x),u.y);}
 float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*vnoise(p);p=p*2.03+vec2(17.1,9.7);a*=.5;}return s;}
@@ -107,13 +108,17 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
      vec3 floorC=mix(vec3(.15,.115,.07),vec3(.11,.105,.06),n2)*(.85+.3*n3);base=mix(base,floorC,cn*.92);diffuseColor.rgb=base;lum=dot(base,vec3(.299,.587,.114));}`:''}
     float green=clamp((base.g-max(base.r,base.b))*7.+.25,0.,1.),bright=smoothstep(.38,.68,lum);
     float macro=(n1-.5)*.30+(n2-.5)*.15;
-    {/* v0.44 orta ölçek (3–15 m) doğal düzensizlik: uydu pikselinin bulanık “fırça” görünümü kırılır */float mf=1.-smoothstep(1400.,4200.,cd);${LITE?'float m1=vnoise(w*.075);':'float m1=fbm(w*.075+3.1);'}float m2=vnoise(w*.31+7.);macro+=((m1-.5)*.20+(m2-.5)*.13)*mf;
+    {/* v0.44 orta ölçek (3–15 m) doğal düzensizlik: uydu pikselinin bulanık “fırça” görünümü kırılır */float mf=1.-smoothstep(1400.,4200.,cd);${LITE?'float m1=vnoise(w*.075);':'float m1=fbm(w*.075+3.1);'}float m2=vnoise(w*.31+7.);macro+=((m1-.5)*.34+(m2-.5)*.24)*mf;
      diffuseColor.rgb*=mix(vec3(1.),vec3(.94,1.03,.9),smoothstep(.55,.8,m1)*mf*(.3+.7*(1.-bright)));}
+    {/* v0.44 bozkırda çalı / ot öbeği benekleri (≈2 m, öbekler hâlinde): açık renkli kuru zeminde 1,5 km'ye kadar görülür; piksel boyutundan küçükse söner (titreme olmaz) */
+     float fw=length(fwidth(w)),vis=1.-smoothstep(1.4,4.,fw),sp=${LITE?'smoothstep(.6,.82,vnoise(w*.42+11.))':'shrubs(w*.42+11.)'}*smoothstep(.4,.7,vnoise(w*.06-4.));
+     diffuseColor.rgb*=1.-sp*vis*(.3+.25*bright)*(1.-green*.5)*uDetail;}
     float grass=(n4-.5)*.24+(n5-.5)*.20-smoothstep(.62,.8,vnoise(w*2.6))*.16;
     float soil=(n3-.5)*.18+(n5-.5)*.12-step(.955,h21(floor(w*2.2)))*.22;
     diffuseColor.rgb*=1.+(macro+mix(soil,grass,green)*nearF*.6)*uDetail;
     {float d1=texture2D(uDet,w/9.).r,d2=texture2D(uDet,mat2(.8,-.6,.6,.8)*w/41.+.37).r,dd=(d1-.5)*1.15*(1.-smoothstep(150.,900.,cd))+(d2-.5)*.7*(1.-smoothstep(400.,2600.,cd));diffuseColor.rgb*=1.+dd*uDetail;} /* döşenen ayrıntı dokusu: iki ölçek, tekrar görünmez */
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.8,.76,.68),bright*.8); /* parlak çıplak zemin plastik beyaz görünmez */
+    {float hl=max(0.,dot(diffuseColor.rgb,vec3(.299,.587,.114))-.32);diffuseColor.rgb=diffuseColor.rgb/(1.+hl*1.6)*mix(vec3(1.),vec3(1.,.95,.86),smoothstep(0.,.25,hl));} /* v0.44 kireçli / açık zemin kar gibi beyaz parlamaz: tepe değerleri sıkıştırılır, sıcak ton */
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.92,1.02,.9),green*smoothstep(.3,.7,n2)*.35);`}
     float slope=1.-clamp(normalize(vWorldN).y,0.,1.);
     ${asphalt?'':'{vec3 wn=normalize(vWorldN);float nf=clamp(-wn.z*4.,0.,1.)*smoothstep(.02,.18,1.-wn.y),sf=clamp(wn.z*4.,0.,1.)*smoothstep(.02,.18,1.-wn.y);diffuseColor.rgb*=mix(vec3(1.),vec3(.86,.93,.82),nf*.7);diffuseColor.rgb*=mix(vec3(1.),vec3(1.05,1.01,.94),sf*.5);} /* v0.44 kuzey yamaçlar daha koyu ve yeşil (nem), güney yamaçlar kuru ve açık */'}
@@ -125,8 +130,8 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
     ${LITE?'float cs=smoothstep(.48,.72,vnoise(w*.0015-uWind*uTime*.0015+vec2(13.,5.)));':'float cs=smoothstep(.48,.72,fbm(w*.0015-uWind*uTime*.0015+vec2(13.,5.)));'}diffuseColor.rgb*=1.-cs*uCloud;}`)
    .replace('#include <normal_fragment_maps>',LITE?'#include <normal_fragment_maps>':`#include <normal_fragment_maps>
    {/* v0.43 yakında zemin kabartısı: tarla izleri, tümsek ve taşlar ışıkta görünür (bump, görünüm uzayında) */
-    vec2 w=vWorldPos.xz;float cd=length(cameraPosition-vWorldPos),bf=1.-smoothstep(60.,520.,cd);
-    if(bf>0.){float H=(${asphalt?'vnoise(w*3.)*.015+vnoise(w*11.)*.006':'fbm(w*.09)*.55+vnoise(w*.8)*.22+vnoise(w*3.4)*.07+vnoise(w*11.)*.025'})*bf;
+    vec2 w=vWorldPos.xz;float cd=length(cameraPosition-vWorldPos),bf=1.-smoothstep(60.,520.,cd),mf=${asphalt?'0.':'(1.-smoothstep(900.,3200.,cd))*smoothstep(.015,.12,1.-normalize(vWorldN).y)'};
+    if(bf>0.||mf>0.){float H=(${asphalt?'vnoise(w*3.)*.015+vnoise(w*11.)*.006':'fbm(w*.09)*.55+vnoise(w*.8)*.22+vnoise(w*3.4)*.07+vnoise(w*11.)*.025'})*bf${asphalt?'':'+(fbm(w*.022+1.7)*3.2+vnoise(w*.06)*1.1)*mf'}; /* v0.44 orta mesafede yamaçlarda 15–45 m ölçekli kabartı (sırt, yarıntı): tepeler kum tepesi gibi pürüzsüz görünmez */
      vec2 dH=vec2(dFdx(H),dFdy(H));vec3 sx=dFdx(-vViewPosition),sy=dFdy(-vViewPosition),R1=cross(sy,normal),R2=cross(normal,sx);float fd=dot(sx,R1)*faceDirection;
      normal=normalize(abs(fd)*normal-sign(fd)*(dH.x*R1+dH.y*R2));}}`);
  };
