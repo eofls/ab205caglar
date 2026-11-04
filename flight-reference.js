@@ -1,5 +1,5 @@
 // Shared reference frames and defaults; not an aircraft certification.
-export const APP_VERSION='0.46.0';
+export const APP_VERSION='0.47.0';
 export const FT=.3048,KT=1852/3600,LB_KG=.45359237;
 export const DEFAULT_MASS_KG=2800,DEFAULT_WEIGHT_LB=DEFAULT_MASS_KG/LB_KG;
 export const MAX_SESSION_SECONDS=900,MAX_SESSION_BYTES=8*1024*1024;
