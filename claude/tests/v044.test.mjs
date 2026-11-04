@@ -70,3 +70,8 @@ test('v0.47 ağaçsız sahada sahne güncellemesi hata vermez (orman / uzak ağa
  assert.ok(/root\.userData\.forest\?\.userData\?\.updateLOD\?\./.test(sv)&&/root\.userData\.far\?\.userData\?\.update\?\./.test(sv),'null güvenli değil');
  assert.ok(!/find\(c=>c\.name==='Orman'\)\|\|0/.test(sv),'0 ile işaretleme hata verir');
 });
+test('v0.49 keşif paterni: ikinci tur yok, keşif dönüşü 180°–540° arasında, sonra düz rüzgâraltı',()=>{
+ for(const id of ['recon','recon-high','pinnacle','confined']){const m=MANEUVERS.find(x=>x.id===id),r=programRun(manCfg(m),[]);let acc=0,prev=null;
+  for(const s of r.samples){if(!['Keşif','Keşif paterninden çıkış'].includes(s.phase)){if(acc)break;continue;}if(prev!==null)acc+=wrap(s.hdg-prev);prev=s.hdg;}
+  const deg=Math.abs(acc)/R;assert.ok(deg>180&&deg<545,`${id} keşif dönüşü ${deg.toFixed(0)}°`);}
+});
