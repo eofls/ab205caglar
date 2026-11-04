@@ -148,7 +148,7 @@ export function airfieldGroundTexture(){const t=airfieldGroundTextureDrawn();if(
 /* v0.39 gerçek arazi / tepeler zemini: Sentinel-2 cloudless 2023 (EOX, CC BY-NC-SA 4.0), ±4.5 km, zemin düzlemiyle aynı kapsam */
 export function realGroundTexture(area){if(typeof document==='undefined')return null;const N=LITE?2048:4096,c=document.createElement('canvas');c.width=c.height=N;const ctx=c.getContext('2d');if(!ctx)return null;ctx.fillStyle='#8c7b5c';ctx.fillRect(0,0,N,N);
  const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;const img=new Image();img.decoding='async';
- img.onload=()=>{ctx.filter='saturate(0.74) hue-rotate(11deg) contrast(1.12) brightness(0.96)'; /* v0.43 bozkır renkleri: biraz daha kontrast ve doygunluk */ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,N,N);ctx.filter='none'; /* v0.43.1 keskinleştirme önceden yapıldı */
+ img.onload=()=>{ctx.filter='saturate(0.66) hue-rotate(9deg) contrast(1.12) brightness(0.95)'; /* v0.43 bozkır renkleri: biraz daha kontrast ve doygunluk */ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,N,N);ctx.filter='none'; /* v0.43.1 keskinleştirme önceden yapıldı */
   /* fine field texture on top of the 4–10 m satellite pixels: soft furrows and mottling (not new features) */
   let seed=91;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};for(let i=0;i<(LITE?12000:60000);i++){const x=rand()*N,y=rand()*N;ctx.fillStyle=rand()>.5?'rgba(255,255,255,.035)':'rgba(30,25,10,.05)';ctx.fillRect(x,y,1+rand()*3,1+rand()*2);}
   t.needsUpdate=true;};img.src='assets/terrain/'+(area==='mountain'?'tepeler':'golbasi')+'-s2k.jpg';return t;}
