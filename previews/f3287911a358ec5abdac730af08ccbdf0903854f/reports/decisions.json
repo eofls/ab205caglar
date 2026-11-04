@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "61fd7e62d136f93d734270ded49ab8af8936cb20",
+  "commit": "f3287911a358ec5abdac730af08ccbdf0903854f",
   "conditions": {
     "grossWeightLb": null,
     "initialRotorRpm": 324,
