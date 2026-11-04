@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "abf2973514be2330aeef00adf8c576d12c2490c2",
+  "commit": "fbc4e50bba4b491eac7ef780331a61313cc45d46",
   "conditions": {
     "grossWeightLb": null,
     "initialRotorRpm": 324,
@@ -125,16 +125,16 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.08241345173014984,
-          "state": "Hafif deformasyon",
+          "severity": 0.07442079101741308,
+          "state": "Belirgin etki yok",
           "detach": false,
           "directContact": false
         },
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.08243568346223669,
-          "state": "Hafif deformasyon",
+          "severity": 0.07444302274949993,
+          "state": "Belirgin etki yok",
           "detach": false,
           "directContact": true
         },
@@ -1448,7 +1448,7 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.05731455020203222,
+          "severity": 0.04881806473530284,
           "state": "Belirgin etki yok",
           "detach": false,
           "directContact": false
@@ -1456,7 +1456,7 @@
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.057329129891255375,
+          "severity": 0.04883264442452599,
           "state": "Belirgin etki yok",
           "detach": false,
           "directContact": true
@@ -2743,7 +2743,7 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 1,
+          "severity": 0.8800073957752226,
           "state": "Ağır deformasyon",
           "detach": false,
           "directContact": false
@@ -2751,7 +2751,7 @@
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 1,
+          "severity": 0.8801778156846662,
           "state": "Ağır deformasyon",
           "detach": false,
           "directContact": true
@@ -2847,8 +2847,8 @@
         {
           "id": "crosstube",
           "label": "Skid çapraz boruları",
-          "severity": 0.48413542097649587,
-          "state": "Belirgin deformasyon",
+          "severity": 0.33392829329278517,
+          "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
         },
@@ -4708,7 +4708,7 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.1904575598578477,
+          "severity": 0.1834850710264173,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
@@ -4716,7 +4716,7 @@
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.19048256332006824,
+          "severity": 0.18351007448863785,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": true
@@ -6105,7 +6105,7 @@
         {
           "id": "crosstube",
           "label": "Skid çapraz boruları",
-          "severity": 0.5106186827099876,
+          "severity": 0.5053091878723713,
           "state": "Belirgin deformasyon",
           "detach": false,
           "directContact": false
@@ -6113,7 +6113,7 @@
         {
           "id": "glazing",
           "label": "Cam yüzeyleri",
-          "severity": 0.03585123225761366,
+          "severity": 0.035818242420232065,
           "state": "Belirgin etki yok",
           "detach": false,
           "directContact": false
@@ -7274,7 +7274,7 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.0866974976562712,
+          "severity": 0.08342373687187685,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
@@ -7282,7 +7282,7 @@
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.08655994051840622,
+          "severity": 0.08328617973401187,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
@@ -7306,7 +7306,7 @@
         {
           "id": "tailBoom",
           "label": "Kuyruk bumu",
-          "severity": 0.39113884911513486,
+          "severity": 0.3870466481346419,
           "state": "Belirgin deformasyon",
           "detach": false,
           "directContact": true
