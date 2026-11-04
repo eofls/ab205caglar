@@ -43,6 +43,7 @@ function setup(s,c){const density=atmosphere(c).density,rawHeading=c.headingDeg*
  if(p.model==='blade'){const tr=trimPitch({rho:density,omega:p.rpm*Math.PI/30,mass:p.mass,tas,dragAreaM2:PARAMETERS.dragAreaM2,agl:p.height});p.thetaTrim=Math.max(ROTOR.thetaMinRad+.015,tr.theta75);p.trimPower=tr.power;const au=autorotationPitch({rho:density,omega:p.rpm*Math.PI/30,mass:p.mass,dragAreaM2:PARAMETERS.dragAreaM2});
   // pilot laws were written around a .7 glide collective; this bias moves them to the blade model's glide pitch
   p.collectiveBias=0;p.autoPitch=au.theta75;}else p.collectiveBias=0;
+ p.flareTune=p.powerFraction>0?null:s?.flareTune??null; // v0.50: yalnızca tam güç kaybı (kısmi güçte mevcut ayar)
  return p;}
 const keys=['x','y','z','vx','vz','w','omega','engine','angle','heading','pitch','roll','collective','cyclicX','cyclicZ','yawRate','pedal','inflowCapture'];
 function initial(p){const v=p.ias*KT*p.tasFactor,vx=Math.sin(p.heading)*v+p.windX,vz=-Math.cos(p.heading)*v+p.windZ,ax=vx-p.windX,az=vz-p.windZ,tas=Math.hypot(ax,az),drag=.5*p.density*PARAMETERS.dragAreaM2*tas;

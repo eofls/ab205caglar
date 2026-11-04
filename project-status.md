@@ -1,3 +1,7 @@
+# v0.50.0 — 4 Kasım 2026 (S01 fleyır)
+
+S01 güvenli saha (400 ft / 60 kt motor arızası), doğru kararlarla: fleyır ≈100 ft'te yumuşak başlar ve alçaldıkça artar; erken asılı kalma 65 ft'ten ≈50 ft'e indi, rotor devri 339 RPM limitini aşmaz (önce 344), yüksek rotor devrinde hatve yüklemesi daha erken. Sürat 15 ft'te ≈11 kt, temas ≈355 ft/dk ve ≈4 kt (önce 428 ft/dk). Ayar yalnızca S01'de; diğer H-V senaryoları, hareketler ve acil durumlar değişmedi. Testler: claude/tests/v050.test.mjs.
+
 # v0.49.0 — 4 Kasım 2026 (meydan turu çizime göre, keşif, kontrol)
 
 06 ve 24 meydan turları kullanıcının haritada çizdiği köşelerden geçer (dönüşler ≈30° yatış, rüzgâraltı sonunda 70 kt). Keşifte yüksek keşif bitince doğrudan rüzgâraltı–esas bacak kesişimine gidilir. Program seçicide hareket başı hep hareketin kendi başı (güçlü kurtarma önceki senaryonun başıyla ağaçlığa gitmiyor). Acil durum usulleri Operatör Talimnamesi Bölüm 9 ile karşılaştırıldı: bariz çelişki yok. Bütün acil durum ve hareketlerin bütün karar seçenekleri süzüldü (claude/sweeps/k34.mjs, k35.mjs): doğru kararlarda bütün inişler yumuşak.
