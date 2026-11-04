@@ -98,7 +98,9 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
     vec3 base=diffuseColor.rgb;float lum=dot(base,vec3(.299,.587,.114));
     ${asphalt?`float det=(n2-.5)*.10+(n3-.5)*.10+(n4-.5)*.08+(n5-.5)*.06*nearF;diffuseColor.rgb*=1.+det*uDetail;
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.82,smoothstep(.55,.8,vnoise(w*vec2(.05,.9))));
-    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.62,smoothstep(.72,.9,vnoise(w*vec2(.9,.012)))*.55);${runway?`
+    diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.62,smoothstep(.72,.9,vnoise(w*vec2(.9,.012)))*.55);
+    {/* v0.45 asfaltta çatlak (sırt gürültüsü) ve onarım yaması; piksel boyutundan inceyse söner */float fwA=length(fwidth(w)),ca=1.-smoothstep(.08,.3,fwA);float r1=abs(vnoise(w*.16+vec2(vnoise(w*.05)*3.))-.5);diffuseColor.rgb*=1.-(1.-smoothstep(.0,.022,r1))*.2*ca*smoothstep(.45,.65,vnoise(w*.03+5.));
+     vec2 pc=floor(w/vec2(7.,4.5));float pt=step(.93,h21(pc));diffuseColor.rgb*=1.-pt*.13*(1.-smoothstep(.6,1.6,fwA));diffuseColor.rgb*=1.+(h21(floor(w*.5))-.5)*.05*ca;}${runway?`
     {/* v0.43 pist: teker izi (lastik birikintisi) temas bölgelerinde ve orta hatta, yamalı asfalt */vec2 rd=vec2(${Math.sin(RUNWAY.heading).toFixed(5)},${(-Math.cos(RUNWAY.heading)).toFixed(5)}),rp=vec2(-rd.y,rd.x);float ra=dot(w,rd),rc=dot(w,rp);
      float dth=1008.-abs(ra),tz=smoothstep(100.,200.,dth)*(1.-smoothstep(600.,800.,dth));float lane=exp(-pow(rc/5.5,2.));float streak=vnoise(vec2(ra*.04,rc*3.1));
      diffuseColor.rgb*=1.-.42*tz*lane*smoothstep(.25,.75,streak);diffuseColor.rgb*=1.-.12*lane*smoothstep(.4,.8,vnoise(vec2(ra*.01,rc*.8)));
@@ -122,6 +124,10 @@ export function enhanceSurface(material,{rock=.0,snowLine=1e9,detail=1,asphalt=f
     {float hl=max(0.,dot(diffuseColor.rgb,vec3(.299,.587,.114))-.32);diffuseColor.rgb=diffuseColor.rgb/(1.+hl*1.6)*mix(vec3(1.),vec3(1.,.95,.86),smoothstep(0.,.25,hl));} /* v0.44 kireçli / açık zemin kar gibi beyaz parlamaz: tepe değerleri sıkıştırılır, sıcak ton */
     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.92,1.02,.9),green*smoothstep(.3,.7,n2)*.35);`}
     float slope=1.-clamp(normalize(vWorldN).y,0.,1.);
+    ${asphalt?'':`{/* v0.45 çıplak yamaçlarda yağmur oyuntusu (yarıntı) izleri: eğim yönünde uzun, enine dar koyu çizgiler; Ankara çevresi marn tepelerine özgü */
+     vec3 wn=normalize(vWorldN);vec2 dn=wn.xz/max(1e-3,length(wn.xz));float sl=smoothstep(.06,.28,1.-wn.y)*(1.-smoothstep(1800.,3500.,cd));
+     if(sl>.01){vec2 q=vec2(dot(w,dn)*.025,dot(w,vec2(-dn.y,dn.x))*.32);float gl=vnoise(q+vec2(0.,vnoise(q*.7+3.)*2.))*.7+vnoise(q*2.1+9.)*.3;float fwG=length(fwidth(w))*.32;
+      float rill=smoothstep(.6,.82,gl)*(1.-smoothstep(.4,1.,fwG));diffuseColor.rgb*=1.-rill*sl*(.16+.2*smoothstep(.3,.6,lum))*uDetail;diffuseColor.rgb*=1.+smoothstep(.15,.3,1.-gl)*sl*.05;}}`}
     ${asphalt?'':'{vec3 wn=normalize(vWorldN);float nf=clamp(-wn.z*4.,0.,1.)*smoothstep(.02,.18,1.-wn.y),sf=clamp(wn.z*4.,0.,1.)*smoothstep(.02,.18,1.-wn.y);diffuseColor.rgb*=mix(vec3(1.),vec3(.86,.93,.82),nf*.7);diffuseColor.rgb*=mix(vec3(1.),vec3(1.05,1.01,.94),sf*.5);} /* v0.44 kuzey yamaçlar daha koyu ve yeşil (nem), güney yamaçlar kuru ve açık */'}
     float rk=smoothstep(.24,.5,slope+(n2-.5)*.12)*uRock;
     vec3 rockC=mix(vec3(.35,.33,.29),vec3(.47,.44,.38),n3)*(0.8+n1*.4);diffuseColor.rgb=mix(diffuseColor.rgb,rockC,rk);
