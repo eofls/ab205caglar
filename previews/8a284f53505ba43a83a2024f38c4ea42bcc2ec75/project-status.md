@@ -1,3 +1,19 @@
+# v0.51.0 — 5 Kasım 2026 (pilot seviyeleri, bitişler, karar anları)
+
+Pilot seviyeleri (hazır akış, güç kaybı): deneyimli pilot sahayı ≈1,5 s’de bir yeniden değerlendirir (erişim ölçülen süzülüşten, yolda engel / tel), süzülüş süratini sahaya erişime göre ayarlar (45–80 kt), ağaç / çatı üstünden şimdiki yükseklikle geçilebiliyorsa saykılıkla tırmanmaz (enerji korunur), son yaklaşmada enerji hattı ve ≈60 m taşma alanı engelsiz saha seçer, fleyırı iniş yerinin zeminine göre başlatır, ormanda açıklığa yaklaşırken ağaç tepesine değil zemine göre son kollektif uygular; altı çizili adımları daha çabuk uygular. Yetkin pilot bunların temel olanlarını daha seyrek yapar; gelişmekte olan pilot ilk sahada kalır, süzülüş sürati sabit, engelde saykılıkla tırmanma eğilimi. Tam güç kaybı (motor arızası) dört sahada: deneyimli ≤1,6 m/s, engelsiz. Bitişler: parça hasarı temas sertliğiyle aynı ölçekte (%100 sertlikte skid ve çapraz borular ağır, gövde tabanı belirgin; normal otorotasyon temasında hasar yok); engel temasında rozet "Engel teması" ve etkilenen parçayı gösterir; ağaç / sert temasta "iniş tamamlandı" denmez; güçlü yaklaşma yolda ağaç tepesi ve tellerin ≥5,5 m üstünden. Karar anları: acil durumlarda haberleşme (MAYDAY / PAN PAN), otorotasyonda rotor devri, inişten sonra emercensi / normal susturma; uçuş hareketlerinde standart kararları (dönüşte çapraz kontrol, süzülüş güç tanzimi, tırmanışlı dönüş, kalkış sonrası tırmanış, hızlanma, alçak uçuş sürati, kol uçuşunda dönüş). Sorular zaman sırasında. Testler: claude/tests/v051.test.mjs; süpürmeler claude/sweeps/k36.mjs.
+
+# v0.50.0 — 4 Kasım 2026 (S01 fleyır)
+
+S01 güvenli saha (400 ft / 60 kt motor arızası), doğru kararlarla: fleyır ≈100 ft'te yumuşak başlar ve alçaldıkça artar; erken asılı kalma 65 ft'ten ≈50 ft'e indi, rotor devri 339 RPM limitini aşmaz (önce 344), yüksek rotor devrinde hatve yüklemesi daha erken. Sürat 15 ft'te ≈11 kt, temas ≈355 ft/dk ve ≈4 kt (önce 428 ft/dk). Ayar yalnızca S01'de; diğer H-V senaryoları, hareketler ve acil durumlar değişmedi. Testler: claude/tests/v050.test.mjs.
+
+# v0.49.0 — 4 Kasım 2026 (meydan turu çizime göre, keşif, kontrol)
+
+06 ve 24 meydan turları kullanıcının haritada çizdiği köşelerden geçer (dönüşler ≈30° yatış, rüzgâraltı sonunda 70 kt). Keşifte yüksek keşif bitince doğrudan rüzgâraltı–esas bacak kesişimine gidilir. Program seçicide hareket başı hep hareketin kendi başı (güçlü kurtarma önceki senaryonun başıyla ağaçlığa gitmiyor). Acil durum usulleri Operatör Talimnamesi Bölüm 9 ile karşılaştırıldı: bariz çelişki yok. Bütün acil durum ve hareketlerin bütün karar seçenekleri süzüldü (claude/sweeps/k34.mjs, k35.mjs): doğru kararlarda bütün inişler yumuşak.
+
+# v0.48.0 — 4 Kasım 2026 (bulutlar)
+
+Parçalı bulutlu havada kümülüs: tabanı düz ve gölgeli, üstü kabarık ve güneş tarafı parlak, dört farklı biçim. Kapalı havada ayrı bulut topları yerine geniş, gri stratus tabakası. Uydu görüntüsü renkleri biraz daha soluk (kasım bozkırı).
+
 # v0.47.0 — 4 Kasım 2026 (orman helikopterle birlikte, kare süresi)
 
 Orman artık başlangıç noktası çevresinde sabit değil: kameranın 2 km (telefonda 1,1 km) çevresindeki ağaç hücreleri uçuş sırasında dilim dilim kurulur, uzaklaşanlar bırakılır; uzun meydan turu ve Tepeler paternlerinde yakındaki ağaçlar hep 3B. Uzak ağaç noktaları 1 km karolarda (görüş dışı çizilmez, 3B ağaçların olduğu yerde gizli). Uzak seviyede ağaç başına tek yumru taç. Düz çatılarda membran / panel dokusu ve çatı cihazları. Ağaçsız sahada sahne güncellemesi hata vermez. Yazılım WebGL'de kare süresi v0.46'ya göre ≈%30 kısa.

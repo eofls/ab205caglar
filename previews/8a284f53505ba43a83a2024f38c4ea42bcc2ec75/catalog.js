@@ -12,9 +12,9 @@ export const SOURCES = {
   chart:{use:'Yükseklik–hız sekmesindeki diyagram ve kaçınılacak bölge.',title:'Gönderdiğin H/V diyagramı',file:'Ekran görüntüsü 2026-10-13 225631.png',id:'libfile_85b25953c5ec8191b917ac957bf11c5c',pages:'Tek görsel',printed:'Figure 9-3 • Change 8 • 9-13',status:'Çatı/burun IAS ölçekleri ve ağırlık eğrileri var; sayısallaştırma bekliyor'}
 };
 export const CREW = {
-  developing:{label:'Gelişmekte',text:'Yapılandırılmış görev paylaşımı ve açık hatırlatmalar gösterilir.'},
-  proficient:{label:'Yetkin',text:'Standart çağrılar ve karşılıklı teyit vurgulanır.'},
-  experienced:{label:'Deneyimli',text:'Kısa çağrılar ve bağımsız çapraz kontrol vurgulanır.'}
+  developing:{label:'Gelişmekte',text:'Yapılandırılmış görev paylaşımı ve açık hatırlatmalar gösterilir. Arızayı geç tanır; ilk seçtiği sahada kalır, süzülüş süratini erişime göre ayarlamaz, engelde saykılıkla tırmanma eğilimindedir; fleyır ve son kollektif geç.'},
+  proficient:{label:'Yetkin',text:'Standart çağrılar ve karşılıklı teyit vurgulanır. Sahayı aralıkla yeniden değerlendirir, süzülüş süratini erişime göre ayarlar, son yaklaşmadaki telleri ve taşma alanını hesaba katar.'},
+  experienced:{label:'Deneyimli',text:'Kısa çağrılar ve bağımsız çapraz kontrol vurgulanır. Arızayı anında tanır; sahayı sürekli değerlendirir, süzülüşü erişime göre yönetir, engel karşısında enerjiyi korur, yükselen arazide fleyırı öndeki zemine göre başlatır.'}
 };
 export const genericDecisions = (low=false) => [
   {id:'priority',at:8,title:'İlk dikkat önceliğin ne?',options:[
@@ -35,7 +35,7 @@ export const SCENARIOS = [
     context:'Düşük süratli uçuş; otorotatif akışı geliştirmek için gereken zaman ve irtifa önemli.',
     aero:'Düşük ileri süratte alçalışa geçiş ve hava akımının kurulması önem kazanır. Yükseklik–sürat bileşimi, rotor enerjisini yönetme payını sınırlayabilir.',
     outcome:'Bu konumda kontrolün korunması bile hasarsız inişi garanti etmez. Kaçınılacak bölge, kesin kaza sonucu anlamına da gelmez.'},
-  {id:'safe',name:'Güvenli saha',subtitle:'S01 · Ayrıntılı motor arızası · 400 ft / 60 kt',zone:'safe',zoneLabel:'Güvenli',height:400,ias:60,duration:60,decisions:SAFE_DECISIONS,lesson:'S01',
+  {id:'safe',name:'Güvenli saha',subtitle:'S01 · Ayrıntılı motor arızası · 400 ft / 60 kt',zone:'safe',zoneLabel:'Güvenli',height:400,ias:60,duration:60,decisions:SAFE_DECISIONS,lesson:'S01',flareTune:{prog:{amin:1,cap:5,hfull:5},ogain:.04},
     context:'Diyagramda güvenli olarak işaretlenen bölümden örnek başlangıç; saha ve hava şartları yine belirleyici.',
     aero:'İrtifa ve ileri sürat, otorotatif alçalışın kurulmasına daha fazla imkân verebilir. Enerji yönetimi, saha seçimi ve doğru teknik hâlâ gereklidir.',
     outcome:'Güvenli bölge ifadesi, test koşullarına bağlı imkânı tarif eder. Engel, zemin, hava ve uygulama hataları uygun başlangıç payını ortadan kaldırabilir.'},

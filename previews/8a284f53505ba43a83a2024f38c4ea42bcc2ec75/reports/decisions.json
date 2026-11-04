@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "bbec59b4cbbee1290ce20426c7c518b7d186b269",
+  "commit": "8a284f53505ba43a83a2024f38c4ea42bcc2ec75",
   "conditions": {
     "grossWeightLb": null,
     "initialRotorRpm": 324,
@@ -125,16 +125,16 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.07442079101741308,
-          "state": "Belirgin etki yok",
+          "severity": 0.11911623383923359,
+          "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
         },
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.07444302274949993,
-          "state": "Belirgin etki yok",
+          "severity": 0.11915181744647163,
+          "state": "Hafif deformasyon",
           "detach": false,
           "directContact": true
         },
@@ -1448,7 +1448,7 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.04881806473530284,
+          "severity": 0.06506603245621806,
           "state": "Belirgin etki yok",
           "detach": false,
           "directContact": false
@@ -1456,7 +1456,7 @@
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.04883264442452599,
+          "severity": 0.06508546465897617,
           "state": "Belirgin etki yok",
           "detach": false,
           "directContact": true
@@ -2743,7 +2743,7 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.8800073957752226,
+          "severity": 1,
           "state": "Ağır deformasyon",
           "detach": false,
           "directContact": false
@@ -2751,7 +2751,7 @@
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.8801778156846662,
+          "severity": 1,
           "state": "Ağır deformasyon",
           "detach": false,
           "directContact": true
@@ -2807,16 +2807,16 @@
         {
           "id": "transmission",
           "label": "Transmisyon bağlantıları",
-          "severity": 0.007228482010128601,
-          "state": "Belirgin etki yok",
+          "severity": 0.386022535236463,
+          "state": "Belirgin deformasyon",
           "detach": false,
           "directContact": false
         },
         {
           "id": "engine",
           "label": "Motor bağlantıları",
-          "severity": 0,
-          "state": "Belirgin etki yok",
+          "severity": 0.2631311424324116,
+          "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
         },
@@ -2839,7 +2839,7 @@
         {
           "id": "controls",
           "label": "Kumanda bağlantıları",
-          "severity": 0,
+          "severity": 0.04511987481418003,
           "state": "Belirgin etki yok",
           "detach": false,
           "directContact": false
@@ -2847,8 +2847,8 @@
         {
           "id": "crosstube",
           "label": "Skid çapraz boruları",
-          "severity": 0.33392829329278517,
-          "state": "Hafif deformasyon",
+          "severity": 1,
+          "state": "Ağır deformasyon",
           "detach": false,
           "directContact": false
         },
@@ -4708,7 +4708,7 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.1834850710264173,
+          "severity": 0.34935996111547063,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
@@ -4716,7 +4716,7 @@
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.18351007448863785,
+          "severity": 0.3494075683052014,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": true
@@ -4812,8 +4812,8 @@
         {
           "id": "crosstube",
           "label": "Skid çapraz boruları",
-          "severity": 0,
-          "state": "Belirgin etki yok",
+          "severity": 0.2077723839056168,
+          "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
         },
@@ -6017,16 +6017,16 @@
         {
           "id": "cabin",
           "label": "Gövde/taban",
-          "severity": 0.37235462726731333,
-          "state": "Belirgin deformasyon",
+          "severity": 1,
+          "state": "Ağır deformasyon",
           "detach": false,
           "directContact": false
         },
         {
           "id": "cockpit",
           "label": "Kokpit",
-          "severity": 0.12740006666225528,
-          "state": "Hafif deformasyon",
+          "severity": 0.4126819242354062,
+          "state": "Belirgin deformasyon",
           "detach": false,
           "directContact": false
         },
@@ -6057,7 +6057,7 @@
         {
           "id": "mast",
           "label": "Mast",
-          "severity": 0.0834000666622553,
+          "severity": 0.3237273636303481,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
@@ -6065,16 +6065,16 @@
         {
           "id": "transmission",
           "label": "Transmisyon bağlantıları",
-          "severity": 0.3447728030252901,
-          "state": "Hafif deformasyon",
+          "severity": 1,
+          "state": "Ağır deformasyon",
           "detach": false,
           "directContact": false
         },
         {
           "id": "engine",
           "label": "Motor bağlantıları",
-          "severity": 0.2711909787832669,
-          "state": "Hafif deformasyon",
+          "severity": 1,
+          "state": "Ağır deformasyon",
           "detach": false,
           "directContact": false
         },
@@ -6097,24 +6097,24 @@
         {
           "id": "controls",
           "label": "Kumanda bağlantıları",
-          "severity": 0.1758182424202321,
-          "state": "Hafif deformasyon",
+          "severity": 0.5176819242354062,
+          "state": "Belirgin deformasyon",
           "detach": false,
           "directContact": false
         },
         {
           "id": "crosstube",
           "label": "Skid çapraz boruları",
-          "severity": 0.5053091878723713,
-          "state": "Belirgin deformasyon",
+          "severity": 1,
+          "state": "Ağır deformasyon",
           "detach": false,
           "directContact": false
         },
         {
           "id": "glazing",
           "label": "Cam yüzeyleri",
-          "severity": 0.035818242420232065,
-          "state": "Belirgin etki yok",
+          "severity": 0.24477280302529014,
+          "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
         },
@@ -7274,7 +7274,7 @@
         {
           "id": "skidLeft",
           "label": "Sol skid",
-          "severity": 0.08342373687187685,
+          "severity": 0.1380854229497784,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
@@ -7282,7 +7282,7 @@
         {
           "id": "skidRight",
           "label": "Sağ skid",
-          "severity": 0.08328617973401187,
+          "severity": 0.13785773432931997,
           "state": "Hafif deformasyon",
           "detach": false,
           "directContact": false
