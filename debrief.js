@@ -62,7 +62,7 @@ export function renderDebrief(host,session,{onSeek,onExport,compare=null,compare
   ${marks}${ticks.join('')}<line class="db-cursor" x1="0" x2="0" y1="${T}" y2="${H1+H2-14}" visibility="hidden"/></svg>`;
  const label={pass:'Uygun',warn:'Sınırda',fail:'Uygun değil',na:'—'};
  const decisionList=d.decisions.filter(dd=>d.choices.some(a=>a.id===dd.id)&&dd.at<=tMax).map((dd,i)=>{const a=d.choices.find(a=>a.id===dd.id),o=dd.options?.find(o=>o.id===a.option);return `<li><b>${i+1}</b> · ${dd.at.toFixed(1)} s · ${esc(dd.title)} → <i>${esc(o?.label??a.option)}</i></li>`;}).join('');
- const cc=session.config,isaT=15-2*cc.pressureAltitudeFt/1000,da=Math.round((cc.pressureAltitudeFt+120*(cc.temperatureC-isaT))/100)*100,lb=cc.grossWeightLb??6173;
+ const cc=session.config,paE=(cc.pressureAltitudeFt??3000)+(1013-(cc.qnhHpa??1013))*27.3,isaT=15-2*paE/1000,da=Math.round((paE+120*(cc.temperatureC-isaT))/100)*100,lb=cc.grossWeightLb??6173;
  const heavy=da>=6000||lb>=9000?`<p class="db-heavy">Ağır koşul: ${lb>=9000?lb+' lb':''}${lb>=9000&&da>=6000?' · ':''}${da>=6000?'yoğunluk irtifası ≈ '+da+' ft':''}. Otorotasyonda alçalış oranı ve fleyır için gereken itki artar, rotor pal stall sınırına yaklaşır; temas sertliği bu koşulun sonucudur.</p>`:'';
  // v0.33: plain-language summary first (what went well / what to work on), then the chart and the graded table.
  const good=s.items.filter(i=>i.grade==='pass').map(i=>i.title),work=s.items.filter(i=>i.grade==='fail'||i.grade==='warn');

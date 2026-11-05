@@ -114,6 +114,10 @@ export function createHelicopter(){
  const mesh=(geo,mat,pos,parent)=>{const m=new T.Mesh(geo,mat);m.position.copy(pos);parent.add(m);return m;};
  const black=new T.MeshStandardMaterial({color:'#1b1d1c',roughness:.7}),paint=new T.MeshStandardMaterial({color:'#e9ecec',roughness:.45});
  const tube=(a,b,r,parent,mat)=>{const av=new T.Vector3(...a),bv=new T.Vector3(...b);const m=mesh(new T.CylinderGeometry(r,r,av.distanceTo(bv),8),mat,av.clone().add(bv).multiplyScalar(.5),parent);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),bv.sub(av).normalize());return m;};
+ {/* v0.52 kuyruk kızağı (tail skid): dikey stabilizenin altında, aşağı ve geriye eğik boru; ucu öne kıvrık */
+  const tb=parts.tailBoom,loc=(x,y)=>fromModel(x,y,0).sub(boomPivot).toArray(),metal=new T.MeshStandardMaterial({color:'#8c9294',roughness:.5,metalness:.4});
+  const a=loc(3.5,.34),b=loc(3.86,-.12),c=loc(3.98,-.16),d=loc(3.6,.3),e=loc(3.84,-.08);
+  for(const [p,q,r] of [[a,b,.022],[b,c,.02],[d,e,.016]]){const m=tube(p,q,r,tb,metal);m.name='tailSkid';m.castShadow=true;}}
  const effects=new T.Group();effects.name='impactEffects';root.add(effects);const dust=[];
  for(let i=0;i<16;i++){const mat=new T.MeshBasicMaterial({color:'#b9a88c',transparent:true,opacity:.12,depthWrite:false});const m=mesh(new T.IcosahedronGeometry(1,1),mat,new T.Vector3(0,1,0),effects);m.visible=false;dust.push(m);}
  const splash=[];for(let i=0;i<3;i++){const m=mesh(new T.TorusGeometry(1,.06,5,32),new T.MeshBasicMaterial({color:'#c6e4e8',transparent:true,opacity:.55,depthWrite:false}),new T.Vector3(0,.1,0),effects);m.rotation.x=Math.PI/2;m.visible=false;splash.push(m);}

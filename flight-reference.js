@@ -4,7 +4,9 @@ export const FT=.3048,KT=1852/3600,LB_KG=.45359237;
 export const DEFAULT_MASS_KG=2800,DEFAULT_WEIGHT_LB=DEFAULT_MASS_KG/LB_KG;
 export const MAX_SESSION_SECONDS=900,MAX_SESSION_BYTES=8*1024*1024;
 export function massKg(c={}){return c.grossWeightLb==null?DEFAULT_MASS_KG:c.grossWeightLb*LB_KG;}
-export function atmosphere(c){const h=c.pressureAltitudeFt*FT,p=101325*Math.pow(1-2.25577e-5*h,5.25588);return {density:p/(287.05287*(c.temperatureC+273.15)),pressurePa:p};}
+/* v0.52 QNH (hPa): basınç irtifası = rakım alanı + (1013,25 − QNH) × 27,3 ft */
+export function pressureAltFt(c){return (c.pressureAltitudeFt??3000)+(1013-(c.qnhHpa??1013))*27.3;}
+export function atmosphere(c){const h=pressureAltFt(c)*FT,p=101325*Math.pow(1-2.25577e-5*h,5.25588);return {density:p/(287.05287*(c.temperatureC+273.15)),pressurePa:p};}
 export function tasFactor(c){return Math.sqrt(1.225/atmosphere(c).density);}
 export function windVector(c){const a=c.windFromDeg*Math.PI/180;return {x:-c.windKt*KT*Math.sin(a),z:c.windKt*KT*Math.cos(a)};}
 // IAS target on a ground track: crab into crosswind; unreachable crosswind is allowed to drift.

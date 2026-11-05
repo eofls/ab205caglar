@@ -14,7 +14,7 @@ import {fromModel,ctlToRuntime,COCKPIT_REF} from './scene-model.js';
    the misc switch panel, the pedestal radios and caution panel on the model's pedestal top, the overhead console under
    its roof and our collective switch box on the supplied right collective. The model itself is not reshaped. */
 const R=Math.PI/180,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-export const EYE=COCKPIT_REF.eye.clone();          // right seat: the supplied pilot's eye point
+export const EYE=COCKPIT_REF.eye.clone().add(new T.Vector3(-.035,-.03,0)); /* v0.52 kullanıcı: göz 3 cm aşağı, 3,5 cm geri */          // right seat: the supplied pilot's eye point
 const FLOOR=COCKPIT_REF.floorY;
 /* panel face of the supplied model: x=-7.18-.25(y+.80) (supplied axes), |z|<.62; the photo layout (u .03–.94) is
    scaled to its width and centred on it */
@@ -300,7 +300,7 @@ export class Cockpit{
  switchLights(p){const on=k=>this.state[k],out={},run=(p.engineRpm??6600)>3000;if(on('hydCont')===1||this.cbOut('hydCb'))out.hyd=true;if(on('gov')===1)out.govemer=true;if(on('fuel')===1&&run){out.efpump=true;out.lboost=true;out.rboost=true;}return out;}
  outputs(p,time,config){const st=this.state,on=k=>st[k],dcOn=on('bat')===1||(p.engineRpm??0)>5500,rot=p.ground?.rotorRpm??p.rotorRpm??324,night=config.lighting==='night'?1:config.lighting==='dusk'?.55:0,lights=caution(p,time,config);
   return {night,landing:dcOn&&on('ldgLt')===0&&on('ldgExt')!==2,landingAuto:this.user.ldgLt===undefined&&night>.4,search:dcOn&&on('slOn')===0,antiColl:dcOn&&on('antiColl')===1,
-   pos:dcOn&&on('posLt')!==1?(on('posLt')===2?'flash':'steady'):null,posBright:on('posDim')===1,fus:dcOn?[.5,0,1][on('fusLt')]:0,wipers:dcOn?[0,0,.7,1.1,1.6][on('wipers')]:0,wiperSel:on('wiperSel'),
+   pos:dcOn&&(on('posLt')!==1||(this.user.posLt===undefined&&(night>.4||(config.visibilityKm??10)<5)))?(on('posLt')===2?'flash':'steady'):null, /* v0.52 gece veya görüş < 5 km: seyrüsefer (pozisyon) ışıkları kendiliğinden STEADY (TM 55-1520-210-10 2-65) */posBright:on('posDim')===1,fus:dcOn?[.5,0,1][on('fusLt')]:0,wipers:dcOn?[0,0,.7,1.1,1.6][on('wipers')]:0,wiperSel:on('wiperSel'),
    horn:dcOn&&on('lowRpmAudio')===0&&rot>1&&(rot<=305||!!lights.rpm&&rot<324),overspeed:dcOn&&rot>=339,
    backlight:Object.fromEntries(['ltPilot','ltCopilot','ltEngine','ltSec','ltConsole','ltPed'].map(k=>[k,dcOn?[0,.55,1][on(k)]:0]))};}
  applyLighting(o){if(!o)return;const lvl=k=>1-o.night*(1-.12-.88*(o.backlight[k]??0)),key=[o.night,...Object.values(o.backlight)].join();if(key===this.ltKey)return;this.ltKey=key;

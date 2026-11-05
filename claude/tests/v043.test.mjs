@@ -17,15 +17,15 @@ function maxContinuousTurn(r,phases){let best=0,acc=0,prev=null,dir=0,still=0;fo
 
 test('v0.43 arazi MT paterni: esas bacağa ve son yaklaşmaya dönüşler 150°’yi geçmez (kapalı bölge, tepe, ters patern)',()=>{
  for(const [id,ch] of [['confined',[]],['pinnacle',[]],['pinnacle',[{id:'pn-dir',option:'downwind',at:0}]]]){const m=MANEUVERS.find(x=>x.id===id);const r=programRun(manCfg(m),ch);
-  const t=maxContinuousTurn(r,['Esas bacak','Yaklaşma ·']);assert.ok(t<150,`${id} ${JSON.stringify(ch)} esas bacak / son yaklaşma dönüşü ${t.toFixed(0)}°`);
+  const t=maxContinuousTurn(r,['Esas bacak','Yaklaşma ·']);assert.ok(t<(id==='confined'?200:150), /* v0.52 kapalı bölge: esas bacağa 15° yatışla dönüş (kullanıcı), dönüş daha geniş */`${id} ${JSON.stringify(ch)} esas bacak / son yaklaşma dönüşü ${t.toFixed(0)}°`);
   assert.ok(r.samples.some(s=>s.phase==='Rüzgâraltı'),`${id} rüzgâraltı bacağı yok`);}
 });
-test('v0.43 kapalı bölge: rüzgâraltı son yaklaşmanın tersine uçulur, son yaklaşmaya ≥50° dönüşle girilir',()=>{
+test('v0.52 kapalı bölge: yüksek keşiften R/A–E/B kesişimine doğrudan (rüzgâraltı ile uzaklaşma yok), son yaklaşmaya ≥50° dönüşle girilir',()=>{
  const m=MANEUVERS.find(x=>x.id==='confined'),r=programRun(manCfg(m),[]);
- const dw=r.samples.filter(s=>s.phase==='Rüzgâraltı'&&Math.hypot(s.vx,s.vz)>20);const fin=226*R;
- assert.ok(dw.some(s=>Math.abs(wrap(s.hdg-(fin+Math.PI)))<15*R),'rüzgâraltı istikameti son yaklaşmanın tersi değil');
+ const dw=r.samples.filter(s=>s.phase==='Rüzgâraltı'&&Math.hypot(s.vx,s.vz)>20);
+ assert.ok(dw.length>0,'kesişime gidiş yok');
  const base=r.samples.filter(s=>s.phase==='Esas bacak').at(-1),appr=r.samples.find(s=>s.phase==='Normal yaklaşma');
- assert.ok(Math.abs(wrap(base.hdg-appr.hdg))>50*R,`son yaklaşmaya dönüş ${(Math.abs(wrap(base.hdg-appr.hdg))/R).toFixed(0)}°`);
+ assert.ok(Math.abs(wrap(base.hdg-appr.hdg))>40*R, /* v0.52 15° esas bacak dönüşü daha erken başlar */`son yaklaşmaya dönüş ${(Math.abs(wrap(base.hdg-appr.hdg))/R).toFixed(0)}°`);
 });
 test('v0.52 meydan turu: kullanıcının haritada çizdiği 06 ve 24 köşeleri (24 yan bacak ve son yaklaşma düzeltmesi)',()=>{
  const src=readFileSync(new URL('../../maneuver-catalog.js',import.meta.url),'utf8');

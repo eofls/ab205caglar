@@ -15,12 +15,12 @@ export function ppc({weightLb=DEFAULT_WEIGHT_LB,paFt=3000,tempC=15}={}){const da
   wMaxIge:Math.min(9500,Math.round(wMaxIge/50)*50),wMaxOge:Math.min(9500,Math.round(wMaxOge/50)*50),goIge:marginIge>=0,goOge:margin>=0};}
 export function ppcText(p){return `YOĞUNLUK İRTİFASI ${p.da} FİT; AZAMİ TORK ${p.tqMax} PSI; HAVIR TORKU YER TESİRİNDE ${p.tqIge}, YER TESİRİ DIŞINDA ${p.tqOge} PSI; GÜÇ PAYI ${p.margin>=0?p.margin:'YOK ('+p.margin+')'} PSI${p.goOge?'':' — YER TESİRİ DIŞI HAVIR GÜCÜ YOK'}`;}
 /* site conditions: pressure altitude ≈ site elevation (standard pressure), temperature with the standard lapse from the configured value */
-export function sitePpc(config,elevFt){const pa=Math.max(0,elevFt),t=(config.temperatureC??15)-2*(pa-(config.pressureAltitudeFt??3000))/1000;return ppc({weightLb:config.grossWeightLb??DEFAULT_WEIGHT_LB,paFt:pa,tempC:t});}
+export function sitePpc(config,elevFt){const dq=(1013-(config.qnhHpa??1013))*27.3,pa=Math.max(0,elevFt+dq),t=(config.temperatureC??15)-2*(elevFt-(config.pressureAltitudeFt??3000))/1000; /* v0.52 QNH basınç irtifasına eklenir */return ppc({weightLb:config.grossWeightLb??DEFAULT_WEIGHT_LB,paFt:pa,tempC:t});}
 export {FT};
 
 /* v0.39 tork göstergesi PPC'ye bağlı: güç oranı (şaft gücü / referans) × yer tesiri dışı havır torku / 1.25
    (programdaki güç eğrisinde OGE havır = 1.25). Ağırlık, basınç irtifası ve sıcaklıkla değişir. */
 const PPC_CACHE=new Map();
 export function torquePsi(p,config,elevFt){const ref=p.referenceShaftPowerW??p.shaftPowerW??1;const share=Math.max(0,(p.shaftPowerW??0)/(ref||1));
- const k=Math.round(elevFt/100)+'|'+config.grossWeightLb+'|'+config.temperatureC+'|'+config.pressureAltitudeFt;let pp=PPC_CACHE.get(k);if(!pp){pp=sitePpc(config,elevFt);PPC_CACHE.set(k,pp);if(PPC_CACHE.size>200)PPC_CACHE.clear();}
+ const k=Math.round(elevFt/100)+'|'+config.grossWeightLb+'|'+config.temperatureC+'|'+config.pressureAltitudeFt+'|'+(config.qnhHpa??1013);let pp=PPC_CACHE.get(k);if(!pp){pp=sitePpc(config,elevFt);PPC_CACHE.set(k,pp);if(PPC_CACHE.size>200)PPC_CACHE.clear();}
  return Math.min(90,share*pp.tqOge/1.25);}
