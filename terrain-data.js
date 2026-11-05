@@ -110,7 +110,7 @@ export function forestClearcuts(R=3000){const out=[],cs=Math.cos(STAND.theta),sn
   if(pts.some(([x,z])=>Math.abs(x)<R&&Math.abs(z)<R))out.push(pts);}return out;}
 let GREENIDX=null;function greenIndex(x,z){if(!GREENIDX){GREENIDX=new Map();for(const g of AIRFIELD_GREEN){const xs=g.points.map(p=>p[0]),zs=g.points.map(p=>p[1]);for(let i=Math.floor(Math.min(...xs)/200);i<=Math.floor(Math.max(...xs)/200);i++)for(let j=Math.floor(Math.min(...zs)/200);j<=Math.floor(Math.max(...zs)/200);j++){const k=i+','+j;(GREENIDX.get(k)??GREENIDX.set(k,[]).get(k)).push(g);}}}return GREENIDX.get(Math.floor(x/200)+','+Math.floor(z/200))??[];}
 function treeDensity(x,z,area){
- if(REAL(area)){for(const s of PAD_CLEAR[area]??[])if(Math.hypot(x-s.x,z-s.z)<s.r)return 0;const cb=confinedBand(x,z,area);if(cb===1)return .5;const c=REAL(area).treeCell(x,z);if(!c)return 0;return Math.max(0,Math.min(1,(c.d-.25)/.75))*(cb===2?.35:1);}
+ if(REAL(area)){for(const s of PAD_CLEAR[area]??[])if(Math.hypot(x-s.x,z-s.z)<s.r)return 0;const cb=confinedBand(x,z,area);if(cb===3)return 0;if(cb===1)return .92;const c=REAL(area).treeCell(x,z);if(!c)return 0;return Math.max(0,Math.min(1,(c.d-.25)/.75))*(cb===2?.35:1);}
  switch(area){
   case 'forest':return forestStand(x,z).density;
   case 'terrain':{if(Math.abs(x)<110&&z<250&&z>-2600)return 0;for(const f of RESIDENTIAL)if(insidePolygon(x,z,f.points))return .5;
@@ -242,10 +242,13 @@ export const POWER_LINE_SPEC={towerHeightM:TOWER_H,offsetsM:WIRE_OFFSETS,sagM:3.
 
 /* v0.39 Tepeler: KML iniş yerleri (tepe / kapalı). Tepe üstleri ve kapalı bölge ortaları ağaçsız ve kayasız tutulur
    (gerçekte de açık alan); MT_HILLS eski arayüz için [x, z, r, yükseklik] */
-const PAD_CLEAR={mountain:TEPE_SITES.map(s=>({x:s.x,z:s.z,r:s.kind==='confined'?55:30}))};
+const PAD_CLEAR={mountain:TEPE_SITES.filter(s=>s.kind!=='confined').map(s=>({x:s.x,z:s.z,r:30}))}; /* v0.52 kapalı bölgeler dikdörtgen açıklık (confinedBand) */
 const CONF_SITES=TEPE_SITES.filter(s=>s.kind==='confined');
 /* 1: kapalı bölgenin kenarındaki kavak halkası (55–78 m), 2: dışında seyreltilmiş örtü (78–170 m) */
-function confinedBand(x,z,area){if(area!=='mountain')return 0;for(const s of CONF_SITES){const d=Math.hypot(x-s.x,z-s.z);if(d<55||d>170)continue;if(d<78)return 1;return 2;}return 0;}
+/* v0.52 kullanıcı: kapalı bölge dikdörtgen, dört yanı sık ağaç duvarıyla çevrili (uzun kenar yaklaşma istikametinde).
+   3: açıklık (ağaç yok), 1: ağaç duvarı, 2: dış kuşak (seyrek), 0: yok */
+const CONF_RECT=CONF_SITES.map(s=>{const f=(s.patterns?.[0]?.final??0)*Math.PI/180;return {x:s.x,z:s.z,ux:Math.sin(f),uz:-Math.cos(f),L:70,W:45,B:24};});
+function confinedBand(x,z,area){if(area!=='mountain')return 0;for(const r of CONF_RECT){const dx=x-r.x,dz=z-r.z;if(dx*dx+dz*dz>230*230)continue;const u=Math.abs(dx*r.ux+dz*r.uz),v=Math.abs(-dx*r.uz+dz*r.ux);if(u<r.L&&v<r.W)return 3;if(u<r.L+r.B&&v<r.W+r.B)return 1;if(u<r.L+r.B+70&&v<r.W+r.B+70)return 2;}return 0;}
 export const MT_HILLS=TEPE_SITES.filter(s=>s.kind==='pinnacle').map(s=>[s.x,s.z,260,terrainHeight(s.x,s.z,'mountain')]);
 /* v0.39.2 yol ızgara indeksi (40 m): yüzey sorgusu her yolu taramıyor (harita ve iniş yeri değerlendirmesi telefonda donuyordu) */
 const ROAD_G={};function roadGrid(area){if(ROAD_G[area])return ROAD_G[area];const g=new Map(),C=40;for(const f of REAL_AREAS[area].features){if(!f.tags.highway)continue;const p=f.points;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],seg=[a,b];for(let gi=Math.floor((Math.min(a[0],b[0])-8)/C);gi<=Math.floor((Math.max(a[0],b[0])+8)/C);gi++)for(let gj=Math.floor((Math.min(a[1],b[1])-8)/C);gj<=Math.floor((Math.max(a[1],b[1])+8)/C);gj++){const k=gi+','+gj;(g.get(k)??g.set(k,[]).get(k)).push(seg);}}}return ROAD_G[area]=g;}
