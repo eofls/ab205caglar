@@ -136,7 +136,7 @@ export function animateHelicopter(heli,state){
  const cf=clamp((c.cyclicForward??0)/.22,-1,1),cr=clamp((c.cyclicRight??0)/.22,-1,1),col=clamp(((c.collective??1)-.3)/1.9,0,1),pd=clamp(c.pedal??0,-1,1),P=heli.parts;
  for(const id of ['cyclicStick','cyclicStickL'])if(P[id]){P[id].rotation.z=-cf*.3;P[id].rotation.x=cr*.24;}
  for(const id of ['collectiveLever','collectiveLeverL'])if(P[id])P[id].rotation.z=col*.35;
- if(P.pedalsL&&P.pedalsR){P.pedalsL.position.x=P.pedalsL.userData.restPosition.x+pd*.08;P.pedalsR.position.x=P.pedalsR.userData.restPosition.x-pd*.08; /* v0.41 model ekseninde +x geriye (pilota doğru, PEDAL_AFT): pedal > 0 = sağ pedal basılı → sağ pedal ileri (−x), sol geri */}
+ if(P.pedalsL&&P.pedalsR){P.pedalsL.position.x=P.pedalsL.userData.restPosition.x-pd*.08;P.pedalsR.position.x=P.pedalsR.userData.restPosition.x+pd*.08; /* v0.52 kokpit kamerasıyla ölçüldü: pedal grubunda +x ileri (pilottan uzağa). pedal > 0 = sağ pedal basılı → sağ pedal ileri, sol geri (HUD ile aynı) */}
  // v0.33: blade coning grows with thrust (collective × rotor speed²); a slow / stopped rotor droops on its stops
  const nr=Math.max(0,(p.rotorRpm??324)/324),cone=nr>.35?Math.min(.09,.012+.032*Math.max(0,c.collective??.7)*nr*nr):-.035*(1-nr/.35);
  for(const [id,side] of [['bladeLeft',1],['bladeRight',-1]]){const b=P[id];if(b){b.rotation.x=side*(.035+(c.collective??.4)*.16);if(!p.contact)b.rotation.z=side*cone;}}
