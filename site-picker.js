@@ -29,7 +29,9 @@ export class SitePicker{
   this.camera.updateMatrixWorld();for(const t of data?.targets??[]){for(const dy of [0,5]){const p=new T.Vector3(t.x,terrainHeight(t.x,t.z,data?.flightArea)+dy,t.z).project(this.camera);if(p.z< -1||p.z>1)continue;const d=Math.hypot(rect.left+(p.x+1)*rect.width/2-x,rect.top+(1-p.y)*rect.height/2-y);if(d<best){best=d;site=t;}}}return {site,data};
  }
  refresh(){if(!this.pointer)return;const {x,y}=this.pointer,{site,data}=this.hit(x,y);this.tip.hidden=!site;if(!site)return;
-  const d=siteDistances(data.position,site,data.flightArea),isT=site.id==='prediction';this.tip.textContent=`${isT?'Tahmini temas noktası (T)':'Aday saha '+site.label}\nYatay: ${d.horizontal.toFixed(1)} m · Dikey: ${d.vertical.toFixed(1)} m\nDoğrudan (hipotenüs): ${d.slant.toFixed(1)} m\nZemin: ${surfaceAt(site.x,site.z,data.flightArea)} · temsili${isT?'\nMevcut kumandalarla hesaplanan temas yeri':'\nSağ tık: sahayı kaldır'}`;
+  const d=siteDistances(data.position,site,data.flightArea),isT=site.id==='prediction',A=data.flightArea,fixed=site.id==='pilot'; /* v0.52 eğim ve durum da gösterilir */
+  const h=(x,z)=>terrainHeight(x,z,A),sl=site.slopeDeg??Math.atan(Math.hypot(h(site.x+4,site.z)-h(site.x-4,site.z),h(site.x,site.z+4)-h(site.x,site.z-4))/8)*180/Math.PI,q=site.quality,st=q!=null?(q>.7?'uygun':q>.4?'sınırda':'uygun değil'):(sl<=7?'uygun':sl<=10?'sınırda':'uygun değil');
+  this.tip.textContent=`${isT?'Tahmini temas noktası (T)':fixed?`${site.label==='H'?'Hareket sahası':'Pilotun seçtiği saha'} ${site.label}`:'Aday saha '+site.label}\nYatay: ${d.horizontal.toFixed(1)} m · Dikey: ${d.vertical.toFixed(1)} m\nDoğrudan (hipotenüs): ${d.slant.toFixed(1)} m\nZemin: ${surfaceAt(site.x,site.z,data.flightArea)} · eğim ${sl.toFixed(1)}° · ${st}${isT?'\nMevcut kumandalarla hesaplanan temas yeri':fixed?'':'\nSağ tık: sahayı kaldır'}`;
   const rect=this.host.getBoundingClientRect(),left=Math.min(x-rect.left+14,rect.width-this.tip.offsetWidth-6),top=y-rect.top-this.tip.offsetHeight-12;
   this.tip.style.left=Math.max(6,left)+'px';this.tip.style.top=Math.max(6,top)+'px';
  }

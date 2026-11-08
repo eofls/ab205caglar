@@ -14,6 +14,10 @@ export {TEPE_SITES};
 export const FEATURES=REAL_AREAS.terrain.features;
 export const DEM={lat:REAL_AREAS.terrain.lat0,lon:REAL_AREAS.terrain.lon0,baseElevationM:REAL_AREAS.terrain.base};
 const REAL=a=>REAL_AREAS[a]??null;
+/* v0.52 kullanıcı işaretlemesi (Tepeler, kapalı bölge başlangıcı batısı): mavi çizilen alan ağaçsız düz yeşil alandır */
+export const OPEN_FIELDS={mountain:[{x:2560,z:-3660,rx:270,rz:250}]};
+const inOpen=(x,z,area)=>{for(const f of OPEN_FIELDS[area]??[]){const u=(x-f.x)/f.rx,v=(z-f.z)/f.rz;if(u*u+v*v<1)return 1-Math.sqrt(u*u+v*v);}return -1;};
+for(const [k,r] of Object.entries(REAL_AREAS))if(OPEN_FIELDS[k]){const tc=r.treeCell;r.treeCell=(x,z)=>inOpen(x,z,k)>=0?null:tc(x,z);}
 /* MSL elevation (m) of a point: base of the area frame + local height */
 export function areaElevationM(x,z,area){const r=REAL(area);if(r)return r.base+terrainHeight(x,z,area);if(area==='airfield')return 818.8+terrainHeight(x,z,area);return 914+terrainHeight(x,z,area);}
 export function insidePolygon(x,z,points){let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
@@ -22,7 +26,7 @@ export function roadAt(x,z){for(const f of FEATURES.filter(f=>f.tags.highway))fo
 export function terrainColor(x,z,area="terrain"){if(area==="water"&&islandHeight(x,z)<=0){const w=Math.sin(x*.021+z*.013)*Math.sin(z*.019-x*.008),near=Math.max(0,1-Math.hypot(Math.max(0,Math.abs(x-750)-60),Math.max(0,Math.abs(z+300)-60))/260);return [.12+.03*w+.07*near,.31+.04*w+.06*near,.39+.03*w+.03*near];}
  if(area==="water"){const hh=islandHeight(x,z);return hh<3?[.74,.69,.5]:[.34+hh*.003,.42+hh*.004,.24];}
  if(area==="forest"){const m=Math.sin(x*.031+z*.017)*Math.cos(z*.023-x*.011),st=forestStand(x,z);if(st.kind==='road')return [.56+.03*m,.5+.03*m,.39];if(st.kind==='clearcut'){const k=hash2(Math.floor(x/3),Math.floor(z/3));return [.43+.05*m+.04*k,.39+.04*m+.03*k,.27+.02*k];}if(st.kind==='young')return [.27+.04*m,.36+.04*m,.17];return st.density<.05?[.4+.04*m,.47+.04*m,.27]:[.18+.04*m,.25+.04*m,.12+.025*m];}
- if(REAL(area)){const c=REAL(area).surfaceClass(x,z),t=REAL(area).treeCell(x,z),n=Math.sin(x*.011+z*.007)*Math.cos(z*.009-x*.004)*.5+.5;let b=[[.50,.47,.33],[.47,.33,.22],[.66,.58,.42],[.75,.70,.60],[.20,.30,.30],[.55,.52,.47]][c]??[.5,.47,.33];if(t&&t.d>.25)b=b.map((v,i)=>v*(1-t.d*.6)+[.20,.27,.14][i]*t.d*.6);return b.map(v=>v*(.94+.12*n));}
+ if(REAL(area)){const c=REAL(area).surfaceClass(x,z),t=REAL(area).treeCell(x,z),n=Math.sin(x*.011+z*.007)*Math.cos(z*.009-x*.004)*.5+.5;let b=[[.50,.47,.33],[.47,.33,.22],[.66,.58,.42],[.75,.70,.60],[.20,.30,.30],[.55,.52,.47]][c]??[.5,.47,.33];if(t&&t.d>.25)b=b.map((v,i)=>v*(1-t.d*.6)+[.20,.27,.14][i]*t.d*.6);{const o=inOpen(x,z,area);if(o>=0){const w=Math.min(1,o*6);b=b.map((v,i)=>v*(1-w*.85)+[.36,.47,.22][i]*w*.85);}}return b.map(v=>v*(.94+.12*n));}
  if(area==="mountain"){const h=terrainHeight(x,z,area),sl=Math.hypot((terrainHeight(x+6,z,area)-terrainHeight(x-6,z,area))/12,(terrainHeight(x,z+6,area)-terrainHeight(x,z-6,area))/12),n=Math.sin(x*.012+z*.009)*Math.cos(z*.011-x*.005)*.5+.5,hi=Math.max(0,Math.min(1,(h-70)/460)),rock=Math.max(0,Math.min(1,(sl-.18)/.3));const grass=[.23+n*.07,.34+n*.06,.15],alpine=[.40,.36,.25],stone=[.35,.33,.29];return [0,1,2].map(i=>(grass[i]*(1-hi)+alpine[i]*hi)*(1-rock)+stone[i]*rock);}
  if(area==='airfield'){const q=runwayCoordinates(x,z),n=Math.sin(x*.009+z*.004)*Math.cos(z*.007)*.5+.5;if(Math.abs(q.across)<235&&Math.abs(q.along)<1180){const m=(Math.floor(q.along/14)%2+2)%2;return [.36+n*.05+m*.025,.47+n*.05+m*.02,.24+n*.02];}return [.45+n*.08,.47+n*.05,.3+n*.03];}
  const h=terrainHeight(x,z,area),wet=landCoverAt(x,z,area)==='wetland',n=Math.sin(x*.007+z*.003)*Math.cos(z*.006)*.5+.5;return new Array(3).fill(0).map((_,i)=>(wet?[.29,.34,.22]:[.47,.43,.31])[i]+n*.07+h*.00025);}
