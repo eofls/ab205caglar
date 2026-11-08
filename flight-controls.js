@@ -35,10 +35,11 @@ export function controlTargets(s,p,choices,sink){
  else if(X.noPilotPlan||!guidance?.plan)guidance=null;} // v0.33
  /* v0.33.1 obstacle avoidance: a wire / tree line / roof on the path that cannot be stopped short of is cleared by a cyclic
     zoom when the speed can buy the height; otherwise the pilot slows down now and lands short of it */
- {const X=globalThis.EXP??{};if(!X.noAvoid&&!plan.cushion&&s.y>6){const o=obstacleNow(s,p,s.pilotSite),site=s.pilotSite,beyond=o&&site&&o.distance>Math.hypot(site.x-s.x,site.z-s.z)-15; /* obstacles past the field are not on the way */
+ {const X=globalThis.EXP??{};if(!X.noAvoid&&!plan.cushion&&s.y>6){let o=obstacleNow(s,p,s.pilotSite);const site=s.pilotSite;{const SA0=X.smartAvoid??p.crew?.smartAvoid,gs0=Math.hypot(s.vx??0,s.vz??0);if(!o&&SA0&&!X.noBeyondFix&&site&&gs0>4&&gs0*gs0/5.4>Math.hypot(site.x-s.x,site.z-s.z)+10){const o2=obstacleNow(s,p,null);if(o2)o=o2;}} /* v0.52 saha aşılacaksa iz boyunca engel aranır */let beyond=o&&site&&o.distance>Math.hypot(site.x-s.x,site.z-s.z)-15; /* obstacles past the field are not on the way */
   /* v0.51 deneyimli/yetkin pilot: engelin üstünden şimdiki yükseklikle rahatça geçilecekse (ağaç / çatı) saykılıkla tırmanılmaz;
      enerji korunur, normal süzülüş ve fleyır engeli aşar. */
-  const SA=X.smartAvoid??p.crew?.smartAvoid,skip=o&&SA&&o.kind!=='wire'&&(s.y+terrainHeight(s.x,s.z,p.flightArea))-obstacleTopNear(o.x,o.z,p.flightArea,7)>(SA.m??8);
+  const SA=X.smartAvoid??p.crew?.smartAvoid;if(beyond&&SA&&!X.noBeyondFix&&o.stopM>o.distance*.8)beyond=false; /* v0.52 saha aşılacaksa sahanın gerisindeki ağaçlar da hesaba katılır */
+  const skip=o&&SA&&o.kind!=='wire'&&(s.y+terrainHeight(s.x,s.z,p.flightArea))-obstacleTopNear(o.x,o.z,p.flightArea,7)>(SA.m??8);
   if(o&&!beyond&&!skip&&o.time<5&&(!plan.flare||o.stopM>o.distance*.8)){
    if(o.canClimb)return {...plan,flare:true,cushion:false,flareAccel:5,speedKt:20,guidance:null,levelCyclic:false,holdCyclic:false,managed:true,yawManaged:p.pedalMode==='auto',turnRate:0,phase:'Engel geçişi · saykılıkla tırmanış',reason:'Önde '+(o.kind==='wire'?'enerji hattı':'engel')+': ileri sürat geri saykılıkla irtifaya çevriliyor.'};
    if(!plan.flare)return {...plan,flare:true,flareAccel:2.7,speedKt:0,guidance:null,managed:true,yawManaged:p.pedalMode==='auto',turnRate:0,phase:'Engel önünde yavaşlama',reason:'Önde '+(o.kind==='wire'?'enerji hattı':'engel')+' ve tırmanacak sürat yok: hemen yavaşlanıyor.'};}}}
