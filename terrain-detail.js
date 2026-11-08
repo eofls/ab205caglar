@@ -1,7 +1,7 @@
 import * as T from './vendor/three.module.js';
 import {LITE} from './device-profile.js';
 import {enhanceSurface,waterMaterial} from './environment.js';
-import {terrainHeight,landCoverAt,terrainColor,FEATURES,parcelKind,FOREST_ROADS,forestClearcuts,buildingHeightOf,runwayCoordinates,RUNWAY,trackOnU,trackOnV,FIELD_TRACK} from './terrain-data.js';
+import {terrainHeight,landCoverAt,terrainColor,FEATURES,parcelKind,FOREST_ROADS,forestClearcuts,buildingHeightOf,runwayCoordinates,RUNWAY,trackOnU,trackOnV,FIELD_TRACK,OPEN_FIELDS} from './terrain-data.js';
 import {AIRFIELD_FEATURES} from './assets/terrain/guvercinlik-osm.js';
 export function groundTexture(){
  if(typeof document==='undefined')return null;const c=document.createElement('canvas');c.width=c.height=2048;const ctx=c.getContext('2d');if(!ctx)return null;
@@ -151,6 +151,9 @@ export function realGroundTexture(area){if(typeof document==='undefined')return 
  img.onload=()=>{ctx.filter='saturate(0.66) hue-rotate(9deg) contrast(1.12) brightness(0.95)'; /* v0.43 bozkır renkleri: biraz daha kontrast ve doygunluk */ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,N,N);ctx.filter='none'; /* v0.43.1 keskinleştirme önceden yapıldı */
   /* fine field texture on top of the 4–10 m satellite pixels: soft furrows and mottling (not new features) */
   let seed=91;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};for(let i=0;i<(LITE?12000:60000);i++){const x=rand()*N,y=rand()*N;ctx.fillStyle=rand()>.5?'rgba(255,255,255,.035)':'rgba(30,25,10,.05)';ctx.fillRect(x,y,1+rand()*3,1+rand()*2);}
+  /* v0.52 kullanıcı işaretlemesi: ağaçsız düz yeşil alan (OPEN_FIELDS) uydu dokusunun üstüne çayır olarak boyanır */
+  {const half=area==='mountain'?6500:4500;for(const f of OPEN_FIELDS[area]??[]){const px=(f.x+half)/(2*half)*N,py=(f.z+half)/(2*half)*N,rx=f.rx/(2*half)*N,rz=f.rz/(2*half)*N;ctx.save();ctx.translate(px,py);ctx.scale(1,rz/rx);const g=ctx.createRadialGradient(0,0,rx*.2,0,0,rx);g.addColorStop(0,'rgba(112,128,66,.72)');g.addColorStop(.75,'rgba(116,128,68,.62)');g.addColorStop(1,'rgba(120,126,70,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,rx,0,6.2832);ctx.fill();ctx.restore();
+   for(let i=0;i<(LITE?600:2400);i++){const a=rand()*6.2832,r=Math.sqrt(rand())*.85;ctx.fillStyle=rand()>.5?'rgba(140,160,80,.12)':'rgba(60,82,34,.12)';ctx.fillRect(px+Math.cos(a)*r*rx,py+Math.sin(a)*r*rz,1+rand()*3,1+rand()*2);}}}
   t.needsUpdate=true;};img.src='assets/terrain/'+(area==='mountain'?'tepeler':'golbasi')+'-s2k.jpg';return t;}
 export function airfieldWideTexture(){if(typeof document==='undefined')return null;const tex=new T.TextureLoader().load('assets/terrain/guvercinlik-s2-genis.jpg');tex.colorSpace=T.SRGBColorSpace;tex.wrapS=tex.wrapT=T.ClampToEdgeWrapping;tex.anisotropy=4;return tex;}
 function airfieldGroundTextureDrawn(){

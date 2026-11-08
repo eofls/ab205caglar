@@ -114,6 +114,10 @@ export function createHelicopter(){
  const mesh=(geo,mat,pos,parent)=>{const m=new T.Mesh(geo,mat);m.position.copy(pos);parent.add(m);return m;};
  const black=new T.MeshStandardMaterial({color:'#1b1d1c',roughness:.7}),paint=new T.MeshStandardMaterial({color:'#e9ecec',roughness:.45});
  const tube=(a,b,r,parent,mat)=>{const av=new T.Vector3(...a),bv=new T.Vector3(...b);const m=mesh(new T.CylinderGeometry(r,r,av.distanceTo(bv),8),mat,av.clone().add(bv).multiplyScalar(.5),parent);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),bv.sub(av).normalize());return m;};
+ {/* v0.52 kuyruk kızağı (tail skid): dikey stabilizenin altında, aşağı ve geriye eğik boru; ucu öne kıvrık */
+  const tb=parts.tailBoom,loc=(x,y)=>fromModel(x,y,0).sub(boomPivot).toArray(),metal=new T.MeshStandardMaterial({color:'#8c9294',roughness:.5,metalness:.4});
+  const a=loc(3.5,.34),b=loc(3.86,-.12),c=loc(3.98,-.16),d=loc(3.6,.3),e=loc(3.84,-.08);
+  for(const [p,q,r] of [[a,b,.022],[b,c,.02],[d,e,.016]]){const m=tube(p,q,r,tb,metal);m.name='tailSkid';m.castShadow=true;}}
  const effects=new T.Group();effects.name='impactEffects';root.add(effects);const dust=[];
  for(let i=0;i<16;i++){const mat=new T.MeshBasicMaterial({color:'#b9a88c',transparent:true,opacity:.12,depthWrite:false});const m=mesh(new T.IcosahedronGeometry(1,1),mat,new T.Vector3(0,1,0),effects);m.visible=false;dust.push(m);}
  const splash=[];for(let i=0;i<3;i++){const m=mesh(new T.TorusGeometry(1,.06,5,32),new T.MeshBasicMaterial({color:'#c6e4e8',transparent:true,opacity:.55,depthWrite:false}),new T.Vector3(0,.1,0),effects);m.rotation.x=Math.PI/2;m.visible=false;splash.push(m);}
@@ -136,7 +140,7 @@ export function animateHelicopter(heli,state){
  const cf=clamp((c.cyclicForward??0)/.22,-1,1),cr=clamp((c.cyclicRight??0)/.22,-1,1),col=clamp(((c.collective??1)-.3)/1.9,0,1),pd=clamp(c.pedal??0,-1,1),P=heli.parts;
  for(const id of ['cyclicStick','cyclicStickL'])if(P[id]){P[id].rotation.z=-cf*.3;P[id].rotation.x=cr*.24;}
  for(const id of ['collectiveLever','collectiveLeverL'])if(P[id])P[id].rotation.z=col*.35;
- if(P.pedalsL&&P.pedalsR){P.pedalsL.position.x=P.pedalsL.userData.restPosition.x+pd*.08;P.pedalsR.position.x=P.pedalsR.userData.restPosition.x-pd*.08; /* v0.41 model ekseninde +x geriye (pilota doğru, PEDAL_AFT): pedal > 0 = sağ pedal basılı → sağ pedal ileri (−x), sol geri */}
+ if(P.pedalsL&&P.pedalsR){P.pedalsL.position.x=P.pedalsL.userData.restPosition.x-pd*.08;P.pedalsR.position.x=P.pedalsR.userData.restPosition.x+pd*.08; /* v0.52 kokpit kamerasıyla ölçüldü: pedal grubunda +x ileri (pilottan uzağa). pedal > 0 = sağ pedal basılı → sağ pedal ileri, sol geri (HUD ile aynı) */}
  // v0.33: blade coning grows with thrust (collective × rotor speed²); a slow / stopped rotor droops on its stops
  const nr=Math.max(0,(p.rotorRpm??324)/324),cone=nr>.35?Math.min(.09,.012+.032*Math.max(0,c.collective??.7)*nr*nr):-.035*(1-nr/.35);
  for(const [id,side] of [['bladeLeft',1],['bladeRight',-1]]){const b=P[id];if(b){b.rotation.x=side*(.035+(c.collective??.4)*.16);if(!p.contact)b.rotation.z=side*cone;}}

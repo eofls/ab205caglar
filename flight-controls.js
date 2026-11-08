@@ -35,13 +35,23 @@ export function controlTargets(s,p,choices,sink){
  else if(X.noPilotPlan||!guidance?.plan)guidance=null;} // v0.33
  /* v0.33.1 obstacle avoidance: a wire / tree line / roof on the path that cannot be stopped short of is cleared by a cyclic
     zoom when the speed can buy the height; otherwise the pilot slows down now and lands short of it */
- {const X=globalThis.EXP??{};if(!X.noAvoid&&!plan.cushion&&s.y>6){const o=obstacleNow(s,p,s.pilotSite),site=s.pilotSite,beyond=o&&site&&o.distance>Math.hypot(site.x-s.x,site.z-s.z)-15; /* obstacles past the field are not on the way */
+ {const X=globalThis.EXP??{};if(!X.noAvoid&&!plan.cushion&&s.y>6){let o=obstacleNow(s,p,s.pilotSite);const site=s.pilotSite;{const SA0=X.smartAvoid??p.crew?.smartAvoid,gs0=Math.hypot(s.vx??0,s.vz??0);if(!o&&SA0&&!X.noBeyondFix&&site&&gs0>4&&gs0*gs0/5.4>Math.hypot(site.x-s.x,site.z-s.z)+10){const o2=obstacleNow(s,p,null);if(o2)o=o2;}} /* v0.52 saha aşılacaksa iz boyunca engel aranır */let beyond=o&&site&&o.distance>Math.hypot(site.x-s.x,site.z-s.z)-15; /* obstacles past the field are not on the way */
   /* v0.51 deneyimli/yetkin pilot: engelin üstünden şimdiki yükseklikle rahatça geçilecekse (ağaç / çatı) saykılıkla tırmanılmaz;
      enerji korunur, normal süzülüş ve fleyır engeli aşar. */
-  const SA=X.smartAvoid??p.crew?.smartAvoid,skip=o&&SA&&o.kind!=='wire'&&(s.y+terrainHeight(s.x,s.z,p.flightArea))-obstacleTopNear(o.x,o.z,p.flightArea,7)>(SA.m??8);
+  const SA=X.smartAvoid??p.crew?.smartAvoid;if(beyond&&SA&&!X.noBeyondFix&&o.stopM>o.distance*.8)beyond=false; /* v0.52 saha aşılacaksa sahanın gerisindeki ağaçlar da hesaba katılır */
+  const skip=o&&SA&&o.kind!=='wire'&&(s.y+terrainHeight(s.x,s.z,p.flightArea))-obstacleTopNear(o.x,o.z,p.flightArea,7)>(SA.m??8);
   if(o&&!beyond&&!skip&&o.time<5&&(!plan.flare||o.stopM>o.distance*.8)){
    if(o.canClimb)return {...plan,flare:true,cushion:false,flareAccel:5,speedKt:20,guidance:null,levelCyclic:false,holdCyclic:false,managed:true,yawManaged:p.pedalMode==='auto',turnRate:0,phase:'Engel geçişi · saykılıkla tırmanış',reason:'Önde '+(o.kind==='wire'?'enerji hattı':'engel')+': ileri sürat geri saykılıkla irtifaya çevriliyor.'};
    if(!plan.flare)return {...plan,flare:true,flareAccel:2.7,speedKt:0,guidance:null,managed:true,yawManaged:p.pedalMode==='auto',turnRate:0,phase:'Engel önünde yavaşlama',reason:'Önde '+(o.kind==='wire'?'enerji hattı':'engel')+' ve tırmanacak sürat yok: hemen yavaşlanıyor.'};}}}
+ /* v0.52 deneyimli / yetkin pilot: alçak ve yavaşken önde ağaç / engel varsa düz devam edilmez; pedal dönüşüyle açık tarafa
+    (tercihen seçilen sahaya) dönülür ve ağaçlara girilmez */
+ {const X=globalThis.EXP??{},SA=X.smartAvoid??p.crew?.smartAvoid,gs=Math.hypot(s.vx??0,s.vz??0),A=p.flightArea,yA=s.yAbs??(s.y+terrainHeight(s.x,s.z,A));
+  if(SA&&!X.noPedalTurn&&!plan.cushion&&s.y>1.5&&s.y<45&&gs>1.2&&gs<24){const vz=-Math.max(0,s.w??0),free=(dir,d0,d1)=>{for(let d=d0;d<=d1;d+=4){const x=s.x+Math.sin(dir)*d,z=s.z-Math.cos(dir)*d,yP=yA+vz*d/Math.max(2,gs);if(obstacleTopNear(x,z,A,4.5)>yP-1.5)return false;}return true;};
+   const trk=Math.atan2(s.vx,-s.vz),stop=gs*gs/(2*2.4),look=clamp(stop+12,14,110);
+   if(!free(trk,4,look)){const site=s.pilotSite,sd=site?Math.atan2(site.x-s.x,-(site.z-s.z)):null,R=gs*gs/4,need=clamp(R*1.2+stop*.5,18,90);let best=null;
+    for(let k=1;k<=9;k++)for(const sg of [1,-1]){const dir=trk+sg*k*20*Math.PI/180;if(!free(dir,4,need))continue;const cost=k+(sd!=null?Math.abs(Math.atan2(Math.sin(dir-sd),Math.cos(dir-sd)))*1.2:0);if(!best||cost<best.cost)best={dir,cost};}
+    if(best&&gs<8){const low=true,spd=low?Math.min(gs,3):gs*.85,tx=s.x+Math.sin(best.dir)*20,tz=s.z-Math.cos(best.dir)*20;
+     return {...plan,flare:low?true:plan.flare,flareAccel:Math.max(plan.flareAccel??0,3),speedKt:spd/(1852/3600),managed:true,yawManaged:true,turnRate:0,guidance:{target:{x:tx,z:tz},distance:20,passed:false,turning:true,groundX:Math.sin(best.dir)*spd,groundZ:-Math.cos(best.dir)*spd,plan:null},phase:low?'Pedal dönüşü · açık tarafa':'Dönüşle açık tarafa · ağaçlardan uzak',reason:'Önde ağaç / engel ve saha aşılıyor: düz devam edilmez; '+(low?'pedal dönüşüyle':'dönüşle')+' açık tarafa geçilir, ağaçlara girilmez.'};}}}}
  return {...plan,reason:plan.reason+' '+(s.pilotForecast?.reason??'')+(s.pilotSite?' Zemin ve erişim taramasıyla iniş hedefi seçildi.':''),managed:true,yawManaged:p.pedalMode==='auto',turnRate:0,guidance};}
  const active=choices.filter(a=>a.at<=s.t),last=active.at(-1);
  if(!powered&&last?.id==='overspeed'&&last.option==='hold')return {collective:s.collective,speedKt:p.ias,flare:false,cushion:false,levelCyclic:false,holdCyclic:true,holdAll:true,managed:false,yawManaged:false,guidance:null,turnRate:0,brakeHeightM:terminalEnvelope(s,p).brakeHeightM,phase:'Kumandalar seçilen konumda tutuluyor',reason:'Overspeed kararında mevcut kumandaları koru seçildi. Yeni bir kumanda kararı verilene kadar kollektif, saykılık ve pedal sabit; otomatik devir düzeltmesi yok.'};

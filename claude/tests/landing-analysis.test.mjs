@@ -24,9 +24,9 @@ test('structural foundation integrates force/stroke, refuses absent data and lim
  // Softening force: first root is valid even when endpoint net work falls below initial energy.
  r=structuralContact({...p,liftN:0}, {...model,curve:[{strokeM:0,forceN:19806.65},{strokeM:1,forceN:0}]});assert.equal(r.capacityExceeded,false);assert.ok(r.strokeM<.3);
 });
-test('automatic pedal defaults on, persists, and off creates no premature manual question',()=>{
- assert.equal(new Session().config.pedalMode,'auto');assert.throws(()=>new Session({pedalMode:'bad'}));
- for(const pedalMode of ['auto','off']){const s=completeSession(new Session({pedalMode}));assert.equal(Session.restore(s.serialize()).config.pedalMode,pedalMode);assert.ok(!s.answers.some(a=>a.id==='yaw'));}
+test('v0.52 automatic pedal option removed: sessions always use the pilot pedal; physics keeps the fixed-pedal path',()=>{
+ assert.equal(new Session().config.pedalMode,'auto');assert.equal(new Session({pedalMode:'off'}).config.pedalMode,'auto');
+ {const s=completeSession(new Session());assert.equal(Session.restore(s.serialize()).config.pedalMode,'auto');assert.ok(!s.answers.some(a=>a.id==='yaw'));}
  const old=new Session().serialize();old.schemaVersion=7;delete old.config.pedalMode;assert.equal(Session.restore(old).config.pedalMode,'auto');
  const sc={height:600,ias:0},choices=[{id:'priority',at:4,option:'diagnose'}],off=flightState(7,sc,{...DEFAULT_CONFIG,pedalMode:'off'},choices),auto=flightState(7,sc,DEFAULT_CONFIG,choices);
  assert.equal(off.controls.pedal,0);assert.ok(auto.controls.pedal>0);assert.notEqual(off.roll,auto.roll);assert.notEqual(off.velocityMps[0],auto.velocityMps[0]);

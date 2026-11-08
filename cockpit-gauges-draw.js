@@ -73,7 +73,7 @@ export const FACES={
 export function drawADI(ctx,n,{pitch=0,roll=0,off=false,slip=0,turn=0,square=false}){ctx.save();ctx.clearRect(0,0,n,n);const cx=n/2,cy=n/2,r=n/2;
  ctx.beginPath();if(square)ctx.rect(0,0,n,n);else ctx.arc(cx,cy,r-1,0,2*Math.PI);ctx.clip();
  ctx.translate(cx,cy);ctx.rotate(-roll);const pp=r*1.6/40; // px per degree of pitch
- const y0=pitch/R*pp;ctx.fillStyle='#8c9da6';ctx.fillRect(-n,-2*n+y0,2*n,2*n);ctx.fillStyle='#2b2723';ctx.fillRect(-n,y0,2*n,2*n);
+ const y0=-pitch/R*pp; /* v0.52 pozitif pitch = burun aşağı: ufuk çizgisi yukarı kayar (önceden ters) */ctx.fillStyle='#8c9da6';ctx.fillRect(-n,-2*n+y0,2*n,2*n);ctx.fillStyle='#2b2723';ctx.fillRect(-n,y0,2*n,2*n);
  ctx.strokeStyle='#f4f2ea';ctx.lineWidth=n*.012;ctx.beginPath();ctx.moveTo(-n,y0);ctx.lineTo(n,y0);ctx.stroke();
  ctx.fillStyle='#f4f2ea';ctx.font=`600 ${r*.11}px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';
  for(let d=-30;d<=30;d+=5){if(!d)continue;const y=y0-d*pp,w=d%10?r*.16:r*.32;ctx.lineWidth=n*.008;ctx.beginPath();ctx.moveTo(-w,y);ctx.lineTo(w,y);ctx.stroke();if(!(d%10)){ctx.fillText(String(Math.abs(d)),-w-r*.12,y);ctx.fillText(String(Math.abs(d)),w+r*.12,y);}}

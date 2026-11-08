@@ -1,4 +1,4 @@
-import {DEFAULT_WEIGHT_LB,APP_VERSION,MAX_SESSION_SECONDS} from './flight-reference.js';
+import {DEFAULT_WEIGHT_LB,APP_VERSION,MAX_SESSION_SECONDS,pressureAltFt} from './flight-reference.js';
 import {validateSites,landingOptions} from './landing-sites.js';
 import {redirectDecision,redirectId,currentLanding} from './site-redirect.js';
 import {contactAssessment} from './contact-assessment.js';
@@ -36,7 +36,7 @@ export function validateConfig(raw){
   if(!c.customStart){c.startHeightFt=getScenario(c.scenario).height;c.startIasKt=getScenario(c.scenario).ias;}
   const prog=isProgramFlight(c);for(const [k,max] of [['startHeightFt',prog?4000:600],['startIasKt',prog?120:80]]){number(c[k],0,max,k);if(!Number.isInteger(c[k]))throw Error('Başlangıç değerleri tam sayı olmalı');}
   if(!['terrain','airfield','forest','mountain','water'].includes(c.flightArea))throw Error('Geçersiz uçuş sahası');
-  if(!['auto','off'].includes(c.pedalMode))throw Error('Geçersiz otomatik pedal ayarı');
+  c.pedalMode='auto'; /* v0.52 otomatik pedal seçeneği kaldırıldı: pilot pedalı her zaman kullanır */
   if(!['blade','energy'].includes(c.physicsModel))throw Error('Geçersiz fizik modeli');
   c.physicsModel='energy'; // v0.32: single calibrated model (blade-element limits built in); old saves map here
   if(!['total','partial'].includes(c.powerLossMode))throw Error('Geçersiz güç kaybı türü');
@@ -47,7 +47,7 @@ export function validateConfig(raw){
   if(c.program==='emergency'){const e=emergencyById(c.emergencyId);if(e.kind==='partial')c.powerLossMode='partial';else if(e.kind==='total'&&c.powerLossMode!=='partial')c.powerLossMode='total';} /* v0.42 'Kısmi güç kaybı' program uçuşu; enerji modelinde kısmi güç 'Tam güç kaybı' + kısmi güç ayarıyla kalır */
   if(!['guided','watch','manual'].includes(c.mode))throw Error('Geçersiz mod');
   if(typeof c.manualRunId!=='string'||c.manualRunId.length>64)throw Error('Geçersiz elle uçuş kaydı');
-  for(const [k,a,b] of [['temperatureC',-20,45],['pressureAltitudeFt',0,12000],['windKt',0,40],['windFromDeg',0,359],['headingDeg',0,359],['visibilityKm',0.2,30],['startX',-4200,4200],['startZ',-4200,4200]])number(c[k],a,b,k);
+  for(const [k,a,b] of [['temperatureC',-20,45],['pressureAltitudeFt',0,12000],['windKt',0,40],['windFromDeg',0,359],['headingDeg',0,359],['visibilityKm',0.2,30],...(c.qnhHpa!==undefined?[['qnhHpa',940,1060]]:[]),['startX',-4200,4200],['startZ',-4200,4200]])number(c[k],a,b,k);
   if(!['clear','scattered','overcast'].includes(c.cloudCover)||!['day','dusk','night'].includes(c.lighting)||!['none','rain'].includes(c.precipitation))throw Error('Geçersiz görsel atmosfer');
   if(!['none','light','moderate'].includes(c.turbulence)||!CREW[c.pilot]||!CREW[c.copilot])throw Error('Geçersiz koşul');
   return Object.fromEntries(Object.keys(DEFAULT_CONFIG).map(k=>[k,c[k]]));
@@ -56,12 +56,12 @@ export function weatherEffects(c){
  const angle=(c.windFromDeg-c.headingDeg)*Math.PI/180;
  const headwind=c.windKt*Math.cos(angle),crosswind=c.windKt*Math.sin(angle);
  // v0.32.2: short technical statements only (no meta disclaimers).
- const isaT=15-2*c.pressureAltitudeFt/1000,da=Math.round((c.pressureAltitudeFt+120*(c.temperatureC-isaT))/100)*100;
+ const paE=Math.round(pressureAltFt(c)),isaT=15-2*paE/1000,da=Math.round((paE+120*(c.temperatureC-isaT))/100)*100;
  const surface={water:'su yüzeyi',forest:'orman',airfield:'meydan',mountain:'tepelik arazi'}[c.flightArea]??'arazi';
  const effects=[{kind:'Meteoroloji',text:`Rüzgâr ${c.windKt} kt / ${c.windFromDeg}°: ${Math.abs(headwind).toFixed(1)} kt ${headwind>=0?'karşı':'arka'}, ${Math.abs(crosswind).toFixed(1)} kt yan bileşen.`,source:['faa']}];
- effects.push({kind:'Meteoroloji',text:`${c.temperatureC} °C, basınç irtifası ${c.pressureAltitudeFt} ft → yoğunluk irtifası ≈ ${da} ft.${da>4000?' Yüksek yoğunluk irtifası rotor verimini düşürür; alçalış oranı artar, fleyırda frenleme azalır.':''}`,source:['faa']});
+ effects.push({kind:'Meteoroloji',text:`${c.temperatureC} °C, QNH ${Math.round(c.qnhHpa??1013)} hPa, basınç irtifası ${paE} ft → yoğunluk irtifası ≈ ${da} ft.${da>4000?' Yüksek yoğunluk irtifası rotor verimini düşürür; alçalış oranı artar, fleyırda frenleme azalır.':''}`,source:['faa']});
  if(c.windKt>0)effects.push({kind:'Meteoroloji',text:`Rüzgâr yere yaklaştıkça azalır (${surface}); fleyır ve temas anında karşı rüzgâr katkısı yukarıdakinden düşüktür.${c.flightArea==='mountain'?' Rüzgârüstü yamaçta yükselen, rüzgâraltında çöken hava vardır.':''}`,source:['met','faa']});
- {const p=ppc({weightLb:c.grossWeightLb??DEFAULT_WEIGHT_LB,paFt:c.pressureAltitudeFt,tempC:c.temperatureC});effects.push({kind:'Performans',text:`PPC (${c.grossWeightLb??DEFAULT_WEIGHT_LB} lb, ${c.pressureAltitudeFt} ft, ${c.temperatureC} °C): azami tork ${p.tqMax} PSI; havır torku yer tesirinde ${p.tqIge}, dışında ${p.tqOge} PSI; güç payı ${p.margin} PSI. Azami havır ağırlığı yer tesirinde ${p.wMaxIge} lb, dışında ${p.wMaxOge} lb.${p.goOge?'':' Yer tesiri dışında havır gücü yok: tepe / kapalı bölge harekâtı yapılmaz.'}`,source:['tr'],reference:'TM 55-1520-210-10 bölüm 7 (yaklaşım)'});}
+ {const p=ppc({weightLb:c.grossWeightLb??DEFAULT_WEIGHT_LB,paFt:paE,tempC:c.temperatureC});effects.push({kind:'Performans',text:`PPC (${c.grossWeightLb??DEFAULT_WEIGHT_LB} lb, ${paE} ft, ${c.temperatureC} °C): azami tork ${p.tqMax} PSI; havır torku yer tesirinde ${p.tqIge}, dışında ${p.tqOge} PSI; güç payı ${p.margin} PSI. Azami havır ağırlığı yer tesirinde ${p.wMaxIge} lb, dışında ${p.wMaxOge} lb.${p.goOge?'':' Yer tesiri dışında havır gücü yok: tepe / kapalı bölge harekâtı yapılmaz.'}`,source:['tr'],reference:'TM 55-1520-210-10 bölüm 7 (yaklaşım)'});}
  effects.push({kind:'Meteoroloji',text:`Görüş ${c.visibilityKm} km${c.visibilityKm<5?': saha ve engel (tel, ağaç) tespiti zorlaşır.':'.'}`,source:['crm']});
  if(c.turbulence!=='none')effects.push({kind:'Meteoroloji',text:`${c.turbulence==='moderate'?'Orta':'Hafif'} türbülans: yatay σ≈${c.turbulence==='moderate'?'1.8':'0.7'} m/s, düşey σ≈${c.turbulence==='moderate'?'0.9':'0.35'} m/s; düşey bileşen yere yaklaştıkça azalır.`,source:['met','crm']});
  return {headwind,crosswind,effects};
@@ -93,7 +93,7 @@ export class Session {
  }
  get scenario(){
   if(isProgramFlight(this.config)){const base=this.baseScenario,c=this.config,defs=programDefs(c),guided=c.mode==='guided',run=programRun(c,guided?this.answers:[]),title=c.program==='maneuver'?maneuverById(c.maneuverId).title:emergencyById(c.emergencyId).title;
-   const decisions=guided?run.decisions.filter(d=>defs[d.id]&&d.at<run.duration).map(d=>({...defs[d.id],at:d.at,...(d.reference?{reference:d.reference}:{})})):[];
+   const decisions=guided?run.decisions.filter(d=>defs[d.id]&&d.at<run.duration).map(d=>({...defs[d.id],at:d.at,...(d.reference?{reference:d.reference}:{}),...(d.options?{options:d.options,title:d.title}:{})})):[];
    return {...base,name:title,subtitle:c.program==='maneuver'?'Uçuş hareketi':'Emercensi · '+emergencyById(c.emergencyId).ref,zone:'context',zoneLabel:c.program==='maneuver'?'Uçuş hareketi':'Emercensi',lesson:null,decisions,duration:run.duration,endReason:run.endReason};}
   const base=this.baseScenario,plan=decisionPlan(base,this.config,this.answers,this.config.mode);
   const decisions=plan.map(item=>{const site=item.id.startsWith('redirect-')?this.config.customSites.find(t=>redirectId(t)===item.id):null,d=site?redirectDecision(site):item.id.startsWith('approach')?{...approachDecision(currentLanding(this.answers.filter(a=>a.at<=item.at+1e-9))?.option,this.config.mode==='guided'?flightState(item.at,base,this.config,this.answers.filter(a=>a.at<item.at-1e-9)):null),id:item.id}:item.id==='obstacle'?obstacleDecision(this.config.mode==='guided'?flightState(item.at,base,this.config,this.answers.filter(a=>a.at<item.at-1e-9)):null):(EXTRA_DECISIONS[item.id]??base.decisions.find(d=>d.id===item.id));return {...d,at:item.at,options:(d.id==='landing'?landingOptions(this.config,d.options):d.options).map(o=>({...o,label:o.id==='control'?(base.ias<=5&&base.height<=20?'Havır konumunu tut; kollektifi koru ve rotor devrini izle':'Rotor enerjisini yönet; kollektif ve saykılığı düzenle'):o.id==='diagnose'?'Kumandaları başlangıç konumunda tut; arızayı incele':o.id==='shared'?(base.ias<=5?'1 · Yakın yüzeyi seç; son kollektifle alçalmayı azalt':'1 · Yakın hedefi seç; yavaşlama ve son kollektifi uygula'):o.id==='distant'?'2 · Uzak hedefi izle; yaklaşmada yavaşlamayı değerlendir':o.label}))};});

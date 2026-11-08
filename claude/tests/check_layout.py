@@ -62,8 +62,8 @@ assert Path('dist/control-display.js').exists()
 print('PASS: control display inside scene/fullscreen root, accessible group, renderer asset present')
 
 pedals=[n for n in p.nodes if n['attrs'].get('name')=='pedalMode']
-assert len(pedals)==1 and byid['config-form'] in pedals[0]['parents']
-print('PASS: automatic pedal selector inside Conditions form')
+assert len(pedals)==0
+print('PASS: automatic pedal selector removed (v0.52)')
 
 assert byid['scene-panel'] in byid['contact-result']['parents']
 assert 'hidden' in byid['contact-result']['attrs']

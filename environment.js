@@ -505,7 +505,7 @@ export function updateGrass(mesh,cam,area,agl){if(!mesh)return;const U=mesh.user
  const J=U.job;if(J){const t0=performance.now(),R=75;
   while(J.ci<=J.ci1&&performance.now()-t0<3){const ci=J.ci,cj=J.cj;J.cj++;if(J.cj>J.cj1){J.cj=J.cj0;J.ci++;}
    const cx=ci*1.8+(_hh(ci,cj)-.5)*1.8,cz=cj*1.8+(_hh(cj+17,ci-5)-.5)*1.8,pn=_vn2(cx*.05,cz*.05)*.7+_vn2(cx*.17+9,cz*.17)*.3;if(_hh(ci+3,cj+9)>.08+.85*Math.min(1,Math.max(0,(pn-.3)/.4)))continue; /* v0.44 otlar öbek öbek: çıplak lekeler ve sık tutamlar */const fr=Math.hypot(cx-J.gx,cz-J.gz)/R;if(fr>1||_hh(ci-11,cj+23)<fr*fr)continue;
-   const key=ci*100003+cj;let c=U.cache.get(key);if(!c){const k=surfaceProfile(cx,cz,area).kind;c={k,h:GRASS_TINT[k]?terrainHeight(cx,cz,area):0};U.cache.set(key,c);if(U.cache.size>60000)U.cache.clear();}
+   const key=ci*100003+cj;let c=U.cache.get(key);if(!c){const k=surfaceProfile(cx,cz,area).kind;c={k,h:GRASS_TINT[k]?(U.hFn?U.hFn(cx,cz):terrainHeight(cx,cz,area)):0}; /* v0.52 ot çizilen zemin ağının üstünde (havada/gömülü durmaz) */U.cache.set(key,c);if(U.cache.size>60000)U.cache.clear();}
    if(GRASS_TINT[c.k])J.list.push([cx,cz,c.k,c.h,fr]);}
   if(J.ci>J.ci1){const o=new T.Object3D(),col=new T.Color();let n=0;for(const [cx,cz,k,h,fr] of J.list){if(n>=U.N)break;const t=GRASS_TINT[k],s=(.5+((Math.abs(cx*31+cz*17)%10)/10)*.7)*(1-.45*fr);
     const gq=_vn2(cx*.11+4,cz*.11-2);o.position.set(cx,h-.02,cz);o.rotation.set(0,(cx*.37+cz*.71)%6.28,0);o.scale.set(s*1.3,s*(k==='stubble'?.45:k==='rough'?.8:.65)*(.8+.5*gq),s*1.3);o.updateMatrix();mesh.setMatrixAt(n,o.matrix);const v=.72+((Math.abs(cx*13+cz*7)%10)/10)*.3;col.setRGB(t[0]*v*(1-.12*gq),t[1]*v,t[2]*v*(1-.05*gq));mesh.setColorAt(n,col);n++;}

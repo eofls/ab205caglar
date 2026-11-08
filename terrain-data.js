@@ -14,6 +14,10 @@ export {TEPE_SITES};
 export const FEATURES=REAL_AREAS.terrain.features;
 export const DEM={lat:REAL_AREAS.terrain.lat0,lon:REAL_AREAS.terrain.lon0,baseElevationM:REAL_AREAS.terrain.base};
 const REAL=a=>REAL_AREAS[a]??null;
+/* v0.52 kullanıcı işaretlemesi (Tepeler, kapalı bölge başlangıcı batısı): mavi çizilen alan ağaçsız düz yeşil alandır */
+export const OPEN_FIELDS={mountain:[{x:2530,z:-3660,rx:215,rz:190}]};
+const inOpen=(x,z,area)=>{for(const f of OPEN_FIELDS[area]??[]){const u=(x-f.x)/f.rx,v=(z-f.z)/f.rz;if(u*u+v*v<1)return 1-Math.sqrt(u*u+v*v);}return -1;};
+for(const [k,r] of Object.entries(REAL_AREAS))if(OPEN_FIELDS[k]){const tc=r.treeCell;r.treeCell=(x,z)=>inOpen(x,z,k)>=0?null:tc(x,z);}
 /* MSL elevation (m) of a point: base of the area frame + local height */
 export function areaElevationM(x,z,area){const r=REAL(area);if(r)return r.base+terrainHeight(x,z,area);if(area==='airfield')return 818.8+terrainHeight(x,z,area);return 914+terrainHeight(x,z,area);}
 export function insidePolygon(x,z,points){let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
@@ -22,7 +26,7 @@ export function roadAt(x,z){for(const f of FEATURES.filter(f=>f.tags.highway))fo
 export function terrainColor(x,z,area="terrain"){if(area==="water"&&islandHeight(x,z)<=0){const w=Math.sin(x*.021+z*.013)*Math.sin(z*.019-x*.008),near=Math.max(0,1-Math.hypot(Math.max(0,Math.abs(x-750)-60),Math.max(0,Math.abs(z+300)-60))/260);return [.12+.03*w+.07*near,.31+.04*w+.06*near,.39+.03*w+.03*near];}
  if(area==="water"){const hh=islandHeight(x,z);return hh<3?[.74,.69,.5]:[.34+hh*.003,.42+hh*.004,.24];}
  if(area==="forest"){const m=Math.sin(x*.031+z*.017)*Math.cos(z*.023-x*.011),st=forestStand(x,z);if(st.kind==='road')return [.56+.03*m,.5+.03*m,.39];if(st.kind==='clearcut'){const k=hash2(Math.floor(x/3),Math.floor(z/3));return [.43+.05*m+.04*k,.39+.04*m+.03*k,.27+.02*k];}if(st.kind==='young')return [.27+.04*m,.36+.04*m,.17];return st.density<.05?[.4+.04*m,.47+.04*m,.27]:[.18+.04*m,.25+.04*m,.12+.025*m];}
- if(REAL(area)){const c=REAL(area).surfaceClass(x,z),t=REAL(area).treeCell(x,z),n=Math.sin(x*.011+z*.007)*Math.cos(z*.009-x*.004)*.5+.5;let b=[[.50,.47,.33],[.47,.33,.22],[.66,.58,.42],[.75,.70,.60],[.20,.30,.30],[.55,.52,.47]][c]??[.5,.47,.33];if(t&&t.d>.25)b=b.map((v,i)=>v*(1-t.d*.6)+[.20,.27,.14][i]*t.d*.6);return b.map(v=>v*(.94+.12*n));}
+ if(REAL(area)){const c=REAL(area).surfaceClass(x,z),t=REAL(area).treeCell(x,z),n=Math.sin(x*.011+z*.007)*Math.cos(z*.009-x*.004)*.5+.5;let b=[[.50,.47,.33],[.47,.33,.22],[.66,.58,.42],[.75,.70,.60],[.20,.30,.30],[.55,.52,.47]][c]??[.5,.47,.33];if(t&&t.d>.25)b=b.map((v,i)=>v*(1-t.d*.6)+[.20,.27,.14][i]*t.d*.6);{const o=inOpen(x,z,area);if(o>=0){const w=Math.min(1,o*6);b=b.map((v,i)=>v*(1-w*.85)+[.36,.47,.22][i]*w*.85);}}return b.map(v=>v*(.94+.12*n));}
  if(area==="mountain"){const h=terrainHeight(x,z,area),sl=Math.hypot((terrainHeight(x+6,z,area)-terrainHeight(x-6,z,area))/12,(terrainHeight(x,z+6,area)-terrainHeight(x,z-6,area))/12),n=Math.sin(x*.012+z*.009)*Math.cos(z*.011-x*.005)*.5+.5,hi=Math.max(0,Math.min(1,(h-70)/460)),rock=Math.max(0,Math.min(1,(sl-.18)/.3));const grass=[.23+n*.07,.34+n*.06,.15],alpine=[.40,.36,.25],stone=[.35,.33,.29];return [0,1,2].map(i=>(grass[i]*(1-hi)+alpine[i]*hi)*(1-rock)+stone[i]*rock);}
  if(area==='airfield'){const q=runwayCoordinates(x,z),n=Math.sin(x*.009+z*.004)*Math.cos(z*.007)*.5+.5;if(Math.abs(q.across)<235&&Math.abs(q.along)<1180){const m=(Math.floor(q.along/14)%2+2)%2;return [.36+n*.05+m*.025,.47+n*.05+m*.02,.24+n*.02];}return [.45+n*.08,.47+n*.05,.3+n*.03];}
  const h=terrainHeight(x,z,area),wet=landCoverAt(x,z,area)==='wetland',n=Math.sin(x*.007+z*.003)*Math.cos(z*.006)*.5+.5;return new Array(3).fill(0).map((_,i)=>(wet?[.29,.34,.22]:[.47,.43,.31])[i]+n*.07+h*.00025);}
@@ -110,7 +114,7 @@ export function forestClearcuts(R=3000){const out=[],cs=Math.cos(STAND.theta),sn
   if(pts.some(([x,z])=>Math.abs(x)<R&&Math.abs(z)<R))out.push(pts);}return out;}
 let GREENIDX=null;function greenIndex(x,z){if(!GREENIDX){GREENIDX=new Map();for(const g of AIRFIELD_GREEN){const xs=g.points.map(p=>p[0]),zs=g.points.map(p=>p[1]);for(let i=Math.floor(Math.min(...xs)/200);i<=Math.floor(Math.max(...xs)/200);i++)for(let j=Math.floor(Math.min(...zs)/200);j<=Math.floor(Math.max(...zs)/200);j++){const k=i+','+j;(GREENIDX.get(k)??GREENIDX.set(k,[]).get(k)).push(g);}}}return GREENIDX.get(Math.floor(x/200)+','+Math.floor(z/200))??[];}
 function treeDensity(x,z,area){
- if(REAL(area)){for(const s of PAD_CLEAR[area]??[])if(Math.hypot(x-s.x,z-s.z)<s.r)return 0;const cb=confinedBand(x,z,area);if(cb===1)return .5;const c=REAL(area).treeCell(x,z);if(!c)return 0;return Math.max(0,Math.min(1,(c.d-.25)/.75))*(cb===2?.35:1);}
+ if(REAL(area)){for(const s of PAD_CLEAR[area]??[])if(Math.hypot(x-s.x,z-s.z)<s.r)return 0;const cb=confinedBand(x,z,area);if(cb===3)return 0;if(cb===1)return .92;const c=REAL(area).treeCell(x,z);if(!c)return 0;return Math.max(0,Math.min(1,(c.d-.25)/.75))*(cb===2?.35:1);}
  switch(area){
   case 'forest':return forestStand(x,z).density;
   case 'terrain':{if(Math.abs(x)<110&&z<250&&z>-2600)return 0;for(const f of RESIDENTIAL)if(insidePolygon(x,z,f.points))return .5;
@@ -237,15 +241,26 @@ export function wireDistance(x,y,z,area){let best=Infinity;for(const line of POW
   if(Math.abs(lat)>12||Math.abs((x-px)*ux+(z-pz)*uz)>1)continue;const f=t/L,ha=terrainHeight(ax,az,area)+lineH(line),hb=terrainHeight(bx,bz,area)+lineH(line),wy=ha+(hb-ha)*f-lineSag(line)*4*f*(1-f);
   for(const o of lineOff(line)){const d=Math.hypot(lat-o,y-wy);if(d<best)best=d;}}return best;}
 // Lowest conductor height (absolute) when (x,z) lies within `r` metres of a power line, else -Infinity.
-export function wireTopNear(x,z,area,r=10){let top=-Infinity;for(const line of POWER_LINES[area]??[])for(let i=1;i<line.length;i++){const [ax,az]=line[i-1],[bx,bz]=line[i],dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<1)continue;const ux=dx/L,uz=dz/L,t=(x-ax)*ux+(z-az)*uz;if(t<-r||t>L+r)continue;const lat=Math.abs((x-ax)*-uz+(z-az)*ux);if(lat>r+3.2)continue;const f=Math.max(0,Math.min(1,t/L)),ha=terrainHeight(ax,az,area)+lineH(line),hb=terrainHeight(bx,bz,area)+lineH(line);top=Math.max(top,ha+(hb-ha)*f-lineSag(line)*4*f*(1-f)+.5);}return top;}
+/* v0.52 hız: tel segmentleri 200 m hücrelere dizinlenir, uç yükseklikleri bir kez hesaplanır (sonuç aynı) */
+const WIRE_IDX={},WCELL=200;
+function wireIndex(area){let I=WIRE_IDX[area];if(I)return I;I=WIRE_IDX[area]={cells:new Map()};for(const line of POWER_LINES[area]??[])for(let i=1;i<line.length;i++){const [ax,az]=line[i-1],[bx,bz]=line[i],dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<1)continue;
+  const seg={ax,az,ux:dx/L,uz:dz/L,L,ha:terrainHeight(ax,az,area)+lineH(line),hb:terrainHeight(bx,bz,area)+lineH(line),sag:lineSag(line)},m=100;
+  for(let cx=Math.floor((Math.min(ax,bx)-m)/WCELL);cx<=Math.floor((Math.max(ax,bx)+m)/WCELL);cx++)for(let cz=Math.floor((Math.min(az,bz)-m)/WCELL);cz<=Math.floor((Math.max(az,bz)+m)/WCELL);cz++){const k=cx+':'+cz;let a=I.cells.get(k);if(!a)I.cells.set(k,a=[]);a.push(seg);}}return I;}
+export function wireTopNear(x,z,area,r=10){if(!(POWER_LINES[area]?.length))return -Infinity;const I=wireIndex(area);let top=-Infinity;
+ if(r>45){for(const line of POWER_LINES[area]??[])for(let i=1;i<line.length;i++){const [ax,az]=line[i-1],[bx,bz]=line[i],dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<1)continue;const ux=dx/L,uz=dz/L,t=(x-ax)*ux+(z-az)*uz;if(t<-r||t>L+r)continue;const lat=Math.abs((x-ax)*-uz+(z-az)*ux);if(lat>r+3.2)continue;const f=Math.max(0,Math.min(1,t/L)),ha=terrainHeight(ax,az,area)+lineH(line),hb=terrainHeight(bx,bz,area)+lineH(line);top=Math.max(top,ha+(hb-ha)*f-lineSag(line)*4*f*(1-f)+.5);}return top;}
+ const segs=I.cells.get(Math.floor(x/WCELL)+':'+Math.floor(z/WCELL));if(!segs)return top;
+ for(const g of segs){const t=(x-g.ax)*g.ux+(z-g.az)*g.uz;if(t<-r||t>g.L+r)continue;const lat=Math.abs((x-g.ax)*-g.uz+(z-g.az)*g.ux);if(lat>r+3.2)continue;const f=Math.max(0,Math.min(1,t/g.L));top=Math.max(top,g.ha+(g.hb-g.ha)*f-g.sag*4*f*(1-f)+.5);}return top;}
 export const POWER_LINE_SPEC={towerHeightM:TOWER_H,offsetsM:WIRE_OFFSETS,sagM:3.5};
 
 /* v0.39 Tepeler: KML iniş yerleri (tepe / kapalı). Tepe üstleri ve kapalı bölge ortaları ağaçsız ve kayasız tutulur
    (gerçekte de açık alan); MT_HILLS eski arayüz için [x, z, r, yükseklik] */
-const PAD_CLEAR={mountain:TEPE_SITES.map(s=>({x:s.x,z:s.z,r:s.kind==='confined'?55:30}))};
+const PAD_CLEAR={mountain:TEPE_SITES.filter(s=>s.kind!=='confined').map(s=>({x:s.x,z:s.z,r:30}))}; /* v0.52 kapalı bölgeler dikdörtgen açıklık (confinedBand) */
 const CONF_SITES=TEPE_SITES.filter(s=>s.kind==='confined');
 /* 1: kapalı bölgenin kenarındaki kavak halkası (55–78 m), 2: dışında seyreltilmiş örtü (78–170 m) */
-function confinedBand(x,z,area){if(area!=='mountain')return 0;for(const s of CONF_SITES){const d=Math.hypot(x-s.x,z-s.z);if(d<55||d>170)continue;if(d<78)return 1;return 2;}return 0;}
+/* v0.52 kullanıcı: kapalı bölge dikdörtgen, dört yanı sık ağaç duvarıyla çevrili (uzun kenar yaklaşma istikametinde).
+   3: açıklık (ağaç yok), 1: ağaç duvarı, 2: dış kuşak (seyrek), 0: yok */
+const CONF_RECT=CONF_SITES.map(s=>{const f=(s.patterns?.[0]?.final??0)*Math.PI/180;return {x:s.x,z:s.z,ux:Math.sin(f),uz:-Math.cos(f),L:70,W:45,B:24};});
+function confinedBand(x,z,area){if(area!=='mountain')return 0;for(const r of CONF_RECT){const dx=x-r.x,dz=z-r.z;if(dx*dx+dz*dz>230*230)continue;const u=Math.abs(dx*r.ux+dz*r.uz),v=Math.abs(-dx*r.uz+dz*r.ux);if(u<r.L&&v<r.W)return 3;if(u<r.L+r.B&&v<r.W+r.B)return 1;if(u<r.L+r.B+70&&v<r.W+r.B+70)return 2;}return 0;}
 export const MT_HILLS=TEPE_SITES.filter(s=>s.kind==='pinnacle').map(s=>[s.x,s.z,260,terrainHeight(s.x,s.z,'mountain')]);
 /* v0.39.2 yol ızgara indeksi (40 m): yüzey sorgusu her yolu taramıyor (harita ve iniş yeri değerlendirmesi telefonda donuyordu) */
 const ROAD_G={};function roadGrid(area){if(ROAD_G[area])return ROAD_G[area];const g=new Map(),C=40;for(const f of REAL_AREAS[area].features){if(!f.tags.highway)continue;const p=f.points;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],seg=[a,b];for(let gi=Math.floor((Math.min(a[0],b[0])-8)/C);gi<=Math.floor((Math.max(a[0],b[0])+8)/C);gi++)for(let gj=Math.floor((Math.min(a[1],b[1])-8)/C);gj<=Math.floor((Math.max(a[1],b[1])+8)/C);gj++){const k=gi+','+gj;(g.get(k)??g.set(k,[]).get(k)).push(seg);}}}return ROAD_G[area]=g;}
