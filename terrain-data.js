@@ -15,7 +15,7 @@ export const FEATURES=REAL_AREAS.terrain.features;
 export const DEM={lat:REAL_AREAS.terrain.lat0,lon:REAL_AREAS.terrain.lon0,baseElevationM:REAL_AREAS.terrain.base};
 const REAL=a=>REAL_AREAS[a]??null;
 /* v0.52 kullanıcı işaretlemesi (Tepeler, kapalı bölge başlangıcı batısı): mavi çizilen alan ağaçsız düz yeşil alandır */
-export const OPEN_FIELDS={mountain:[{x:2560,z:-3660,rx:270,rz:250}]};
+export const OPEN_FIELDS={mountain:[{x:2530,z:-3660,rx:215,rz:190}]};
 const inOpen=(x,z,area)=>{for(const f of OPEN_FIELDS[area]??[]){const u=(x-f.x)/f.rx,v=(z-f.z)/f.rz;if(u*u+v*v<1)return 1-Math.sqrt(u*u+v*v);}return -1;};
 for(const [k,r] of Object.entries(REAL_AREAS))if(OPEN_FIELDS[k]){const tc=r.treeCell;r.treeCell=(x,z)=>inOpen(x,z,k)>=0?null:tc(x,z);}
 /* MSL elevation (m) of a point: base of the area frame + local height */
@@ -241,7 +241,15 @@ export function wireDistance(x,y,z,area){let best=Infinity;for(const line of POW
   if(Math.abs(lat)>12||Math.abs((x-px)*ux+(z-pz)*uz)>1)continue;const f=t/L,ha=terrainHeight(ax,az,area)+lineH(line),hb=terrainHeight(bx,bz,area)+lineH(line),wy=ha+(hb-ha)*f-lineSag(line)*4*f*(1-f);
   for(const o of lineOff(line)){const d=Math.hypot(lat-o,y-wy);if(d<best)best=d;}}return best;}
 // Lowest conductor height (absolute) when (x,z) lies within `r` metres of a power line, else -Infinity.
-export function wireTopNear(x,z,area,r=10){let top=-Infinity;for(const line of POWER_LINES[area]??[])for(let i=1;i<line.length;i++){const [ax,az]=line[i-1],[bx,bz]=line[i],dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<1)continue;const ux=dx/L,uz=dz/L,t=(x-ax)*ux+(z-az)*uz;if(t<-r||t>L+r)continue;const lat=Math.abs((x-ax)*-uz+(z-az)*ux);if(lat>r+3.2)continue;const f=Math.max(0,Math.min(1,t/L)),ha=terrainHeight(ax,az,area)+lineH(line),hb=terrainHeight(bx,bz,area)+lineH(line);top=Math.max(top,ha+(hb-ha)*f-lineSag(line)*4*f*(1-f)+.5);}return top;}
+/* v0.52 hız: tel segmentleri 200 m hücrelere dizinlenir, uç yükseklikleri bir kez hesaplanır (sonuç aynı) */
+const WIRE_IDX={},WCELL=200;
+function wireIndex(area){let I=WIRE_IDX[area];if(I)return I;I=WIRE_IDX[area]={cells:new Map()};for(const line of POWER_LINES[area]??[])for(let i=1;i<line.length;i++){const [ax,az]=line[i-1],[bx,bz]=line[i],dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<1)continue;
+  const seg={ax,az,ux:dx/L,uz:dz/L,L,ha:terrainHeight(ax,az,area)+lineH(line),hb:terrainHeight(bx,bz,area)+lineH(line),sag:lineSag(line)},m=100;
+  for(let cx=Math.floor((Math.min(ax,bx)-m)/WCELL);cx<=Math.floor((Math.max(ax,bx)+m)/WCELL);cx++)for(let cz=Math.floor((Math.min(az,bz)-m)/WCELL);cz<=Math.floor((Math.max(az,bz)+m)/WCELL);cz++){const k=cx+':'+cz;let a=I.cells.get(k);if(!a)I.cells.set(k,a=[]);a.push(seg);}}return I;}
+export function wireTopNear(x,z,area,r=10){if(!(POWER_LINES[area]?.length))return -Infinity;const I=wireIndex(area);let top=-Infinity;
+ if(r>45){for(const line of POWER_LINES[area]??[])for(let i=1;i<line.length;i++){const [ax,az]=line[i-1],[bx,bz]=line[i],dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<1)continue;const ux=dx/L,uz=dz/L,t=(x-ax)*ux+(z-az)*uz;if(t<-r||t>L+r)continue;const lat=Math.abs((x-ax)*-uz+(z-az)*ux);if(lat>r+3.2)continue;const f=Math.max(0,Math.min(1,t/L)),ha=terrainHeight(ax,az,area)+lineH(line),hb=terrainHeight(bx,bz,area)+lineH(line);top=Math.max(top,ha+(hb-ha)*f-lineSag(line)*4*f*(1-f)+.5);}return top;}
+ const segs=I.cells.get(Math.floor(x/WCELL)+':'+Math.floor(z/WCELL));if(!segs)return top;
+ for(const g of segs){const t=(x-g.ax)*g.ux+(z-g.az)*g.uz;if(t<-r||t>g.L+r)continue;const lat=Math.abs((x-g.ax)*-g.uz+(z-g.az)*g.ux);if(lat>r+3.2)continue;const f=Math.max(0,Math.min(1,t/g.L));top=Math.max(top,g.ha+(g.hb-g.ha)*f-g.sag*4*f*(1-f)+.5);}return top;}
 export const POWER_LINE_SPEC={towerHeightM:TOWER_H,offsetsM:WIRE_OFFSETS,sagM:3.5};
 
 /* v0.39 Tepeler: KML iniş yerleri (tepe / kapalı). Tepe üstleri ve kapalı bölge ortaları ağaçsız ve kayasız tutulur
